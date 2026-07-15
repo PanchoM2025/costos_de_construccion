@@ -64,6 +64,7 @@ class AppPrincipal(tk.Tk):
         self._btn(barra, "Nueva obra", COLOR_BTN_NUEVO, self.nueva_obra).pack(side="left", padx=(12, 4))
         self._btn(barra, "Abrir obra", COLOR_BTN_ABRIR, self.abrir_obra).pack(side="left", padx=4)
         self._btn(barra, "Eliminar obra", COLOR_BTN_ELIM, self.eliminar_obra).pack(side="left", padx=4)
+        self._btn(barra, "↑ BackUp", "#555555", self.hacer_backup).pack(side="left", padx=(16, 4))
 
         # Tabla de obras
         frame_tabla = tk.Frame(self, bg="#f0f0f0")
@@ -201,6 +202,24 @@ class AppPrincipal(tk.Tk):
             obra.eliminar()
             self.actualizar_lista()
 
+
+
+    def hacer_backup(self):
+        """Copia Master_Obras.db → Master_Obras_BUP.db y hace commit+push a GitHub."""
+        import shutil
+        from core.obra import CARPETA_DATA
+
+        # 1. Copia local de seguridad de la DB
+        origen  = CARPETA_DATA / "Master_Obras.db"
+        destino = CARPETA_DATA / "Master_Obras_BUP.db"
+        try:
+            shutil.copy2(str(origen), str(destino))
+        except Exception as e:
+            messagebox.showerror("Error en backup", f"No se pudo copiar la DB:\n{e}", parent=self)
+            return
+
+        # 2. Commit + push (reutiliza cierre_de_dia)
+        _cierre_de_dia(parent_window=self)
 
 
 class _DlgVersiones(tk.Toplevel):
