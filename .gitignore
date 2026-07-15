@@ -13,6 +13,18 @@ __pycache__/
 .vscode/
 .idea/
 
-# Bases de datos de obras individuales (datos grandes, cambian seguido)
-# Comentar si querés incluirlas en el repo
-# Obras/*/data/BaseParticular.db
+# DBs por obra — se regeneran desde Master_Obras.db
+Obras/*/data/BaseParticular.db
+
+# DBs viejas / de prueba (no son la fuente de verdad)
+Data/Master.db
+Bien/
+
+# Archivos de precios (xlsx grandes, cambian poco)
+Data/Precios/
+
+# Lo que SÍ entra al repo:
+#   Data/Master_Obras.db          ← catálogo + índice de obras
+#   Obras/*/data/obra*.json       ← presupuestos con tareas, cantidades y precios
+#   Obras/*/data/variaciones.txt  ← log de versiones
+#   Scripts/                      ← todo el código
