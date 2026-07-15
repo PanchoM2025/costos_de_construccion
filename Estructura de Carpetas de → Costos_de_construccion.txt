@@ -1,0 +1,84 @@
+Estructura de: C:\Dropbox\Claude\Costos_de_construccion 
+ 
+Listado de rutas de carpetas para el volumen Windows
+El número de serie del volumen es 000001EA BAC2:D2AE
+C:\DROPBOX\CLAUDE\COSTOS_DE_CONSTRUCCION
+|   Estructura de Carpetas de ? Costos_de_construccion.txt
+|   
++---Bien
+|       Master_de_Costos.db
+|       
++---Data
+|   |   Master.db
+|   |   Master_Obras.db
+|   |   obras_db.json
+|   |   
+|   \---Precios
+|       |   PUnitarios_05_2026.xlsx
+|       |   PUnitarios_08_2025.xlsx
+|       |   
+|       \---Precios_base
++---Docs y Logs
+|       Chandias_Incidencias.xlsx
+|       README_2026-05-28.md
+|       README_LC.docx
+|       README_Negocio_y_Flujo.docx
+|       README_Presupuestacion.docx
+|       
++---Obras
+|   +---Obra001
+|   |   +---data
+|   |   |       BaseParticular.db
+|   |   |       obra.json
+|   |   |       obra000.json
+|   |   |       obra001.json
+|   |   |       Presupuesto Sayhueque.xlsx
+|   |   |       
+|   |   \---Precios
+|   +---Obra002
+|   |   +---data
+|   |   |       BaseParticular.db
+|   |   |       obra000.json
+|   |   |       obra001.json
+|   |   |       pedir_precios_002.txt
+|   |   |       variaciones.txt
+|   |   |       
+|   |   \---Precios
+|   \---Obra003
+|       +---data
+|       |       BaseParticular.db
+|       |       obra000.json
+|       |       
+|       \---Precios
+\---Scripts
+    |   BAT Dispara App.bat
+    |   main.pyw
+    |   test_treeview.py
+    |   
+    +---core
+    |   |   maestro.py
+    |   |   obra.py
+    |   |   __init__.py
+    |   |   
+    |   \---__pycache__
+    |           maestro.cpython-313.pyc
+    |           maestro.cpython-314.pyc
+    |           obra.cpython-313.pyc
+    |           obra.cpython-314.pyc
+    |           __init__.cpython-313.pyc
+    |           __init__.cpython-314.pyc
+    |           
+    \---ui
+        |   dialogo_nueva_obra.py
+        |   ventana_obra.py
+        |   ventana_obra_000.py
+        |   __init__.py
+        |   
+        \---__pycache__
+                dialogo_nueva_obra.cpython-313.pyc
+                dialogo_nueva_obra.cpython-314.pyc
+                ventana_obra.cpython-313.pyc
+                ventana_obra.cpython-314.pyc
+                __init__.cpython-313.pyc
+                __init__.cpython-314.pyc
+                

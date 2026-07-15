@@ -1,0 +1,138 @@
+{
+  "numero": "001",
+  "nombre": "Estructura H° A°",
+  "ubicacion": "Villa la Angostura",
+  "comitente": "",
+  "fecha_creacion": "2026-05-05",
+  "version": 0,
+  "archivo_precios": "",
+  "items_presupuesto": [
+    {
+      "es_rubro": true,
+      "rubro": "",
+      "descripcion": "HORMIGON ARMADO"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "1111",
+      "descripcion": "Bases Centradas.",
+      "unidad": "m3",
+      "cantidad": 134.0,
+      "cod_tar": "1111",
+      "subcontrato": "",
+      "rubro_std": "ESTRUCTURAS RESISTENTES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "1162",
+      "descripcion": "Platea de 0,15m de espesor.",
+      "unidad": "m2",
+      "cantidad": 222.0,
+      "cod_tar": "5162",
+      "subcontrato": "",
+      "rubro_std": "PAVIMENTOS"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "",
+      "descripcion": "PINTURAS y VIDRIOS"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "9151",
+      "descripcion": "Barniz en carpintería de madera.",
+      "unidad": "m2",
+      "cantidad": 888.0,
+      "cod_tar": "9151",
+      "subcontrato": "",
+      "rubro_std": "PINTURAS"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "",
+      "descripcion": "TAREAS PRELIMINARES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "0121",
+      "descripcion": "Casilla Obrador.",
+      "unidad": "m2",
+      "cantidad": 25.0,
+      "cod_tar": "0121",
+      "subcontrato": "",
+      "rubro_std": "TAREAS PRELIMINARES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "0130",
+      "descripcion": "Cartel de Obra.",
+      "unidad": "m2",
+      "cantidad": 12.0,
+      "cod_tar": "0130",
+      "subcontrato": "",
+      "rubro_std": "TAREAS PRELIMINARES"
+    }
+  ],
+  "tareas": {
+    "1111": {
+      "cod": "1111",
+      "base": "1111",
+      "variante": " ",
+      "nombre": "Bases Centradas.",
+      "nombre_editado": "Bases Centradas.",
+      "unidad": "m3",
+      "rubro": "ESTRUCTURAS RESISTENTES",
+      "cantidad": 134.0,
+      "subcontrato": ""
+    },
+    "5162": {
+      "cod": "5162",
+      "base": "5162",
+      "variante": " ",
+      "nombre": "Piso de Hormigón Armado fratazado esp. 0,15m.",
+      "nombre_editado": "Platea de 0,15m de espesor.",
+      "unidad": "m2",
+      "rubro": "PAVIMENTOS",
+      "cantidad": 222.0,
+      "subcontrato": ""
+    },
+    "9151": {
+      "cod": "9151",
+      "base": "9151",
+      "variante": " ",
+      "nombre": "Barniz en carpintería de madera.",
+      "nombre_editado": "Barniz en carpintería de madera.",
+      "unidad": "m2",
+      "rubro": "PINTURAS",
+      "cantidad": 888.0,
+      "subcontrato": ""
+    },
+    "0121": {
+      "cod": "0121",
+      "base": "0121",
+      "variante": " ",
+      "nombre": "Casilla Obrador.",
+      "nombre_editado": "Casilla Obrador.",
+      "unidad": "m2",
+      "rubro": "TRABAJOS PREPARATORIOS",
+      "cantidad": 25.0,
+      "subcontrato": ""
+    },
+    "0130": {
+      "cod": "0130",
+      "base": "0130",
+      "variante": " ",
+      "nombre": "Cartel de Obra.",
+      "nombre_editado": "Cartel de Obra.",
+      "unidad": "m2",
+      "rubro": "TRABAJOS PREPARATORIOS",
+      "cantidad": 12.0,
+      "subcontrato": ""
+    }
+  }
+}

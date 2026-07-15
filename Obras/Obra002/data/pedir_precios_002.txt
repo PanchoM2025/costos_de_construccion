@@ -1,0 +1,17 @@
+Codigo	Insumo	Unidad
+000114	Oficial.	hs
+000116	Ayudante.	hs
+000334	Prestación Mano de Obra Ayudante.	hs
+1129	H. Torsionado Tek=4200Kgr/cm2 - Diam. promedio	Kg
+1212	Alambre negro recocido Nro. 16.	Kg
+1223	Clavos Punta París  2-3" promedio.	Kg
+1311	Tablas de madera p/encofrado s/cepillar 1".	m2
+1341	Tirante de pino 3x3	ml
+1411	Cemento Portland normal bolsa de 50Kgr - 3 pliegos	Kg
+1511	Arena gruesa lavada	m3
+1630	Arena Mediana	m3
+2121	Ladrillo cerámico hueco 08/15/20	un
+2211	Cal Hidraúlica	Kg
+2221	Arena Mediana	m3
+2222	Arena Fina	m3
+2251	Hidrófugo Inorgánico tipo SIKA	Kg

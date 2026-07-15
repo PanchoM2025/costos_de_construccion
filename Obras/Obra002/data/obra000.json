@@ -1,0 +1,266 @@
+{
+  "numero": "002",
+  "nombre": "Viviendas Multifamiliares",
+  "ubicacion": "Villa la Angostura",
+  "comitente": "",
+  "fecha_creacion": "2026-05-06",
+  "version": 0,
+  "archivo_precios": "",
+  "items_presupuesto": [
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "01",
+      "descripcion": "Excavación bases y vigas de fundación",
+      "unidad": "m3",
+      "cantidad": 1.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "02",
+      "descripcion": "Zapata de fundación ZF1 (0,60 x 0,20)",
+      "unidad": "m3",
+      "cantidad": 222.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "03",
+      "descripcion": "Mampostería de 18 cm",
+      "unidad": "m2",
+      "cantidad": 222.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "05",
+      "descripcion": "Zapata de fundación ZF2 (30x25)",
+      "unidad": "m3",
+      "cantidad": 333.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "06",
+      "descripcion": "Mamposteria de 10 cm",
+      "unidad": "m2",
+      "cantidad": 333.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "07",
+      "descripcion": "Vigas Fundacion VF1",
+      "unidad": "m3",
+      "cantidad": 444.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "08",
+      "descripcion": "Hidrófugo exterior",
+      "unidad": "m2",
+      "cantidad": 444.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "09",
+      "descripcion": "Plateas armadas esp. 0,15 malla 6 15x15",
+      "unidad": "m3",
+      "cantidad": 555.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "10",
+      "descripcion": "Plateas armadas",
+      "unidad": "m3",
+      "cantidad": 666.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "11",
+      "descripcion": "Columnas de hormigón armado 20x20",
+      "unidad": "m3",
+      "cantidad": 777.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "12",
+      "descripcion": "Vigas de hormigón  20 x 30",
+      "unidad": "m3",
+      "cantidad": 888.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "",
+      "item": "13",
+      "descripcion": "Losa hormigón armado espesor 15 cm",
+      "unidad": "m2",
+      "cantidad": 999.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": true,
+      "rubro": "01",
+      "item": "",
+      "descripcion": "Tareas Preliminares",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "01",
+      "descripcion": "Replanteo",
+      "unidad": "gl",
+      "cantidad": 1.0,
+      "cod_tar": "0140",
+      "subcontrato": "",
+      "rubro_std": "TAREAS PRELIMINARES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "04",
+      "descripcion": "Limpieza obra",
+      "unidad": "gl",
+      "cantidad": 222.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": true,
+      "rubro": "02",
+      "item": "",
+      "descripcion": "Estructura de Hormigón armado",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "02",
+      "item": "01",
+      "descripcion": "Bases aisladas",
+      "unidad": "m3",
+      "cantidad": 111.0,
+      "cod_tar": "1113",
+      "subcontrato": "",
+      "rubro_std": "HORMIGON ARMADO"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "03",
+      "item": "",
+      "descripcion": "Albañilería",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "03",
+      "item": "01",
+      "descripcion": "Capa aisladora doble muros exteriores e interiores 0,18m",
+      "unidad": "m2",
+      "cantidad": 111.0,
+      "cod_tar": "2330",
+      "subcontrato": "",
+      "rubro_std": "ALBAÑILERIA"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "04",
+      "item": "",
+      "descripcion": "Tareas generales",
+      "unidad": "hs",
+      "cantidad": 0.0,
+      "cod_tar": "0334",
+      "subcontrato": "",
+      "rubro_std": "TAREAS PRELIMINARES"
+    }
+  ],
+  "tareas": {
+    "0140": {
+      "cod": "0140",
+      "base": "0140",
+      "variante": " ",
+      "nombre": "Replanteo.",
+      "nombre_editado": "Replanteo",
+      "unidad": "gl",
+      "rubro": "TAREAS PRELIMINARES",
+      "cantidad": 1.0,
+      "subcontrato": ""
+    },
+    "1113": {
+      "cod": "1113",
+      "base": "1113",
+      "variante": " ",
+      "nombre": "Bases Esquineras.",
+      "nombre_editado": "Bases aisladas",
+      "unidad": "m3",
+      "rubro": "HORMIGON ARMADO",
+      "cantidad": 111.0,
+      "subcontrato": ""
+    },
+    "2330": {
+      "cod": "2330",
+      "base": "2330",
+      "variante": " ",
+      "nombre": "Capa aisladora horizontal en muros.",
+      "nombre_editado": "Capa aisladora doble muros exteriores e interiores 0,18m",
+      "unidad": "m2",
+      "rubro": "ALBAÑILERIA",
+      "cantidad": 111.0,
+      "subcontrato": ""
+    }
+  }
+}

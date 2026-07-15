@@ -1,0 +1,173 @@
+{
+  "numero": "001",
+  "nombre": "Estructura H° A°",
+  "ubicacion": "Villa la Angostura",
+  "fecha_creacion": "2026-05-05",
+  "tareas": {
+    "0140": {
+      "cod": "0140",
+      "base": "0140",
+      "variante": " ",
+      "nombre": "Replanteo.",
+      "nombre_editado": "Replanteo",
+      "unidad": "gl",
+      "rubro": "TAREAS PRELIMINARES",
+      "cantidad": 1.0,
+      "subcontrato": ""
+    },
+    "0252": {
+      "cod": "0252",
+      "base": "0252",
+      "variante": " ",
+      "nombre": "Excavación Vigas de encadenado.",
+      "nombre_editado": "Excavación bases y vigas de fundación",
+      "unidad": "m3",
+      "rubro": "TAREAS PRELIMINARES",
+      "cantidad": 1.0,
+      "subcontrato": ""
+    },
+    "1111": {
+      "cod": "1111",
+      "base": "1111",
+      "variante": " ",
+      "nombre": "Bases Centradas.",
+      "nombre_editado": "Bases aisladas",
+      "unidad": "m3",
+      "rubro": "HORMIGON ARMADO",
+      "cantidad": 111.0,
+      "subcontrato": "E"
+    },
+    "1132": {
+      "cod": "1132",
+      "base": "1132",
+      "variante": " ",
+      "nombre": "Viga Portamuros.",
+      "nombre_editado": "Vigas Fundacion VF1",
+      "unidad": "m3",
+      "rubro": "HORMIGON ARMADO",
+      "cantidad": 444.0,
+      "subcontrato": ""
+    },
+    "1162": {
+      "cod": "1162",
+      "base": "1162",
+      "variante": " ",
+      "nombre": "Platea de 0,15m de espesor.",
+      "nombre_editado": "Plateas armadas esp. 0,15 malla 6 15x15",
+      "unidad": "m3",
+      "rubro": "HORMIGON ARMADO",
+      "cantidad": 555.0,
+      "subcontrato": "E"
+    },
+    "1163": {
+      "cod": "1163",
+      "base": "1163",
+      "variante": " ",
+      "nombre": "Platea de 0,20m de espesor.",
+      "nombre_editado": "Plateas armadas",
+      "unidad": "m3",
+      "rubro": "HORMIGON ARMADO",
+      "cantidad": 666.0,
+      "subcontrato": ""
+    },
+    "1222": {
+      "cod": "1222",
+      "base": "1222",
+      "variante": " ",
+      "nombre": "Columnas a la vista.",
+      "nombre_editado": "Columnas de hormigón armado 20x20",
+      "unidad": "m3",
+      "rubro": "HORMIGON ARMADO",
+      "cantidad": 777.0,
+      "subcontrato": "X"
+    },
+    "1232": {
+      "cod": "1232",
+      "base": "1232",
+      "variante": " ",
+      "nombre": "Vigas a la vista.",
+      "nombre_editado": "Vigas de hormigón  20 x 30",
+      "unidad": "m3",
+      "rubro": "HORMIGON ARMADO",
+      "cantidad": 888.0,
+      "subcontrato": ""
+    },
+    "1242": {
+      "cod": "1242",
+      "base": "1242",
+      "variante": " ",
+      "nombre": "Losas macizas a la vista.",
+      "nombre_editado": "Losa hormigón armado espesor 15 cm",
+      "unidad": "m2",
+      "rubro": "HORMIGON ARMADO",
+      "cantidad": 999.0,
+      "subcontrato": ""
+    },
+    "2330": {
+      "cod": "2330",
+      "base": "2330",
+      "variante": " ",
+      "nombre": "Capa aisladora horizontal en muros.",
+      "nombre_editado": "Capa aisladora doble muros exteriores e interiores 0,18m",
+      "unidad": "m2",
+      "rubro": "ALBAÑILERIA",
+      "cantidad": 111.0,
+      "subcontrato": ""
+    },
+    "2423": {
+      "cod": "2423",
+      "base": "2423",
+      "variante": " ",
+      "nombre": "Ladrillos huecos cerámicos 18/18/33",
+      "nombre_editado": "Mampostería de 18 cm",
+      "unidad": "m2",
+      "rubro": "ALBAÑILERIA",
+      "cantidad": 222.0,
+      "subcontrato": ""
+    },
+    "2421": {
+      "cod": "2421",
+      "base": "2421",
+      "variante": " ",
+      "nombre": "Ladrillos huecos cerámicos 08/15/20",
+      "nombre_editado": "Mamposteria de 10 cm",
+      "unidad": "m2",
+      "rubro": "ALBAÑILERIA",
+      "cantidad": 333.0,
+      "subcontrato": ""
+    },
+    "2621": {
+      "cod": "2621",
+      "base": "2621",
+      "variante": " ",
+      "nombre": "Revoque impermeable vertical alisado.",
+      "nombre_editado": "Hidrófugo exterior",
+      "unidad": "m2",
+      "rubro": "ALBAÑILERIA",
+      "cantidad": 444.0,
+      "subcontrato": ""
+    },
+    "0291": {
+      "cod": "0291",
+      "base": "0291",
+      "variante": " ",
+      "nombre": "Gestiones Municipales.",
+      "nombre_editado": "Ayuda de gremios",
+      "unidad": "gl",
+      "rubro": "TAREAS PRELIMINARES",
+      "cantidad": 111.0,
+      "subcontrato": ""
+    },
+    "0110": {
+      "cod": "0110",
+      "base": "0110",
+      "variante": " ",
+      "nombre": "Limpieza superficial.",
+      "nombre_editado": "Limpieza obra",
+      "unidad": "gl",
+      "rubro": "TAREAS PRELIMINARES",
+      "cantidad": 222.0,
+      "subcontrato": ""
+    }
+  }
+}

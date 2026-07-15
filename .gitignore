@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Archivos temporales
+*.tmp
+*.bak
+~$*
+
+# IDEs
+.vscode/
+.idea/
+
+# Bases de datos de obras individuales (datos grandes, cambian seguido)
+# Comentar si querés incluirlas en el repo
+# Obras/*/data/BaseParticular.db

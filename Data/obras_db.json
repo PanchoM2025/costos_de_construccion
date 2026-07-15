@@ -1,0 +1,20 @@
+{
+  "001": {
+    "numero": "001",
+    "nombre": "Estructura H° A°",
+    "ubicacion": "Villa la Angostura",
+    "comitente": "",
+    "fecha_creacion": "2026-05-05",
+    "archivo_precios": "",
+    "version": 0
+  },
+  "002": {
+    "numero": "002",
+    "nombre": "Viviendas Multifamiliares",
+    "ubicacion": "Villa la Angostura",
+    "comitente": "",
+    "fecha_creacion": "2026-05-06",
+    "archivo_precios": "",
+    "version": 1
+  }
+}
