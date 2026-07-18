@@ -1,5 +1,12 @@
 """ventana_obra.py"""
 import tkinter as tk
+import os as _os_dbg, datetime as _dt_dbg
+_DBG_LOG = _os_dbg.path.join(_os_dbg.path.dirname(_os_dbg.path.abspath(__file__)), "DEBUG_SUBC.log")
+def _dbg(*a):
+    with open(_DBG_LOG, "a", encoding="utf-8") as _f:
+        _f.write(_dt_dbg.datetime.now().strftime("%H:%M:%S") + " " + " ".join(str(x) for x in a) + "\n")
+_dbg("=== MODULO CARGADO ===", __file__)
+
 from tkinter import ttk, messagebox
 from pathlib import Path
 import sys
@@ -31,8 +38,9 @@ class VentanaObra(tk.Toplevel):
             messagebox.showerror("Error", str(e), parent=self)
             self.destroy()
             return
-        self._precios = {}
-        self._nombre_precios = ""
+        self._precios = dict(getattr(obra, "precios", {}) or {})
+        self._precios_tarea = dict(getattr(obra, "precios_tarea", {}) or {})
+        self._nombre_precios = getattr(obra, "archivo_precios", "") or ""
         self._ruta_precios = None
         self._build_ui()
     def _build_ui(self):
@@ -72,26 +80,27 @@ class VentanaObra(tk.Toplevel):
         self.lbl_st.pack(side="left", padx=12)
     def _build_rubros(self):
         f = self.tab_rubros
-
-        # Cabecera con texto centrado
         hdr = tk.Frame(f, bg=COLOR_HDR, height=36)
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
         tk.Label(hdr, text="Seleccioná los Rubros a presupuestar",
                  bg=COLOR_HDR, fg="white", font=FUENTE_B).place(relx=0.5, rely=0.5, anchor="center")
-
-        # Contenedor de dos columnas (sin scroll)
         outer = tk.Frame(f, bg=COLOR_BG)
         outer.pack(fill="both", expand=True, padx=16, pady=10)
-
+        # Panel izquierdo: dos columnas de rubros
+        frm_rubros = tk.Frame(outer, bg=COLOR_BG)
+        frm_rubros.grid(row=0, column=0, sticky="nsew")
+        ttk.Separator(outer, orient="vertical").grid(row=0, column=1, sticky="ns", padx=10)
+        # Panel derecho: referencia de modalidades de subcontrato
+        frm_modal = tk.Frame(outer, bg=COLOR_BG)
+        frm_modal.grid(row=0, column=2, sticky="nsew", padx=(0, 4))
+        outer.grid_columnconfigure(0, weight=3)
+        outer.grid_columnconfigure(2, weight=1)
+        # --- Rubros ---
         rubros = self.maestro["rubros"]
-        mitad  = (len(rubros) + 1) // 2   # 14 en col izquierda, resto en derecha
-
+        mitad  = (len(rubros) + 1) // 2
         self.vars_rubros = {}
-
         def _hacer_columna(parent, rubros_lista, offset):
-            """Dibuja encabezados + filas de rubros en un Frame."""
-            # Encabezados
             tk.Label(parent, text="#",      bg=COLOR_BG, font=FUENTE_B, fg=COLOR_HDR,
                      width=4, anchor="e").grid(row=0, column=0, padx=(8,4),  pady=(8,2))
             tk.Label(parent, text="Rubro",  bg=COLOR_BG, font=FUENTE_B, fg=COLOR_HDR,
@@ -100,7 +109,6 @@ class VentanaObra(tk.Toplevel):
                      width=6, anchor="e").grid(row=0, column=2, padx=(0,8), pady=(8,2))
             ttk.Separator(parent, orient="horizontal").grid(
                 row=1, column=0, columnspan=3, sticky="ew", padx=4, pady=(0,4))
-
             for j, rubro in enumerate(rubros_lista):
                 fila = j + 2
                 v = tk.BooleanVar(value=self._rubro_activo(rubro))
@@ -116,48 +124,67 @@ class VentanaObra(tk.Toplevel):
                 tk.Label(parent, text=str(n_tar), bg=COLOR_BG, font=FUENTE,
                          fg="#888", width=6, anchor="e").grid(
                     row=fila, column=2, padx=(0,8), pady=2)
-
-        col_izq = tk.Frame(outer, bg=COLOR_BG)
-        col_der = tk.Frame(outer, bg=COLOR_BG)
-        # Separador vertical entre columnas
-        sep_v   = ttk.Separator(outer, orient="vertical")
-
-        col_izq.grid(row=0, column=0, sticky="nsew", padx=(0,8))
-        sep_v  .grid(row=0, column=1, sticky="ns",   padx=4)
-        col_der.grid(row=0, column=2, sticky="nsew", padx=(8,0))
-        outer.grid_columnconfigure(0, weight=1)
-        outer.grid_columnconfigure(2, weight=1)
-
+        col_izq = tk.Frame(frm_rubros, bg=COLOR_BG)
+        col_der = tk.Frame(frm_rubros, bg=COLOR_BG)
+        sep_v2  = ttk.Separator(frm_rubros, orient="vertical")
+        col_izq.grid(row=0, column=0, sticky="nsew", padx=(0, 8))
+        sep_v2 .grid(row=0, column=1, sticky="ns",   padx=4)
+        col_der.grid(row=0, column=2, sticky="nsew", padx=(8, 0))
+        frm_rubros.grid_columnconfigure(0, weight=1)
+        frm_rubros.grid_columnconfigure(2, weight=1)
         _hacer_columna(col_izq, rubros[:mitad],  0)
         _hacer_columna(col_der, rubros[mitad:], mitad)
-
+        # --- Modalidades de Subcontrato ---
+        tk.Label(frm_modal, text="Modalidades de Subcontrato",
+                 bg=COLOR_BG, font=FUENTE_B, fg=COLOR_HDR,
+                 anchor="w").pack(anchor="w", pady=(8, 4))
+        ttk.Separator(frm_modal, orient="horizontal").pack(fill="x", pady=(0, 8))
+        def _bloque(titulo, items):
+            tk.Label(frm_modal, text=titulo, bg=COLOR_BG,
+                     font=("Segoe UI", 9, "bold"), fg=COLOR_SEC,
+                     anchor="w").pack(anchor="w", pady=(6, 2))
+            for letra, desc in items:
+                fila = tk.Frame(frm_modal, bg=COLOR_BG)
+                fila.pack(anchor="w", padx=4, pady=1)
+                tk.Label(fila, text=f"  {letra if letra else ' '}  ",
+                         bg="#e8f0f8", font=("Segoe UI", 9, "bold"),
+                         fg=COLOR_HDR, width=3, relief="flat").pack(side="left")
+                tk.Label(fila, text=desc, bg=COLOR_BG,
+                         font=FUENTE_S, fg="#333",
+                         anchor="w").pack(side="left", padx=6)
+        _bloque("Rubro 3 — Estructuras Resistentes:", [
+            ("",  "MdeO propia"),
+            ("S", "MdeO c/elabor. manual (Madera, clavos y alambre)"),
+            ("E", "MdeO sin elabor. manual (Madera, clavos y alambre)"),
+            ("X", "MdeO sin elaboración manual"),
+            ("T", "MdeO y Materiales"),
+        ])
+        _bloque("Todos los demás Rubros:", [
+            ("",  "Mano de Obra propia"),
+            ("S", "Subcontrato — Mano de Obra"),
+            ("T", "Subcontrato TOTAL"),
+        ])
     def _rubro_activo(self, rubro):
-        """El rubro está activo si hay al menos un ítem vinculado con ese rubro_std."""
         return any(
             it.get("rubro_std") == rubro
             for it in getattr(self.obra, "items_presupuesto", [])
             if not it.get("es_rubro") and it.get("cod_tar")
         )
-
     def _on_rubro(self, rubro):
-        """Al destildar un rubro solo refresca el panel; no borra ítems del presupuesto."""
         self._actualizar_st()
     def _build_tareas(self):
         f = self.tab_tareas
         if not hasattr(self.obra, "items_presupuesto"):
             self.obra.items_presupuesto = []
         self._item_sel_idx = None
-
         frm_btn = tk.Frame(f, bg=COLOR_BG)
         frm_btn.pack(side="bottom", fill="x", padx=12, pady=6)
         self.lbl_sin_vinculo = tk.Label(frm_btn,
             text="", bg=COLOR_BG, fg=COLOR_ROJO, font=FUENTE_S)
         self.lbl_sin_vinculo.pack(side="left", padx=4)
-
         paned = tk.PanedWindow(f, orient="horizontal", bg="#cccccc",
                                sashwidth=5, sashrelief="flat")
         paned.pack(fill="both", expand=True, padx=6, pady=(6, 0))
-
         izq = tk.Frame(paned, bg=COLOR_BG)
         paned.add(izq, minsize=380)
         frm_iz_top = tk.Frame(izq, bg=COLOR_HDR, height=32)
@@ -173,7 +200,6 @@ class VentanaObra(tk.Toplevel):
                   font=FUENTE_S, relief="flat", padx=6, pady=1, cursor="hand2",
                   command=self._importar_presupuesto
                   ).pack(side="right", padx=2, pady=3)
-
         cols_iz = ("rubro", "item", "descripcion", "unidad", "cantidad")
         self.tbl_iz = ttk.Treeview(izq, columns=cols_iz,
                                    show="headings", selectmode="extended")
@@ -197,7 +223,6 @@ class VentanaObra(tk.Toplevel):
         self.tbl_iz.bind("<ButtonRelease-1>", self._clic_fila_iz)
         self.tbl_iz.bind("<Double-1>",        self._doble_clic_iz)
         self.tbl_iz.bind("<Button-3>",        self._menu_der_iz)
-
         der = tk.Frame(paned, bg=COLOR_BG)
         paned.add(der, minsize=340)
         frm_der_top = tk.Frame(der, bg=COLOR_HDR, height=32)
@@ -217,7 +242,6 @@ class VentanaObra(tk.Toplevel):
                   bg="#ccc", padx=4, cursor="hand2",
                   command=lambda: self.var_bus.set("")
                   ).pack(side="left")
-
         cols_der = ("subcont", "nombre", "unidad")
         self.tbl_der = ttk.Treeview(der, columns=cols_der,
                                     show="headings", selectmode="browse")
@@ -239,15 +263,21 @@ class VentanaObra(tk.Toplevel):
         self.tbl_der.bind("<Double-1>", self._doble_clic_der)
         self.tbl_der.bind("<ButtonRelease-1>", self._clic_der_subc)
         self.tbl_der.bind("<Button-3>", self._menu_der_der)
-
+        self._SUBC_DESC_R3 = {
+            "":  "   MdeO propia",
+            "S": "S  MdeO (c/elabor. manual, Madera, clavos y alambre)",
+            "E": "E  MdeO (sin elabor. manual, Madera, clavos y alambre)",
+            "X": "X  MdeO (sin elabor. manual)",
+            "T": "T  MdeO y Materiales",
+        }
+        self._subc_opts = {}  # desc → letra, rebuilt per combo open
         self._subc_var = tk.StringVar()
-        self._subc_entry = ttk.Entry(der, textvariable=self._subc_var,
-                                     font=FUENTE, width=4, justify="center")
-        self._subc_entry.bind("<Return>",  self._confirmar_subc)
-        self._subc_entry.bind("<Escape>",  lambda e: self._subc_entry.place_forget())
-        self._subc_entry.bind("<FocusOut>", self._confirmar_subc)
-        self._subc_iid = None
-
+        self._subc_combo = ttk.Combobox(der, textvariable=self._subc_var,
+                                        font=FUENTE, width=46, state="readonly")
+        self._subc_combo.bind("<<ComboboxSelected>>", self._confirmar_subc)
+        self._subc_combo.bind("<Escape>",  lambda e: self._subc_combo.place_forget())
+        self._subc_iid   = None
+        self._subc_cache = {}   # cod_tar → letra confirmada
         if getattr(self.obra, "items_presupuesto", []):
             self._poblar_iz()
     def _clic_der_subc(self, event=None):
@@ -256,24 +286,53 @@ class VentanaObra(tk.Toplevel):
         iid    = self.tbl_der.identify_row(event.y)
         if region != "cell" or col != "#1" or not iid or iid.startswith("__rub_"):
             return
-        x, y, w, h = self.tbl_der.bbox(iid, col)
-        if not x:
+        bbox = self.tbl_der.bbox(iid, col)
+        if not bbox:
             return
+        x, y, w, h = bbox
+        tareas_por_cod     = self.maestro.get("tareas_por_cod", {})
+        incidencias_master = self.maestro.get("incidencias", {})
+        t      = tareas_por_cod.get(iid, {})
+        nombre = t.get("nombre", iid)
+        # Rubro 3 (Estructuras Resistentes) tiene variantes E y X; los demás no
+        es_r3 = any(
+            (iid + l) in tareas_por_cod or (iid + l) in incidencias_master
+            for l in ("E", "X")
+        )
+        if es_r3:
+            desc_map          = self._SUBC_DESC_R3
+            letras_a_chequear = ("S", "E", "X", "T")
+        else:
+            desc_map = {
+                "":  "   Mano de Obra propia",
+                "S": f"S  M. de Obra para {nombre}",
+                "T": "T  Subcontrato TOTAL",
+            }
+            letras_a_chequear = ("S", "T")
+        letras_opciones = [""]
+        for letra in letras_a_chequear:
+            if (iid + letra) in tareas_por_cod or (iid + letra) in incidencias_master:
+                letras_opciones.append(letra)
+        opciones = [desc_map[l] for l in letras_opciones]
+        self._subc_opts = {desc_map[l]: l for l in letras_opciones}
+        self._subc_combo["values"] = opciones
         vals = self.tbl_der.item(iid, "values")
-        self._subc_var.set(vals[0] if vals else "")
+        letra_actual = (vals[0] if vals else "").strip().upper()
+        desc_actual  = desc_map.get(letra_actual, desc_map[""])
+        self._subc_var.set(desc_actual)
         self._subc_iid = iid
-        self._subc_entry.place(x=self.tbl_der.winfo_x() + x,
+        combo_w = max(w, 340)
+        self._subc_combo.place(x=self.tbl_der.winfo_x() + x,
                                y=self.tbl_der.winfo_y() + y,
-                               width=w, height=h)
-        self._subc_entry.focus_set()
-        self._subc_entry.select_range(0, "end")
+                               width=combo_w, height=h)
+        self._subc_combo.focus_set()
+        self._subc_combo.after(50, lambda: self._subc_combo.event_generate("<Button-1>"))
     def _confirmar_subc(self, event=None):
         if not self._subc_iid:
             return
-        val = self._subc_var.get().strip().upper()[:1]
-        LETRAS_VALIDAS = {"", "S", "T", "E", "X"}
-        if val not in LETRAS_VALIDAS:
-            val = ""
+        desc = self._subc_var.get()
+        val  = self._subc_opts.get(desc, "")
+        _dbg("CONFIRMAR_SUBC iid=", self._subc_iid, "val=", val)
         iid  = self._subc_iid
         vals = list(self.tbl_der.item(iid, "values"))
         vals[0] = val
@@ -282,11 +341,19 @@ class VentanaObra(tk.Toplevel):
         for it in items:
             if it.get("cod_tar") == iid:
                 it["subcontrato"] = val
-        self._subc_entry.place_forget()
+        if not hasattr(self, "_subc_cache"):
+            self._subc_cache = {}
+        self._subc_cache[iid] = val
+        if not hasattr(self, "_subc_cache"): self._subc_cache = {}
+        self._subc_cache[iid] = val
+        _dbg("CACHE guardado", iid, "->", val)
+        self._subc_combo.place_forget()
         self._subc_iid = None
     def _cargar_tareas(self):
         if not hasattr(self, "tbl_iz") or not hasattr(self, "tbl_der"):
             return
+        self._subc_cache = {}
+        self._subc_cache = {}
         self._poblar_iz()
         for item in self.tbl_der.get_children():
             self.tbl_der.delete(item)
@@ -297,12 +364,14 @@ class VentanaObra(tk.Toplevel):
                 values=("", "← Seleccioná rubros en la pestaña 1.", ""))
             return
         i = 0
+        tareas_por_cod = self.maestro["tareas_por_cod"]
         for rubro in self.maestro["rubros"]:
             if rubro not in rubros_activos:
                 continue
+            # FIX: mostrar tareas base (sin sufijo) O tareas con sufijo que no tienen versión base
             tareas_rubro = [
                 t for t in self.maestro["tareas"][rubro]
-                if len(t["cod"]) == 4
+                if (t["variante"] == " " or t["base"] not in tareas_por_cod)
                 and (not texto or texto in t["nombre"].lower())
             ]
             if not tareas_rubro:
@@ -395,11 +464,17 @@ class VentanaObra(tk.Toplevel):
                 parent=self)
             if not ok:
                 return
-        subcont = it.get("subcontrato", "")
+        cache         = getattr(self, "_subc_cache", {})
+        subcont_cache = cache.get(cod, "").strip().upper()
+        vals_der      = self.tbl_der.item(cod, "values")
+        subcont_tbl   = (vals_der[0] if vals_der else "").strip().upper()
+        subcont = subcont_cache or subcont_tbl or it.get("subcontrato", "")
+        _dbg("DOBLE_CLIC cod="+str(cod)+" cache="+str(subcont_cache)+" tbl="+str(subcont_tbl)+" result="+str(subcont))
         it["cod_tar"]     = cod
         it["unidad"]      = it.get("unidad") or t["unidad"]
         it["rubro_std"]   = t["rubro"]
         it["subcontrato"] = subcont
+        _dbg("AFTER_LINK subcontrato="+str(it["subcontrato"]))
         self._refrescar_der_sel(cod)
         self._poblar_iz()
         self.tbl_iz.item(str(self._item_sel_idx), tags=("sel",))
@@ -712,7 +787,7 @@ class VentanaObra(tk.Toplevel):
         falt  = 0
         for cod_ins, datos in sorted(insumos.items()):
             nombre = cat.get(cod_ins, {}).get("nombre", cod_ins)
-            unidad = datos["unidad"]
+            unidad = datos["unidad"] or cat.get(cod_ins, {}).get("unidad", "")
             cant   = datos["cantidad_total"]
             precio = self._precios.get(cod_ins)
             if precio and precio > 0:
@@ -786,9 +861,9 @@ class VentanaObra(tk.Toplevel):
         frm_top.pack(side="top", fill="x", padx=12, pady=(8, 2))
         tk.Label(frm_top, text="Presupuesto valorizado",
                  bg=COLOR_BG, font=FUENTE_B, fg=COLOR_HDR).pack(side="left")
-        tk.Button(frm_top, text="↺ Actualizar", bg=COLOR_SEC, fg="white",
+        tk.Button(frm_top, text="📄 Exportar Excel", bg=COLOR_VERDE, fg="white",
                   font=FUENTE_S, relief="flat", padx=8, pady=3, cursor="hand2",
-                  command=self._cargar_presupuesto).pack(side="right")
+                  command=self._exportar_presupuesto).pack(side="right")
         cols = ("rubro", "item", "descripcion", "unidad", "cantidad", "precio", "total")
         self.tbl_ppto = ttk.Treeview(f, columns=cols, show="headings",
                                      selectmode="browse")
@@ -820,6 +895,7 @@ class VentanaObra(tk.Toplevel):
             background="#1a3a5c", foreground="white",
             font=("Segoe UI", 10, "bold"))
         self.tbl_ppto.bind("<ButtonRelease-1>", self._toggle_ppto)
+        self.tbl_ppto.bind("<Double-1>", self._editar_precio_tarea)
         self.lbl_total_ppto = tk.Label(f, text="", bg="#e8f0f8",
                                        font=FUENTE_B, anchor="e",
                                        fg=COLOR_HDR, pady=5, padx=12)
@@ -846,12 +922,12 @@ class VentanaObra(tk.Toplevel):
             cod_tar = it.get("cod_tar", "")
             subcont = (it.get("subcontrato") or "").strip().upper()
             cant    = it.get("cantidad") or 0.0
-            cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
-            lista_inc  = incidencias.get(cod_buscar) or incidencias.get(cod_tar, [])
-            precio_unit = sum(
-                (precios.get(inc["cod_ins"], 0.0) or 0.0) * inc["cantidad"]
-                for inc in lista_inc
-            )
+            cod_buscar  = cod_tar + subcont if (cod_tar and subcont) else cod_tar
+            lista_inc   = incidencias.get(cod_buscar, []) if subcont else incidencias.get(cod_tar, [])
+            _dbg("PRESUP", "cod_tar="+str(cod_tar), "subcont="+str(subcont), "busca="+str(cod_buscar), "incs="+str(len(lista_inc)))
+            precio_unit = (self._precios_tarea.get(idx) or
+                           sum((precios.get(inc["cod_ins"], 0.0) or 0.0) * inc["cantidad"]
+                               for inc in lista_inc))
             totales_rubro[rubro_idx_actual] += precio_unit * cant
         total_general = 0.0
         i_tarea = 0
@@ -873,25 +949,30 @@ class VentanaObra(tk.Toplevel):
             rub      = it.get("rubro", "")
             item_num = it.get("item", "")
             cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
-            lista_inc  = incidencias.get(cod_buscar) or incidencias.get(cod_tar, [])
-            precio_unit = 0.0
+            lista_inc  = incidencias.get(cod_buscar, []) if subcont else incidencias.get(cod_tar, [])
+            precio_unit      = 0.0
             todos_con_precio = True
             insumos_detalle  = []
-            for inc in lista_inc:
-                cod_ins    = inc["cod_ins"]
-                p_ins      = precios.get(cod_ins, 0.0) or 0.0
-                cant_ins   = inc["cantidad"]
-                sub_ins    = cant_ins * p_ins
-                precio_unit += sub_ins
-                if p_ins == 0:
-                    todos_con_precio = False
-                nombre_ins = insumos_cat.get(cod_ins, {}).get("nombre", cod_ins)
-                insumos_detalle.append({
-                    "cod": cod_ins, "nombre": nombre_ins,
-                    "unidad": inc.get("unidad", ""),
-                    "incidencia": cant_ins,
-                    "precio": p_ins, "subtotal": sub_ins,
-                })
+            precio_manual    = self._precios_tarea.get(idx)
+            if precio_manual:
+                precio_unit      = precio_manual
+                todos_con_precio = True
+            else:
+                for inc in lista_inc:
+                    cod_ins    = inc["cod_ins"]
+                    p_ins      = precios.get(cod_ins, 0.0) or 0.0
+                    cant_ins   = inc["cantidad"]
+                    sub_ins    = cant_ins * p_ins
+                    precio_unit += sub_ins
+                    if p_ins == 0:
+                        todos_con_precio = False
+                    nombre_ins = insumos_cat.get(cod_ins, {}).get("nombre", cod_ins)
+                    insumos_detalle.append({
+                        "cod": cod_ins, "nombre": nombre_ins,
+                        "unidad": inc.get("unidad", ""),
+                        "incidencia": cant_ins,
+                        "precio": p_ins, "subtotal": sub_ins,
+                    })
             total_tarea    = precio_unit * cant
             total_general += total_tarea
             tag = ("tarea_ok" if todos_con_precio and precio_unit > 0
@@ -936,6 +1017,153 @@ class VentanaObra(tk.Toplevel):
             self._ppto_expandido.discard(iid)
         else:
             self._ppto_expandido.add(iid)
+        self._cargar_presupuesto()
+    def _exportar_presupuesto(self):
+        from tkinter import filedialog
+        import openpyxl
+        from openpyxl.styles import (Font, PatternFill, Alignment,
+                                     Border, Side, numbers)
+        ruta = filedialog.asksaveasfilename(
+            parent=self,
+            title="Exportar Presupuesto",
+            initialdir=str(self.obra.carpeta),
+            initialfile=f"Presupuesto_{self.obra.numero}_{self.obra.nombre}.xlsx",
+            defaultextension=".xlsx",
+            filetypes=[("Excel", "*.xlsx"), ("Todos", "*.*")],
+        )
+        if not ruta:
+            return
+        try:
+            items       = getattr(self.obra, "items_presupuesto", [])
+            incidencias = self.maestro["incidencias"]
+            precios     = self._precios
+            wb = openpyxl.Workbook()
+            ws = wb.active
+            ws.title = "Presupuesto"
+            # Estilos
+            COLOR_H  = "1A3A5C"
+            COLOR_S  = "2A6099"
+            COLOR_IT = "FFFFFF"
+            COLOR_A  = "F5F5F5"
+            COLOR_T  = "1D7A4A"
+            ft_hdr   = Font(name="Segoe UI", bold=True, color="FFFFFF", size=10)
+            ft_rub   = Font(name="Segoe UI", bold=True, color="FFFFFF", size=10)
+            ft_tar   = Font(name="Segoe UI", size=10)
+            ft_tot   = Font(name="Segoe UI", bold=True, color="FFFFFF", size=10)
+            fill_hdr = PatternFill("solid", fgColor=COLOR_H)
+            fill_rub = PatternFill("solid", fgColor=COLOR_H)
+            fill_sec = PatternFill("solid", fgColor=COLOR_S)
+            fill_alt = PatternFill("solid", fgColor="EEF4FB")
+            fill_tot = PatternFill("solid", fgColor=COLOR_T)
+            al_c     = Alignment(horizontal="center", vertical="center")
+            al_l     = Alignment(horizontal="left",   vertical="center", wrap_text=True)
+            al_r     = Alignment(horizontal="right",  vertical="center")
+            thin     = Side(style="thin", color="CCCCCC")
+            brd      = Border(bottom=thin)
+            fmt_num  = '#,##0.00'
+            fmt_mon  = '"$"#,##0.00'
+            # Cabecera
+            headers = ["Rubro", "Ítem", "Descripción", "Unidad",
+                       "Cantidad", "P. Unit.", "Total"]
+            widths  = [8, 8, 55, 10, 12, 14, 14]
+            cols    = ["A","B","C","D","E","F","G"]
+            for i, (h, w, c) in enumerate(zip(headers, widths, cols), 1):
+                cell = ws.cell(row=1, column=i, value=h)
+                cell.font      = ft_hdr
+                cell.fill      = fill_hdr
+                cell.alignment = al_c
+                ws.column_dimensions[c].width = w
+            ws.row_dimensions[1].height = 22
+            row = 2
+            total_general = 0.0
+            i_tar = 0
+            for idx, it in enumerate(items):
+                if it.get("es_rubro"):
+                    desc = it.get("descripcion", "")
+                    ws.merge_cells(f"A{row}:G{row}")
+                    cell = ws.cell(row=row, column=1,
+                                   value=f"  {it.get('rubro','')}  —  {desc}")
+                    cell.font      = ft_rub
+                    cell.fill      = fill_rub
+                    cell.alignment = al_l
+                    ws.row_dimensions[row].height = 18
+                    row += 1
+                    continue
+                cod_tar  = it.get("cod_tar", "")
+                subcont  = (it.get("subcontrato") or "").strip().upper()
+                cant     = it.get("cantidad") or 0.0
+                desc     = it.get("descripcion", "")
+                unidad   = it.get("unidad", "")
+                rub      = it.get("rubro", "")
+                item_num = it.get("item", "")
+                cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
+                lista_inc  = (incidencias.get(cod_buscar, []) if subcont
+                              else incidencias.get(cod_tar, []))
+                precio_unit = (self._precios_tarea.get(idx) or
+                               sum((precios.get(inc["cod_ins"], 0.0) or 0.0) * inc["cantidad"]
+                                   for inc in lista_inc))
+                total_tar = precio_unit * cant
+                total_general += total_tar
+                fill_row = PatternFill("solid", fgColor=(COLOR_IT if i_tar % 2 == 0 else "F5F5F5"))
+                vals = [rub, item_num, desc, unidad,
+                        cant if cant else None,
+                        precio_unit if precio_unit else None,
+                        total_tar if precio_unit else None]
+                fmts = [None, None, None, None, fmt_num, fmt_mon, fmt_mon]
+                alns = [al_c, al_c, al_l, al_c, al_r, al_r, al_r]
+                for ci, (v, fmt, aln) in enumerate(zip(vals, fmts, alns), 1):
+                    cell = ws.cell(row=row, column=ci, value=v)
+                    cell.font      = ft_tar
+                    cell.fill      = fill_row
+                    cell.alignment = aln
+                    cell.border    = brd
+                    if fmt and v is not None:
+                        cell.number_format = fmt
+                ws.row_dimensions[row].height = 16
+                row += 1
+                i_tar += 1
+            # Total general
+            ws.merge_cells(f"A{row}:F{row}")
+            cell = ws.cell(row=row, column=1, value="TOTAL GENERAL")
+            cell.font      = ft_tot
+            cell.fill      = fill_tot
+            cell.alignment = al_r
+            cell = ws.cell(row=row, column=7, value=total_general)
+            cell.font          = ft_tot
+            cell.fill          = fill_tot
+            cell.alignment     = al_r
+            cell.number_format = fmt_mon
+            ws.row_dimensions[row].height = 20
+            # Freeze header
+            ws.freeze_panes = "A2"
+            wb.save(ruta)
+            messagebox.showinfo("Exportado",
+                f"Presupuesto exportado:\n{Path(ruta).name}", parent=self)
+        except Exception as e:
+            messagebox.showerror("Error al exportar", str(e), parent=self)
+    def _editar_precio_tarea(self, event=None):
+        iid = self.tbl_ppto.identify_row(event.y)
+        if not iid or not iid.startswith("tar_"):
+            return
+        col = self.tbl_ppto.identify_column(event.x)
+        if col != "#6":   # columna P.Unit.
+            return
+        idx = int(iid.split("_")[1])
+        items = getattr(self.obra, "items_presupuesto", [])
+        if idx >= len(items):
+            return
+        it     = items[idx]
+        desc   = it.get("descripcion", "") or it.get("cod_tar", "")
+        unidad = it.get("unidad", "")
+        actual = self._precios_tarea.get(idx, "")
+        dlg = _DlgVal(self, f"Precio directo — ítem {it.get('item','')}", desc, unidad, actual, es_precio=True)
+        self.wait_window(dlg)
+        if dlg.resultado is None:
+            return
+        if dlg.resultado > 0:
+            self._precios_tarea[idx] = dlg.resultado
+        else:
+            self._precios_tarea.pop(idx, None)
         self._cargar_presupuesto()
     def _on_tab(self, _event):
         idx = self.nb.index("current")
@@ -1005,6 +1233,8 @@ class VentanaObra(tk.Toplevel):
             return 0
     def _guardar(self, silencioso=False):
         try:
+            self.obra.precios       = dict(self._precios)
+            self.obra.precios_tarea = dict(self._precios_tarea)
             self.obra.tareas = {}
             for it in self.obra.items_presupuesto:
                 if it.get("es_rubro") or not it.get("cod_tar"):
@@ -1037,6 +1267,8 @@ class VentanaObra(tk.Toplevel):
                 self.lbl_st.config(text=f"  Guardado en {ver}.")
         except Exception as e:
             messagebox.showerror("Error al guardar", str(e), parent=self)
+
+
 class _DlgInsumosTarea(tk.Toplevel):
     def __init__(self, parent, titulo: str, incidencias: list, insumos_cat: dict):
         super().__init__(parent)
@@ -1085,6 +1317,8 @@ class _DlgInsumosTarea(tk.Toplevel):
         self.geometry(
             f"+{parent.winfo_x()+(parent.winfo_width()-self.winfo_width())//2}"
             f"+{parent.winfo_y()+(parent.winfo_height()-self.winfo_height())//2}")
+
+
 class _DlgGuardarVersion(tk.Toplevel):
     def __init__(self, parent, nombre_actual: str):
         super().__init__(parent)
@@ -1188,8 +1422,8 @@ class _DlgEditarFila(tk.Toplevel):
         tk.Button(frm_btn, text="Aceptar", bg=COLOR_VERDE, fg="white",
                   font=FUENTE_B, relief="flat", padx=12, pady=5,
                   command=_ok).pack(side="left", padx=4)
-        tk.Button(frm_btn, text="Cancelar", bg="#888", fg="white",
-                  font=FUENTE, relief="flat", padx=12, pady=5,
+        tk.Button(frm_btn, text="Cancelar", bg="#888", fg="white", font=FUENTE,
+                  relief="flat", padx=12, pady=5,
                   command=self.destroy).pack(side="left")
         self.bind("<Return>", lambda _: _ok())
         self.bind("<Escape>", lambda _: self.destroy())
@@ -1227,8 +1461,8 @@ class _DlgVal(tk.Toplevel):
         tk.Button(frm_btn, text="Aceptar", bg=COLOR_VERDE, fg="white",
                   font=FUENTE_B, relief="flat", padx=12, pady=5,
                   command=self._ok).pack(side="left", padx=4)
-        tk.Button(frm_btn, text="Cancelar", bg="#888", fg="white",
-                  font=FUENTE, relief="flat", padx=12, pady=5,
+        tk.Button(frm_btn, text="Cancelar", bg="#888", fg="white", font=FUENTE,
+                  relief="flat", padx=12, pady=5,
                   command=self.destroy).pack(side="left")
         self.bind("<Return>", lambda _: self._ok())
         self.bind("<Escape>", lambda _: self.destroy())

@@ -141,7 +141,6 @@ class AppPrincipal(tk.Tk):
         self.wait_window(dlg)
         if dlg.obra_creada:
             self.actualizar_lista()
-            # Seleccionar y abrir la nueva obra directamente
             num = dlg.obra_creada.numero
             if self.tabla.exists(num):
                 self.tabla.selection_set(num)
@@ -157,7 +156,6 @@ class AppPrincipal(tk.Tk):
                                     parent=self)
                 return
             try:
-                # Ver cuántas versiones hay
                 from pathlib import Path
                 from core.obra import CARPETA_OBRAS
                 carpeta_data = CARPETA_OBRAS / f"Obra{num}" / "data"
@@ -202,23 +200,21 @@ class AppPrincipal(tk.Tk):
             obra.eliminar()
             self.actualizar_lista()
 
-
-
     def hacer_backup(self):
-        """Copia Master_Obras.db → Master_Obras_BUP.db y hace commit+push a GitHub."""
+        """Copia Datos_Obras.db y hace commit+push a GitHub."""
         import shutil
         from core.obra import CARPETA_DATA
 
-        # 1. Copia local de seguridad de la DB
-        origen  = CARPETA_DATA / "Master_Obras.db"
-        destino = CARPETA_DATA / "Master_Obras_BUP.db"
+        # Copia local de seguridad de Datos_Obras.db
+        origen  = CARPETA_DATA / "Datos_Obras.db"
+        destino = CARPETA_DATA / "Datos_Obras_BUP.db"
         try:
             shutil.copy2(str(origen), str(destino))
         except Exception as e:
             messagebox.showerror("Error en backup", f"No se pudo copiar la DB:\n{e}", parent=self)
             return
 
-        # 2. Commit + push (reutiliza cierre_de_dia)
+        # Commit + push
         _cierre_de_dia(parent_window=self)
 
 
@@ -231,7 +227,7 @@ class _DlgVersiones(tk.Toplevel):
         self.minsize(420, 240)
         self.resizable(True, True)
         self.grab_set()
-        self.seleccionados = []   # lista de Path
+        self.seleccionados = []
 
         hdr = tk.Frame(self, bg=COLOR_HEADER, height=40)
         hdr.pack(fill="x")
@@ -267,7 +263,7 @@ class _DlgVersiones(tk.Toplevel):
 
         self.tbl.tag_configure("par",   background="#ffffff")
         self.tbl.tag_configure("impar", background="#eaf2fb")
-        self.tbl.tag_configure("last",  background="#d4edda")  # ultima version en verde
+        self.tbl.tag_configure("last",  background="#d4edda")
 
         import json as _json
         notas = self._leer_notas(jsons[0].parent)
@@ -286,7 +282,6 @@ class _DlgVersiones(tk.Toplevel):
             self.tbl.insert("", "end", iid=str(j), tags=(tag,),
                             values=(j.name, ver, fecha, nota))
 
-        # Seleccionar la última por defecto
         if jsons:
             self.tbl.selection_set(str(jsons[-1]))
             self.tbl.see(str(jsons[-1]))
@@ -314,7 +309,6 @@ class _DlgVersiones(tk.Toplevel):
         self.geometry(f"+{px}+{py}")
 
     def _leer_notas(self, carpeta) -> dict:
-        """Lee variaciones.txt y devuelve {nombre_archivo: nota}."""
         notas = {}
         ruta = carpeta / "variaciones.txt"
         if not ruta.exists():

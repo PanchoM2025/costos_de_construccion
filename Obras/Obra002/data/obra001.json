@@ -137,7 +137,7 @@
       "nombre": "Replanteo.",
       "nombre_editado": "Replanteo",
       "unidad": "gl",
-      "rubro": "TAREAS PRELIMINARES",
+      "rubro": "TRABAJOS PREPARATORIOS",
       "cantidad": 1.0,
       "subcontrato": ""
     },
@@ -148,7 +148,7 @@
       "nombre": "Excavación Vigas de encadenado.",
       "nombre_editado": "Excavación bases y vigas de fundación",
       "unidad": "m3",
-      "rubro": "TAREAS PRELIMINARES",
+      "rubro": "MOVIMIENTO DE SUELOS",
       "cantidad": 1.0,
       "subcontrato": ""
     },
@@ -159,7 +159,7 @@
       "nombre": "Prestación Mano de Obra Ayudante.",
       "nombre_editado": "Limpieza obra",
       "unidad": "gl",
-      "rubro": "TAREAS PRELIMINARES",
+      "rubro": "OTRAS PRESTACIONES",
       "cantidad": 222.0,
       "subcontrato": ""
     },
@@ -170,7 +170,7 @@
       "nombre": "Bases Esquineras.",
       "nombre_editado": "Bases aisladas",
       "unidad": "m3",
-      "rubro": "HORMIGON ARMADO",
+      "rubro": "ESTRUCTURAS RESISTENTES",
       "cantidad": 111.0,
       "subcontrato": ""
     },
@@ -181,7 +181,7 @@
       "nombre": "Viga Portamuros.",
       "nombre_editado": "Zapata de fundación ZF2 (30x25)",
       "unidad": "m3",
-      "rubro": "HORMIGON ARMADO",
+      "rubro": "ESTRUCTURAS RESISTENTES",
       "cantidad": 333.0,
       "subcontrato": ""
     },
@@ -192,7 +192,7 @@
       "nombre": "Tronco de Columnas.",
       "nombre_editado": "Troncos de columna",
       "unidad": "m3",
-      "rubro": "HORMIGON ARMADO",
+      "rubro": "ESTRUCTURAS RESISTENTES",
       "cantidad": 55.0,
       "subcontrato": "S"
     },
@@ -203,7 +203,7 @@
       "nombre": "Capa aisladora horizontal en muros.",
       "nombre_editado": "Capa aisladora doble muros exteriores e interiores 0,18m",
       "unidad": "m2",
-      "rubro": "ALBAÑILERIA",
+      "rubro": "CONTRAPISOS y CAPAS AISLADORAS",
       "cantidad": 111.0,
       "subcontrato": ""
     },
@@ -214,7 +214,7 @@
       "nombre": "Ladrillos huecos cerámicos 08/15/20",
       "nombre_editado": "Mamposteria de 10 cm",
       "unidad": "m2",
-      "rubro": "ALBAÑILERIA",
+      "rubro": "MAPOSTERÍAS y TABIQUES",
       "cantidad": 333.0,
       "subcontrato": ""
     }
