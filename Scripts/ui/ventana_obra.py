@@ -311,6 +311,8 @@ class VentanaObra(tk.Toplevel):
             return
         # Clic en columna nombre/unidad con item del pliego seleccionado -> asignar directo
         if col != "#1":
+            if hasattr(self, "_subc_combo"):
+                self._subc_combo.place_forget()
             if self._item_sel_idx is not None:
                 self._asignar_tarea_der(iid)
             return
@@ -350,6 +352,9 @@ class VentanaObra(tk.Toplevel):
         self._subc_var.set(desc_actual)
         self._subc_iid = iid
         combo_w = max(w, 340)
+        # Cerrar el dropdown anterior antes de reposicionar
+        self._subc_combo.place_forget()
+        self._subc_combo.update_idletasks()
         self._subc_combo.place(x=self.tbl_der.winfo_x() + x,
                                y=self.tbl_der.winfo_y() + y,
                                width=combo_w, height=h)
@@ -454,13 +459,22 @@ class VentanaObra(tk.Toplevel):
             self.tbl_iz.delete(item)
         items = getattr(self.obra, "items_presupuesto", [])
         sin_vnc = 0
+        item_counter = 0
+        cur_rubro_idx = None
+        rubro_counts  = {}
         for idx, it in enumerate(items):
             es_rubro = it.get("es_rubro", False)
             if es_rubro:
+                cur_rubro_idx = idx
+                rubro_counts[cur_rubro_idx] = 0
                 self.tbl_iz.insert("", "end", iid=str(idx), tags=("rubro_hdr",),
                     values=(it.get("rubro", ""), "",
                             it.get("descripcion", ""), "", ""))
+                continue
             else:
+                rubro_counts[cur_rubro_idx] = rubro_counts.get(cur_rubro_idx, 0) + 1
+                display_item = f"{rubro_counts[cur_rubro_idx]:02d}"
+                rub = it.get("rubro", "")
                 vinculado = bool(it.get("cod_tar"))
                 tag = "vinculada" if vinculado else "sin_vnc"
                 if not vinculado:
@@ -468,12 +482,14 @@ class VentanaObra(tk.Toplevel):
                 cant = it.get("cantidad", "")
                 cant_str = f"{cant:,.2f}" if isinstance(cant, (int, float)) else str(cant)
                 self.tbl_iz.insert("", "end", iid=str(idx), tags=(tag,),
-                    values=(it.get("rubro", ""), it.get("item", ""),
+                    values=(rub, display_item,
                             it.get("descripcion", ""),
                             it.get("unidad", ""), cant_str))
         msg = f"⚠  {sin_vnc} tarea{'s' if sin_vnc!=1 else ''} sin equivalente." if sin_vnc else ""
         self.lbl_sin_vinculo.config(text=msg)
     def _clic_fila_iz(self, event=None):
+        if hasattr(self, "_subc_combo"):
+            self._subc_combo.place_forget()
         sel = self.tbl_iz.selection()
         if not sel:
             return
@@ -1462,18 +1478,53 @@ class VentanaObra(tk.Toplevel):
                           foreground="#1a3a5c", font=("Segoe UI", 9))
         tbl.tag_configure("ins_b",   background="#e4ecf7",
                           foreground="#1a3a5c", font=("Segoe UI", 9))
+        tbl.tag_configure("total_row", background="#1d5a2a", foreground="white",
+                          font=("Segoe UI", 10, "bold"))
         return tbl, lbl
 
     # ── Insumos (todos) ─────────────────────────────────────────────
     def _build_rpt_insumos(self):
-        cols    = ("cod", "nombre", "unidad", "cantidad")
-        anchos  = {"cod": 80, "nombre": 380, "unidad": 60, "cantidad": 110}
+        cols    = ("cod", "nombre", "unidad", "cantidad", "p_unitario", "p_total", "acum")
+        anchos  = {"cod": 80, "nombre": 270, "unidad": 60, "cantidad": 90,
+                   "p_unitario": 100, "p_total": 100, "acum": 72}
         textos  = {"cod": "Codigo", "nombre": "Insumo",
-                   "unidad": "Unidad", "cantidad": "Cantidad"}
-        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e"}
+                   "unidad": "Unidad", "cantidad": "Cantidad",
+                   "p_unitario": "P.Unitario", "p_total": "P.Total", "acum": "% Acum."}
+        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e",
+                   "p_unitario": "e", "p_total": "e", "acum": "e"}
         self.tbl_rpt_ins, self.lbl_rpt_ins = self._make_rpt_tabla(
             self.tab_rpt_ins, "Listado de Insumos",
             cols, anchos, textos, anclas, self._cargar_rpt_insumos)
+        self._ins_ptmap = {}
+        self._ins_stot  = 0.0
+        _asc_ins = [True]
+        def _sort_ins():
+            tbl  = self.tbl_rpt_ins
+            kids = list(tbl.get_children(""))
+            data = [(tbl.item(k)["values"], k)
+                    for k in kids if "total_row" not in (tbl.item(k)["tags"] or [])]
+            def _n(v):
+                try: return float(str(v[-2]).replace(",", ""))
+                except: return -1
+            data.sort(key=lambda x: _n(x[0]), reverse=not _asc_ins[0])
+            _asc_ins[0] = not _asc_ins[0]
+            for i, (_, k) in enumerate(data):
+                tbl.move(k, "", i)
+            for k in kids:
+                if "total_row" in (tbl.item(k)["tags"] or []):
+                    tbl.move(k, "", "end")
+            # recalcular % acumulado en el nuevo orden
+            acum = 0.0
+            for k in tbl.get_children(""):
+                if "total_row" in (tbl.item(k)["tags"] or []):
+                    continue
+                pt = self._ins_ptmap.get(k, 0.0)
+                if self._ins_stot:
+                    acum += pt / self._ins_stot * 100
+                vals = list(tbl.item(k)["values"])
+                vals[-1] = f"{acum:.1f}%" if self._ins_stot else ""
+                tbl.item(k, values=vals)
+        self.tbl_rpt_ins.heading("p_total", text="P.Total ↕", command=_sort_ins)
 
     def _cargar_rpt_insumos(self, tipo=None):
         for item in self.tbl_rpt_ins.get_children():
@@ -1481,35 +1532,89 @@ class VentanaObra(tk.Toplevel):
         insumos_raw = self.obra.calcular_insumos(self.maestro["incidencias"])
         if not insumos_raw:
             self.tbl_rpt_ins.insert("", "end",
-                values=("", "Sin tareas o cantidades cargadas.", "", ""))
+                values=("", "Sin tareas o cantidades cargadas.", "", "", "", ""))
             self.lbl_rpt_ins.config(text="")
             return
         cat = self.maestro["insumos"]
         i = 0
+        suma_total = 0.0
+        rows_pt    = []   # [(iid, p_total_num)]
         for cod_ins, datos in sorted(insumos_raw.items()):
             nombre = cat.get(cod_ins, {}).get("nombre", cod_ins)
             unidad = datos.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
             cant   = datos["cantidad_total"]
             if tipo and self._tipo_insumo(nombre) != tipo:
                 continue
-            tag = "par" if i % 2 == 0 else "impar"
-            self.tbl_rpt_ins.insert("", "end", tags=(tag,),
-                values=(cod_ins, nombre, unidad, f"{cant:,.3f}"))
+            p_unit  = self._precios.get(cod_ins)
+            p_total = p_unit * cant if p_unit is not None else None
+            pt_num  = p_total if p_total is not None else 0.0
+            if p_total is not None:
+                suma_total += p_total
+            p_u_str = f"{p_unit:,.2f}"  if p_unit  is not None else ""
+            p_t_str = f"{p_total:,.2f}" if p_total is not None else ""
+            tag     = "par" if i % 2 == 0 else "impar"
+            iid = self.tbl_rpt_ins.insert("", "end", tags=(tag,),
+                values=(cod_ins, nombre, unidad, f"{cant:,.3f}", p_u_str, p_t_str, ""))
+            rows_pt.append((iid, pt_num))
             i += 1
+        # calcular % acumulado
+        self._ins_ptmap = dict(rows_pt)
+        self._ins_stot  = suma_total
+        acum = 0.0
+        for iid, pt in rows_pt:
+            if suma_total:
+                acum += pt / suma_total * 100
+            vals = list(self.tbl_rpt_ins.item(iid)["values"])
+            vals[-1] = f"{acum:.1f}%" if suma_total else ""
+            self.tbl_rpt_ins.item(iid, values=vals)
+        self.tbl_rpt_ins.insert("", "end", iid="ins_total_row", tags=("total_row",),
+            values=("", "TOTAL", "", "", "", f"{suma_total:,.2f}", "100%"))
         label = {None: "Todos", "material": "Materiales",
                  "mdo": "M. de Obra", "subcontrato": "Subcontratos"}.get(tipo, tipo)
         self.lbl_rpt_ins.config(text=f"{label}: {i} insumos")
 
     # ── Materiales ──────────────────────────────────────────────────
     def _build_rpt_materiales(self):
-        cols    = ("cod", "nombre", "unidad", "cantidad")
-        anchos  = {"cod": 80, "nombre": 380, "unidad": 60, "cantidad": 110}
+        cols    = ("cod", "nombre", "unidad", "cantidad", "p_unitario", "p_total", "acum")
+        anchos  = {"cod": 80, "nombre": 270, "unidad": 60, "cantidad": 90,
+                   "p_unitario": 100, "p_total": 100, "acum": 72}
         textos  = {"cod": "Codigo", "nombre": "Material",
-                   "unidad": "Unidad", "cantidad": "Cantidad"}
-        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e"}
+                   "unidad": "Unidad", "cantidad": "Cantidad",
+                   "p_unitario": "P.Unitario", "p_total": "P.Total", "acum": "% Acum."}
+        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e",
+                   "p_unitario": "e", "p_total": "e", "acum": "e"}
         self.tbl_rpt_mat, self.lbl_rpt_mat = self._make_rpt_tabla(
             self.tab_rpt_mat, "Materiales",
             cols, anchos, textos, anclas, self._cargar_rpt_materiales)
+        self._mat_ptmap = {}
+        self._mat_stot  = 0.0
+        _asc_mat = [True]
+        def _sort_mat():
+            tbl  = self.tbl_rpt_mat
+            kids = list(tbl.get_children(""))
+            data = [(tbl.item(k)["values"], k)
+                    for k in kids if "total_row" not in (tbl.item(k)["tags"] or [])]
+            def _n(v):
+                try: return float(str(v[-2]).replace(",", ""))
+                except: return -1
+            data.sort(key=lambda x: _n(x[0]), reverse=not _asc_mat[0])
+            _asc_mat[0] = not _asc_mat[0]
+            for i, (_, k) in enumerate(data):
+                tbl.move(k, "", i)
+            for k in kids:
+                if "total_row" in (tbl.item(k)["tags"] or []):
+                    tbl.move(k, "", "end")
+            acum = 0.0
+            for k in tbl.get_children(""):
+                if "total_row" in (tbl.item(k)["tags"] or []):
+                    continue
+                pt = self._mat_ptmap.get(k, 0.0)
+                if self._mat_stot:
+                    acum += pt / self._mat_stot * 100
+                vals = list(tbl.item(k)["values"])
+                vals[-1] = f"{acum:.1f}%" if self._mat_stot else ""
+                tbl.item(k, values=vals)
+        self.tbl_rpt_mat.heading("p_total", text="P.Total ↕", command=_sort_mat)
 
     def _cargar_rpt_materiales(self):
         for item in self.tbl_rpt_mat.get_children():
@@ -1517,33 +1622,75 @@ class VentanaObra(tk.Toplevel):
         insumos_raw = self.obra.calcular_insumos(self.maestro["incidencias"])
         if not insumos_raw:
             self.tbl_rpt_mat.insert("", "end",
-                values=("", "Sin tareas o cantidades cargadas.", "", ""))
+                values=("", "Sin tareas o cantidades cargadas.", "", "", "", ""))
             self.lbl_rpt_mat.config(text="")
             return
         cat = self.maestro["insumos"]
         i = 0
+        suma_total = 0.0
+        rows_pt    = []
         for cod_ins, datos in sorted(insumos_raw.items()):
             nombre = cat.get(cod_ins, {}).get("nombre", cod_ins)
             if self._tipo_insumo(nombre) != "material":
                 continue
-            unidad = datos.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
-            cant   = datos["cantidad_total"]
-            tag    = "par" if i % 2 == 0 else "impar"
-            self.tbl_rpt_mat.insert("", "end", tags=(tag,),
-                values=(cod_ins, nombre, unidad, f"{cant:,.3f}"))
+            unidad  = datos.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
+            cant    = datos["cantidad_total"]
+            p_unit  = self._precios.get(cod_ins)
+            p_total = p_unit * cant if p_unit is not None else None
+            pt_num  = p_total if p_total is not None else 0.0
+            if p_total is not None:
+                suma_total += p_total
+            p_u_str = f"{p_unit:,.2f}"  if p_unit  is not None else ""
+            p_t_str = f"{p_total:,.2f}" if p_total is not None else ""
+            tag     = "par" if i % 2 == 0 else "impar"
+            iid = self.tbl_rpt_mat.insert("", "end", tags=(tag,),
+                values=(cod_ins, nombre, unidad, f"{cant:,.3f}", p_u_str, p_t_str, ""))
+            rows_pt.append((iid, pt_num))
             i += 1
+        self._mat_ptmap = dict(rows_pt)
+        self._mat_stot  = suma_total
+        acum = 0.0
+        for iid, pt in rows_pt:
+            if suma_total:
+                acum += pt / suma_total * 100
+            vals = list(self.tbl_rpt_mat.item(iid)["values"])
+            vals[-1] = f"{acum:.1f}%" if suma_total else ""
+            self.tbl_rpt_mat.item(iid, values=vals)
+        self.tbl_rpt_mat.insert("", "end", iid="mat_total_row", tags=("total_row",),
+            values=("", "TOTAL", "", "", "", f"{suma_total:,.2f}", "100%"))
         self.lbl_rpt_mat.config(text=f"Materiales: {i} items")
 
     # ── Mano de Obra ────────────────────────────────────────────────
     def _build_rpt_mdo(self):
-        cols    = ("cod", "nombre", "unidad", "cantidad")
-        anchos  = {"cod": 80, "nombre": 380, "unidad": 60, "cantidad": 110}
+        cols    = ("cod", "nombre", "unidad", "cantidad", "p_unitario", "p_total")
+        anchos  = {"cod": 80, "nombre": 310, "unidad": 60, "cantidad": 100,
+                   "p_unitario": 110, "p_total": 110}
         textos  = {"cod": "Codigo", "nombre": "Categoria M. de Obra",
-                   "unidad": "Unidad", "cantidad": "Cantidad"}
-        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e"}
+                   "unidad": "Unidad", "cantidad": "Cantidad",
+                   "p_unitario": "P.Unitario", "p_total": "P.Total"}
+        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e",
+                   "p_unitario": "e", "p_total": "e"}
         self.tbl_rpt_mdo, self.lbl_rpt_mdo = self._make_rpt_tabla(
             self.tab_rpt_mdo, "Mano de Obra",
             cols, anchos, textos, anclas, self._cargar_rpt_mdo)
+        _asc_mdo = [True]
+        def _sort_mdo():
+            tbl = self.tbl_rpt_mdo
+            kids = list(tbl.get_children(""))
+            _fixed = {"total_row", "jornal_row"}
+            data = [(tbl.item(k)["values"], k)
+                    for k in kids if not (_fixed & set(tbl.item(k)["tags"] or []))]
+            def _n(v):
+                try: return float(str(v[-1]).replace(",", ""))
+                except: return -1
+            data.sort(key=lambda x: _n(x[0]), reverse=not _asc_mdo[0])
+            _asc_mdo[0] = not _asc_mdo[0]
+            for i, (_, k) in enumerate(data):
+                tbl.move(k, "", i)
+            for k in kids:
+                if _fixed & set(tbl.item(k)["tags"] or []):
+                    tbl.move(k, "", "end")
+        self.tbl_rpt_mdo.heading("p_total", text="P.Total ↕", command=_sort_mdo)
 
     def _cargar_rpt_mdo(self):
         for item in self.tbl_rpt_mdo.get_children():
@@ -1551,55 +1698,125 @@ class VentanaObra(tk.Toplevel):
         insumos_raw = self.obra.calcular_insumos(self.maestro["incidencias"])
         if not insumos_raw:
             self.tbl_rpt_mdo.insert("", "end",
-                values=("", "Sin tareas o cantidades cargadas.", "", ""))
+                values=("", "Sin tareas o cantidades cargadas.", "", "", "", ""))
             self.lbl_rpt_mdo.config(text="")
             return
         cat = self.maestro["insumos"]
         i = 0
+        suma_total  = 0.0
+        hs_oficial  = 0.0
+        hs_ayudante = 0.0
         for cod_ins, datos in sorted(insumos_raw.items()):
             nombre = cat.get(cod_ins, {}).get("nombre", cod_ins)
             if self._tipo_insumo(nombre) != "mdo":
                 continue
-            unidad = datos.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
-            cant   = datos["cantidad_total"]
-            tag    = "par" if i % 2 == 0 else "impar"
+            unidad  = datos.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
+            cant    = datos["cantidad_total"]
+            p_unit  = self._precios.get(cod_ins)
+            p_total = p_unit * cant if p_unit is not None else None
+            if p_total is not None:
+                suma_total += p_total
+            if nombre.strip().startswith("Oficial"):
+                hs_oficial  += cant
+            elif nombre.strip().startswith("Ayudante"):
+                hs_ayudante += cant
+            p_u_str = f"{p_unit:,.2f}"  if p_unit  is not None else ""
+            p_t_str = f"{p_total:,.2f}" if p_total is not None else ""
+            tag     = "par" if i % 2 == 0 else "impar"
             self.tbl_rpt_mdo.insert("", "end", tags=(tag,),
-                values=(cod_ins, nombre, unidad, f"{cant:,.3f}"))
+                values=(cod_ins, nombre, unidad, f"{cant:,.3f}", p_u_str, p_t_str))
             i += 1
+        self.tbl_rpt_mdo.tag_configure("jornal_row", background="#c8e6c9",
+                                        foreground="#1b5e20",
+                                        font=("Segoe UI", 10, "bold"))
+        self.tbl_rpt_mdo.insert("", "end", iid="mdo_total_row", tags=("total_row",),
+            values=("", "TOTAL", "", "", "", f"{suma_total:,.2f}"))
+        jof  = hs_oficial  / 8
+        jay  = hs_ayudante / 8
+        jtot = jof + jay
+        _jf  = lambda v: f"{v:,.1f}" if v else ""
+        self.tbl_rpt_mdo.insert("", "end", iid="mdo_jornal_of", tags=("jornal_row",),
+            values=("", "", "", "", "Jornales Oficial",  _jf(jof)))
+        self.tbl_rpt_mdo.insert("", "end", iid="mdo_jornal_ay", tags=("jornal_row",),
+            values=("", "", "", "", "Jornales Ayudante", _jf(jay)))
+        self.tbl_rpt_mdo.insert("", "end", iid="mdo_jornal_tot", tags=("jornal_row",),
+            values=("", "", "", "", "Total Jornales",    _jf(jtot)))
         self.lbl_rpt_mdo.config(text=f"Categorias M. de Obra: {i}")
 
     # ── Detalle de Tareas ───────────────────────────────────────────
     def _build_rpt_detalle(self):
-        cols   = ("rubro", "item", "descripcion", "unidad", "cantidad")
-        anchos = {"rubro": 42, "item": 42, "descripcion": 320,
-                  "unidad": 60, "cantidad": 100}
+        cols   = ("rubro", "item", "descripcion", "unidad", "cantidad",
+                  "p_unitario", "p_total")
+        anchos = {"rubro": 42, "item": 42, "descripcion": 260,
+                  "unidad": 60, "cantidad": 90, "p_unitario": 100, "p_total": 100}
         textos = {"rubro": "Rubro", "item": "Item", "descripcion": "Descripcion",
-                  "unidad": "Unidad", "cantidad": "Cantidad"}
+                  "unidad": "Unidad", "cantidad": "Cantidad",
+                  "p_unitario": "P.Unitario", "p_total": "P.Total"}
         anclas = {"rubro": "center", "item": "center", "descripcion": "w",
-                  "unidad": "center", "cantidad": "e"}
+                  "unidad": "center", "cantidad": "e",
+                  "p_unitario": "e", "p_total": "e"}
         self.tbl_rpt_det, self.lbl_rpt_det = self._make_rpt_tabla(
             self.tab_rpt_det, "Detalle de Tareas",
             cols, anchos, textos, anclas, self._cargar_rpt_detalle)
+        self._det_children = {}   # tarea_iid → [child_iids]
+        self._det_open     = set()  # iids actualmente abiertos
+        def _toggle_det(event):
+            iid = self.tbl_rpt_det.identify_row(event.y)
+            if not iid.startswith("dtar_"):
+                return
+            children = self._det_children.get(iid, [])
+            if not children:
+                return
+            vals = list(self.tbl_rpt_det.item(iid, "values"))
+            if iid in self._det_open:
+                for c in children:
+                    self.tbl_rpt_det.detach(c)
+                vals[2] = "▶" + vals[2][1:]
+                self._det_open.discard(iid)
+            else:
+                all_top = list(self.tbl_rpt_det.get_children(""))
+                pos = all_top.index(iid) + 1
+                for j, c in enumerate(children):
+                    self.tbl_rpt_det.move(c, "", pos + j)
+                vals[2] = "▼" + vals[2][1:]
+                self._det_open.add(iid)
+            self.tbl_rpt_det.item(iid, values=vals)
+        self.tbl_rpt_det.bind("<Button-1>", _toggle_det)
 
     def _cargar_rpt_detalle(self):
+        # Eliminar filas adjuntas
         for item in self.tbl_rpt_det.get_children():
             self.tbl_rpt_det.delete(item)
+        # Eliminar también los hijos detacheados de la carga anterior
+        for children in getattr(self, "_det_children", {}).values():
+            for c in children:
+                try:
+                    self.tbl_rpt_det.delete(c)
+                except Exception:
+                    pass
         items_ppto  = getattr(self.obra, "items_presupuesto", [])
         incidencias = self.maestro["incidencias"]
         cat         = self.maestro["insumos"]
         if not items_ppto:
             self.tbl_rpt_det.insert("", "end",
-                values=("", "", "Sin items de presupuesto.", "", ""))
+                values=("", "", "Sin items de presupuesto.", "", "", "", ""))
             self.lbl_rpt_det.config(text="")
             return
+        self._det_children = {}
+        self._det_open     = set()
         i_tar = 0
         n_tar = 0
         sin_vnc = 0
-        for it in items_ppto:
+        suma_total    = 0.0
+        cur_rubro_idx = None
+        rubro_counts  = {}
+        for idx, it in enumerate(items_ppto):
             if it.get("es_rubro"):
+                cur_rubro_idx = idx
+                rubro_counts[cur_rubro_idx] = 0
                 self.tbl_rpt_det.insert("", "end", tags=("rub_hdr",),
                     values=(it.get("rubro", ""), "",
-                            it.get("descripcion", ""), "", ""))
+                            it.get("descripcion", ""), "", "", "", ""))
                 continue
             cod_tar = it.get("cod_tar", "")
             subcont = (it.get("subcontrato") or "").strip().upper()
@@ -1607,12 +1824,13 @@ class VentanaObra(tk.Toplevel):
             desc    = it.get("descripcion", "")
             unidad  = it.get("unidad", "")
             rub     = it.get("rubro", "")
-            item_num = it.get("item", "")
+            rubro_counts[cur_rubro_idx] = rubro_counts.get(cur_rubro_idx, 0) + 1
+            item_num = f"{rubro_counts[cur_rubro_idx]:02d}"
             if not cod_tar:
                 sin_vnc += 1
                 self.tbl_rpt_det.insert("", "end", tags=("sin_vnc",),
-                    values=(rub, item_num, f"[sin vincular]  {desc}", unidad,
-                            f"{cant:,.2f}" if cant else ""))
+                    values=(rub, item_num, f"  [sin vincular]  {desc}", unidad,
+                            f"{cant:,.2f}" if cant else "", "", ""))
                 continue
             n_tar += 1
             cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
@@ -1620,20 +1838,47 @@ class VentanaObra(tk.Toplevel):
             tag_tar    = "par" if i_tar % 2 == 0 else "impar"
             cod_label  = cod_tar + subcont if subcont else cod_tar
             cant_str   = f"{cant:,.2f}" if cant else ""
-            self.tbl_rpt_det.insert("", "end", tags=(tag_tar,),
-                values=(rub, item_num, f"{desc}  [{cod_label}]",
-                        unidad, cant_str))
+            p_unit_tar = self._precios_tarea.get(idx)
+            if p_unit_tar is None:
+                p_unit_tar = sum(
+                    (self._precios.get(inc["cod_ins"], 0.0) or 0.0) * inc.get("cantidad", 0.0)
+                    for inc in lista_inc
+                ) or None
+            p_total_tar = p_unit_tar * cant if (p_unit_tar and cant) else None
+            if p_total_tar is not None:
+                suma_total += p_total_tar
+            pu_str = f"{p_unit_tar:,.2f}"  if p_unit_tar  is not None else ""
+            pt_str = f"{p_total_tar:,.2f}" if p_total_tar is not None else ""
+            tar_iid = f"dtar_{idx}"
+            flecha  = "▶ " if lista_inc else "  "
+            self.tbl_rpt_det.insert("", "end", iid=tar_iid, tags=(tag_tar,),
+                values=(rub, item_num, f"{flecha}{desc}  [{cod_label}]",
+                        unidad, cant_str, pu_str, pt_str))
+            child_iids = []
             for j, inc in enumerate(lista_inc):
                 cod_ins    = inc["cod_ins"]
                 nombre_ins = cat.get(cod_ins, {}).get("nombre", cod_ins)
                 unidad_ins = inc.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
                 inc_cant   = inc.get("cantidad", 0)
                 total_ins  = inc_cant * cant
+                p_ins_u    = self._precios.get(cod_ins)
+                p_ins_t    = p_ins_u * total_ins if p_ins_u is not None else None
+                p_iu_str   = f"{p_ins_u:,.2f}" if p_ins_u is not None else ""
+                p_it_str   = f"{p_ins_t:,.2f}" if p_ins_t is not None else ""
                 tag_ins    = "ins_a" if j % 2 == 0 else "ins_b"
-                self.tbl_rpt_det.insert("", "end", tags=(tag_ins,),
+                ins_iid    = f"dins_{idx}_{j}"
+                self.tbl_rpt_det.insert("", "end", iid=ins_iid, tags=(tag_ins,),
                     values=("", "", f"    {nombre_ins}",
-                            unidad_ins, f"{total_ins:,.3f}"))
+                            unidad_ins, f"{total_ins:,.3f}", p_iu_str, p_it_str))
+                child_iids.append(ins_iid)
+            if child_iids:
+                self._det_children[tar_iid] = child_iids
+                # empieza colapsado: desconectar hijos inmediatamente
+                for c in child_iids:
+                    self.tbl_rpt_det.detach(c)
             i_tar += 1
+        self.tbl_rpt_det.insert("", "end", iid="det_total_row", tags=("total_row",),
+            values=("", "TOTAL", "", "", "", "", f"{suma_total:,.2f}"))
         self.lbl_rpt_det.config(
             text=f"Tareas vinculadas: {n_tar}  |  Sin vincular: {sin_vnc}")
 
