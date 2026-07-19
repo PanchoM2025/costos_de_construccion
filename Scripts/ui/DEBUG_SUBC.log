@@ -2334,3 +2334,647 @@
 18:45:18 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
 18:46:30 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
 19:08:08 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+19:33:07 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+19:33:42 DOBLE_CLIC cod=1233 cache= tbl= result=
+19:33:42 AFTER_LINK subcontrato=
+19:33:49 DOBLE_CLIC cod=1233 cache= tbl= result=
+19:33:49 AFTER_LINK subcontrato=
+19:33:52 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:33:52 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:33:52 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:33:52 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:33:52 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:33:52 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+19:33:52 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:33:52 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:33:52 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+19:33:52 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:34:10 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:34:10 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:34:10 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:34:10 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:34:10 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:34:10 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+19:34:10 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:34:10 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:34:10 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+19:34:10 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:34:11 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:34:11 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:34:11 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:34:11 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:34:11 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:34:11 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+19:34:11 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:34:11 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:34:11 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+19:34:11 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:41:16 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+19:41:39 CONFIRMAR_SUBC iid= 1233 val= E
+19:41:39 CACHE guardado 1233 -> E
+19:41:51 CONFIRMAR_SUBC iid= 1233 val= T
+19:41:51 CACHE guardado 1233 -> T
+19:42:00 CONFIRMAR_SUBC iid= 1233 val= X
+19:42:00 CACHE guardado 1233 -> X
+19:42:19 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:42:22 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:42:22 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:42:22 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:42:22 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:42:22 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:42:22 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:42:22 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:42:22 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:42:22 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:42:30 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:42:30 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:42:30 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:42:30 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:42:30 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:42:30 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:42:30 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:42:30 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:42:30 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:42:30 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:42:36 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:42:36 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:42:36 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:42:36 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:42:36 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:42:36 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:42:36 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:42:36 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:42:36 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:42:36 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:42:55 DOBLE_CLIC cod=1233 cache= tbl= result=X
+19:42:55 AFTER_LINK subcontrato=X
+19:43:02 DOBLE_CLIC cod=1233 cache= tbl= result=X
+19:43:02 AFTER_LINK subcontrato=X
+19:43:05 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:43:05 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:43:05 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:05 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:05 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:05 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:05 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:05 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:05 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:05 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:11 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:43:11 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:43:11 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:11 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:11 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:11 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:11 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:11 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:11 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:11 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:12 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:43:13 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:43:13 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:13 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:13 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:13 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:13 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:13 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:13 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:13 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:31 DOBLE_CLIC cod=1233 cache= tbl= result=X
+19:43:31 AFTER_LINK subcontrato=X
+19:43:37 DOBLE_CLIC cod=1233 cache= tbl= result=X
+19:43:37 AFTER_LINK subcontrato=X
+19:43:50 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:43:50 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:43:50 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:50 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:50 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:50 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:50 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:50 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:50 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:50 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:52 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:43:52 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:43:52 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:52 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:52 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:52 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:52 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:52 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:52 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:52 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:54 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+19:43:54 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+19:43:54 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:54 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+19:43:54 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:54 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:54 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:43:54 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+19:43:54 PRESUP cod_tar=1233 subcont=X busca=1233X incs=7
+19:43:54 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+19:44:09 DOBLE_CLIC cod=1233 cache= tbl= result=X
+19:44:09 AFTER_LINK subcontrato=X
+19:44:34 DOBLE_CLIC cod=1233 cache= tbl= result=X
+19:44:34 AFTER_LINK subcontrato=X
+20:09:37 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+20:10:11 ASIGNAR_DER cod=1233 subcont=X
+20:10:11 DOBLE_CLIC cod=1233 cache=X tbl=X result=X
+20:10:11 AFTER_LINK subcontrato=X
+20:10:12 ASIGNAR_DER cod=1233 subcont=X
+20:10:15 CONFIRMAR_SUBC iid= 1233 val= 
+20:10:15 CACHE guardado 1233 -> 
+20:10:17 ASIGNAR_DER cod=1233 subcont=X
+20:10:17 DOBLE_CLIC cod=1233 cache=X tbl=X result=X
+20:10:17 AFTER_LINK subcontrato=X
+20:10:17 ASIGNAR_DER cod=1233 subcont=X
+20:10:17 ASIGNAR_DER cod=1233 subcont=X
+20:10:18 DOBLE_CLIC cod=1233 cache=X tbl=X result=X
+20:10:18 AFTER_LINK subcontrato=X
+20:10:18 ASIGNAR_DER cod=1233 subcont=X
+20:10:21 CONFIRMAR_SUBC iid= 1233 val= 
+20:10:21 CACHE guardado 1233 -> 
+20:10:29 ASIGNAR_DER cod=1233 subcont=X
+20:10:29 DOBLE_CLIC cod=1233 cache=X tbl=X result=X
+20:10:29 AFTER_LINK subcontrato=X
+20:10:29 ASIGNAR_DER cod=1233 subcont=X
+20:10:34 CONFIRMAR_SUBC iid= 1233 val= 
+20:10:34 CACHE guardado 1233 -> 
+20:10:41 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+20:10:41 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+20:10:41 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:41 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:41 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:41 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:41 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:41 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:41 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:41 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:46 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+20:10:46 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+20:10:46 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:46 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:46 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:46 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:46 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:46 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:46 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:46 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:48 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+20:10:48 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+20:10:48 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:48 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:48 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:48 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:48 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:48 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:48 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:48 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:51 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+20:10:51 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+20:10:51 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:51 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:51 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:51 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:51 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:51 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:51 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:51 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:53 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+20:10:53 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+20:10:53 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:53 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:10:53 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:53 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:53 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:10:53 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:10:53 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:10:53 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:12:32 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+20:12:32 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+20:12:32 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:12:32 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:12:32 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:12:32 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:12:32 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:12:32 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:12:32 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:12:32 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:13:34 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+20:13:34 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+20:13:34 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:13:34 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:13:34 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:13:34 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:13:34 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:13:34 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:13:34 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:13:34 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:14:10 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+20:14:10 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+20:14:10 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:14:10 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+20:14:10 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:14:10 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:14:10 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+20:14:10 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+20:14:10 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+20:14:10 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:26:37 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+23:26:44 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+23:26:44 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+23:26:44 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:26:44 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:26:44 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:26:44 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:26:44 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:26:44 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:26:44 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:26:44 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:27:22 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+23:27:22 PRESUP cod_tar=0251 subcont=S busca=0251S incs=1
+23:27:22 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:27:22 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:27:22 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:27:22 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:27:22 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:27:22 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:27:22 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:27:22 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:43:36 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+23:45:55 ASIGNAR_DER cod=0251 subcont=S
+23:45:57 ASIGNAR_DER cod=0251 subcont=S
+23:45:59 CONFIRMAR_SUBC iid= 0251 val= 
+23:45:59 CACHE guardado 0251 -> 
+23:46:00 ASIGNAR_DER cod=0251 subcont=S
+23:46:00 DOBLE_CLIC cod=0251 cache=S tbl=S result=S
+23:46:00 AFTER_LINK subcontrato=S
+23:46:00 ASIGNAR_DER cod=0251 subcont=S
+23:46:17 ASIGNAR_DER cod=0251 subcont=S
+23:46:17 DOBLE_CLIC cod=0251 cache=S tbl=S result=S
+23:46:17 AFTER_LINK subcontrato=S
+23:46:17 ASIGNAR_DER cod=0251 subcont=S
+23:46:18 ASIGNAR_DER cod=0251 subcont=S
+23:46:18 DOBLE_CLIC cod=0251 cache=S tbl=S result=S
+23:46:18 AFTER_LINK subcontrato=S
+23:46:19 ASIGNAR_DER cod=0251 subcont=S
+23:46:36 ASIGNAR_DER cod=0251 subcont=S
+23:46:40 CONFIRMAR_SUBC iid= 0251 val= 
+23:46:40 CACHE guardado 0251 -> 
+23:46:51 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+23:46:51 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+23:46:51 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:46:51 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:46:51 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:46:51 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:46:51 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:46:51 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:46:51 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:46:51 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:46:55 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+23:46:55 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+23:46:55 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:46:55 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:46:55 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:46:55 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:46:55 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:46:55 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:46:55 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:46:55 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:46:59 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+23:46:59 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+23:46:59 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:46:59 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:46:59 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:46:59 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:46:59 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:46:59 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:46:59 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:46:59 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:48:30 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+23:48:30 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+23:48:30 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:48:30 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+23:48:30 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:48:30 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:48:30 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:48:30 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+23:48:30 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+23:48:30 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+23:53:43 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+00:01:04 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+00:01:19 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:01:19 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:01:19 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:01:19 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:01:19 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:01:19 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:01:19 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:01:19 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:01:19 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:01:19 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:01:35 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:01:35 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:01:35 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:01:35 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:01:35 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:01:35 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:01:35 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:01:35 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:01:35 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:01:35 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:02:38 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:02:38 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:02:38 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:02:38 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:02:38 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:02:38 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:02:38 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:02:38 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:02:38 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:02:38 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:07:04 === MODULO CARGADO === C:\Dropbox\Claude\Costos_de_construccion\Scripts\ui\ventana_obra.py
+00:07:20 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:07:20 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:07:20 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:07:20 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:07:20 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:07:20 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:07:20 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:07:20 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:07:20 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:07:20 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:09:38 ASIGNAR_DER cod=1223 subcont=X
+00:09:43 CONFIRMAR_SUBC iid= 1223 val= X
+00:09:43 CACHE guardado 1223 -> X
+00:10:16 ASIGNAR_DER cod=1223 subcont=X
+00:10:20 CONFIRMAR_SUBC iid= 1223 val= 
+00:10:20 CACHE guardado 1223 -> 
+00:10:26 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:10:26 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:10:26 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:26 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:26 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:26 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:26 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:26 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:26 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:26 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:30 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:10:30 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:10:30 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:30 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:30 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:30 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:30 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:30 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:30 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:30 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:32 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:10:32 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:10:32 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:32 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:32 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:32 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:32 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:32 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:32 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:32 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:39 CONFIRMAR_SUBC iid= 1221 val= X
+00:10:39 CACHE guardado 1221 -> X
+00:10:41 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:10:41 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:10:41 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:41 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:41 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:41 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:41 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:41 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:41 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:41 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:43 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:10:43 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:10:43 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:43 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:43 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:43 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:43 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:43 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:43 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:43 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:45 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:10:45 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:10:45 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:45 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:10:45 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:45 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:45 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:45 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:10:45 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:10:45 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:10:55 ASIGNAR_DER cod=1223 subcont=X
+00:10:56 ASIGNAR_DER cod=1223 subcont=X
+00:11:06 CONFIRMAR_SUBC iid= 1223 val= 
+00:11:06 CACHE guardado 1223 -> 
+00:11:07 ASIGNAR_DER cod=1223 subcont=X
+00:11:09 CONFIRMAR_SUBC iid= 1223 val= 
+00:11:09 CACHE guardado 1223 -> 
+00:11:17 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:11:17 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:11:17 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:17 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:17 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:17 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:17 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:17 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:17 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:17 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:19 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:11:19 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:11:19 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:19 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:19 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:19 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:19 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:19 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:19 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:19 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:20 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:11:20 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:11:20 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:20 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:20 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:20 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:20 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:20 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:20 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:20 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:26 ASIGNAR_DER cod=1223 subcont=X
+00:11:29 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:11:29 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:11:29 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:29 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:29 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:11:29 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:29 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:29 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:29 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:29 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:33 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:11:33 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:11:33 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:33 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:33 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:11:33 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:33 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:33 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:33 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:33 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:36 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:11:36 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:11:36 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:36 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:36 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:11:36 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:36 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:36 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:36 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:36 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:44 ASIGNAR_DER cod=1223 subcont=X
+00:11:45 ASIGNAR_DER cod=1223 subcont=X
+00:11:47 CONFIRMAR_SUBC iid= 1223 val= 
+00:11:47 CACHE guardado 1223 -> 
+00:11:48 ASIGNAR_DER cod=1223 subcont=X
+00:11:50 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:11:50 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:11:50 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:50 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:50 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:11:50 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:50 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:50 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:50 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:50 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:53 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:11:53 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:11:53 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:53 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:11:53 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:11:53 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:53 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:11:53 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:11:53 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:11:53 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:01 ASIGNAR_DER cod=1223 subcont=X
+00:12:04 CONFIRMAR_SUBC iid= 1223 val= 
+00:12:04 CACHE guardado 1223 -> 
+00:12:05 ASIGNAR_DER cod=1223 subcont=X
+00:12:06 ASIGNAR_DER cod=1223 subcont=X
+00:12:06 DOBLE_CLIC cod=1223 cache=X tbl=X result=X
+00:12:06 AFTER_LINK subcontrato=X
+00:12:06 ASIGNAR_DER cod=1223 subcont=X
+00:12:09 CONFIRMAR_SUBC iid= 1223 val= 
+00:12:09 CACHE guardado 1223 -> 
+00:12:10 ASIGNAR_DER cod=1223 subcont=X
+00:12:11 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:12:11 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:12:11 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:11 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:11 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:12:11 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:11 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:11 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:11 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:11 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:13 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:12:13 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:12:13 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:13 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:13 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:12:13 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:13 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:13 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:13 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:13 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:17 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:12:17 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:12:17 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:17 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:17 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:12:17 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:17 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:17 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:17 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:17 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:21 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:12:21 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:12:21 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:21 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:21 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:12:21 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:21 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:21 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:21 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:21 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:22 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:12:22 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:12:22 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:22 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:22 PRESUP cod_tar=1223 subcont=X busca=1223X incs=7
+00:12:22 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:22 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:22 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:22 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:22 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:40 ASIGNAR_DER cod=1223 subcont=X
+00:12:41 ASIGNAR_DER cod=1223 subcont=X
+00:12:44 CONFIRMAR_SUBC iid= 1223 val= 
+00:12:44 CACHE guardado 1223 -> 
+00:12:47 ASIGNAR_DER cod=1223 subcont=X
+00:12:48 ASIGNAR_DER cod=1223 subcont=X
+00:12:48 DOBLE_CLIC cod=1223 cache=X tbl=X result=X
+00:12:48 AFTER_LINK subcontrato=X
+00:12:48 ASIGNAR_DER cod=1223 subcont=X
+00:12:50 CONFIRMAR_SUBC iid= 1223 val= 
+00:12:50 CACHE guardado 1223 -> 
+00:12:54 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:12:54 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:12:54 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:54 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:54 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:54 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:54 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:54 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:54 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:54 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:56 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:12:56 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:12:56 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:56 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:56 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:56 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:56 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:56 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:56 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:56 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:58 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:12:58 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:12:58 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:58 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:12:58 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:58 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:58 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:12:58 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:12:58 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:12:58 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:13:20 PRESUP cod_tar=0258S subcont= busca=0258S incs=1
+00:13:20 PRESUP cod_tar=0251 subcont= busca=0251 incs=1
+00:13:20 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:13:20 PRESUP cod_tar=1132 subcont= busca=1132 incs=10
+00:13:20 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:13:20 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:13:20 PRESUP cod_tar=1250 subcont= busca=1250 incs=4
+00:13:20 PRESUP cod_tar=1223 subcont= busca=1223 incs=10
+00:13:20 PRESUP cod_tar=1233 subcont= busca=1233 incs=10
+00:13:20 PRESUP cod_tar=1250 subcont= busca=1250 incs=4

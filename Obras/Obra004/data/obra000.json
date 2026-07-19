@@ -48,7 +48,7 @@
       "unidad": "m3",
       "cantidad": 265.0,
       "cod_tar": "0251",
-      "subcontrato": "S",
+      "subcontrato": "",
       "rubro_std": "MOVIMIENTO DE SUELOS"
     },
     {
@@ -102,7 +102,7 @@
       "descripcion": "2° S Vigas",
       "unidad": "m3",
       "cantidad": 35.0,
-      "cod_tar": "1233X",
+      "cod_tar": "1233",
       "subcontrato": "",
       "rubro_std": "ESTRUCTURAS RESISTENTES"
     },
@@ -135,7 +135,7 @@
       "descripcion": "1° S Vigas",
       "unidad": "m3",
       "cantidad": 35.0,
-      "cod_tar": "1233X",
+      "cod_tar": "1233",
       "subcontrato": "",
       "rubro_std": "ESTRUCTURAS RESISTENTES"
     },
@@ -172,7 +172,7 @@
       "unidad": "m3",
       "rubro": "MOVIMIENTO DE SUELOS",
       "cantidad": 265.0,
-      "subcontrato": "S"
+      "subcontrato": ""
     },
     "1132": {
       "cod": "1132",
@@ -196,10 +196,10 @@
       "cantidad": 8.0,
       "subcontrato": ""
     },
-    "1233X": {
-      "cod": "1233X",
+    "1233": {
+      "cod": "1233",
       "base": "1233",
-      "variante": "X",
+      "variante": " ",
       "nombre": "Vigas a la vista independientes",
       "nombre_editado": "1° S Vigas",
       "unidad": "m3",

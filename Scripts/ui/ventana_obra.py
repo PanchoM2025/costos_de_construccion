@@ -54,21 +54,33 @@ class VentanaObra(tk.Toplevel):
             tk.Label(hdr, text=f"  |  {self.obra.ubicacion}",
                      bg=COLOR_HDR, fg="#aaccee", font=("Segoe UI", 11)
                      ).pack(side="left")
-        self.nb = ttk.Notebook(self)
-        self.nb.pack(fill="both", expand=True, padx=8, pady=8)
-        self.tab_rubros = tk.Frame(self.nb, bg=COLOR_BG)
-        self.tab_tareas = tk.Frame(self.nb, bg=COLOR_BG)
-        self.tab_ins    = tk.Frame(self.nb, bg=COLOR_BG)
-        self.tab_ppto   = tk.Frame(self.nb, bg=COLOR_BG)
-        self.nb.add(self.tab_rubros, text="  1. Rubros  ")
-        self.nb.add(self.tab_tareas, text="  2. Tareas  ")
-        self.nb.add(self.tab_ins,    text="  3. Insumos y precios  ")
-        self.nb.add(self.tab_ppto,   text="  4. Presupuesto  ")
-        self.nb.bind("<<NotebookTabChanged>>", self._on_tab)
+        # ── Barra de tabs personalizada ──────────────────────────────
+        self._build_custom_tabbar()
+        # Frame contenedor de tabs (reemplaza ttk.Notebook — sin barra nativa)
+        self._nb_cont = tk.Frame(self, bg=COLOR_BG)
+        self._nb_cont.pack(fill="both", expand=True, padx=8, pady=(0, 8))
+        self.tab_rubros  = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self.tab_tareas  = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self.tab_ins     = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self.tab_ppto    = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self.tab_rpt_ins = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self.tab_rpt_mat = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self.tab_rpt_mdo = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self.tab_rpt_det = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self._tab_frames = [
+            self.tab_rubros, self.tab_tareas, self.tab_ins, self.tab_ppto,
+            self.tab_rpt_ins, self.tab_rpt_mat, self.tab_rpt_mdo, self.tab_rpt_det,
+        ]
+        # Mostrar tab inicial (Rubros)
+        self.tab_rubros.place(relx=0, rely=0, relwidth=1, relheight=1)
         self._build_rubros()
         self._build_tareas()
         self._build_ins()
         self._build_presupuesto()
+        self._build_rpt_insumos()
+        self._build_rpt_materiales()
+        self._build_rpt_mdo()
+        self._build_rpt_detalle()
         bar = tk.Frame(self, bg="#e0e0e0", pady=6)
         bar.pack(fill="x")
         tk.Button(bar, text="Guardar obra", bg=COLOR_VERDE, fg="white",
@@ -280,11 +292,27 @@ class VentanaObra(tk.Toplevel):
         self._subc_cache = {}   # cod_tar → letra confirmada
         if getattr(self.obra, "items_presupuesto", []):
             self._poblar_iz()
+    def _auto_variante(self, cod: str) -> str:
+        """Detecta la variante de subcontrato por defecto para una tarea.
+        Rubro 3: prefiere X (sin elaboracion manual). Demas rubros: prefiere S."""
+        tareas_por_cod     = self.maestro.get("tareas_por_cod", {})
+        incidencias_master = self.maestro.get("incidencias", {})
+        if (cod + "X") in tareas_por_cod or (cod + "X") in incidencias_master:
+            return "X"
+        if (cod + "S") in tareas_por_cod or (cod + "S") in incidencias_master:
+            return "S"
+        return ""
+
     def _clic_der_subc(self, event=None):
         region = self.tbl_der.identify_region(event.x, event.y)
         col    = self.tbl_der.identify_column(event.x)
         iid    = self.tbl_der.identify_row(event.y)
-        if region != "cell" or col != "#1" or not iid or iid.startswith("__rub_"):
+        if region != "cell" or not iid or iid.startswith("__rub_"):
+            return
+        # Clic en columna nombre/unidad con item del pliego seleccionado -> asignar directo
+        if col != "#1":
+            if self._item_sel_idx is not None:
+                self._asignar_tarea_der(iid)
             return
         bbox = self.tbl_der.bbox(iid, col)
         if not bbox:
@@ -327,6 +355,43 @@ class VentanaObra(tk.Toplevel):
                                width=combo_w, height=h)
         self._subc_combo.focus_set()
         self._subc_combo.after(50, lambda: self._subc_combo.event_generate("<Button-1>"))
+    def _asignar_tarea_der(self, cod: str):
+        """Vincula la tarea cod a la fila del pliego seleccionada, con variante automatica."""
+        items = getattr(self.obra, "items_presupuesto", [])
+        if self._item_sel_idx is None or self._item_sel_idx >= len(items):
+            return
+        it = items[self._item_sel_idx]
+        t  = self.maestro["tareas_por_cod"].get(cod)
+        if not t:
+            return
+        if it.get("cod_tar") and it["cod_tar"] != cod:
+            desc_actual = self.maestro["tareas_por_cod"].get(it["cod_tar"], {}).get("nombre", "?")
+            ok = messagebox.askyesno(
+                "Cambiar vinculo",
+                f"Esta fila ya esta vinculada a:\n{it['cod_tar']} - {desc_actual}\n\n"
+                f"Cambiala por:\n{cod} - {t['nombre']}?",
+                parent=self)
+            if not ok:
+                return
+        subcont = self._auto_variante(cod)
+        it["cod_tar"]     = cod
+        it["unidad"]      = it.get("unidad") or t["unidad"]
+        it["rubro_std"]   = t["rubro"]
+        it["subcontrato"] = subcont
+        if not hasattr(self, "_subc_cache"):
+            self._subc_cache = {}
+        self._subc_cache[cod] = subcont
+        vals = list(self.tbl_der.item(cod, "values"))
+        if vals:
+            vals[0] = subcont
+            self.tbl_der.item(cod, values=vals)
+        _dbg("ASIGNAR_DER cod="+str(cod)+" subcont="+str(subcont))
+        self._refrescar_der_sel(cod)
+        self._poblar_iz()
+        self.tbl_iz.item(str(self._item_sel_idx), tags=("sel",))
+        self.tbl_iz.see(str(self._item_sel_idx))
+        self._actualizar_st()
+
     def _confirmar_subc(self, event=None):
         if not self._subc_iid:
             return
@@ -469,6 +534,8 @@ class VentanaObra(tk.Toplevel):
         vals_der      = self.tbl_der.item(cod, "values")
         subcont_tbl   = (vals_der[0] if vals_der else "").strip().upper()
         subcont = subcont_cache or subcont_tbl or it.get("subcontrato", "")
+        if not subcont:
+            subcont = self._auto_variante(cod)
         _dbg("DOBLE_CLIC cod="+str(cod)+" cache="+str(subcont_cache)+" tbl="+str(subcont_tbl)+" result="+str(subcont))
         it["cod_tar"]     = cod
         it["unidad"]      = it.get("unidad") or t["unidad"]
@@ -1165,14 +1232,22 @@ class VentanaObra(tk.Toplevel):
         else:
             self._precios_tarea.pop(idx, None)
         self._cargar_presupuesto()
-    def _on_tab(self, _event):
-        idx = self.nb.index("current")
+    def _on_tab_switch(self, idx: int):
+        """Carga el contenido del tab activo."""
         if idx == 1:
             self._cargar_tareas()
         elif idx == 2:
             self._cargar_ins()
         elif idx == 3:
             self._cargar_presupuesto()
+        elif idx == 4:
+            self._cargar_rpt_insumos()
+        elif idx == 5:
+            self._cargar_rpt_materiales()
+        elif idx == 6:
+            self._cargar_rpt_mdo()
+        elif idx == 7:
+            self._cargar_rpt_detalle()
     def _actualizar_st(self):
         items = getattr(self.obra, "items_presupuesto", [])
         n_items = sum(1 for it in items if not it.get("es_rubro"))
@@ -1267,6 +1342,300 @@ class VentanaObra(tk.Toplevel):
                 self.lbl_st.config(text=f"  Guardado en {ver}.")
         except Exception as e:
             messagebox.showerror("Error al guardar", str(e), parent=self)
+
+
+    # ═══════════════════════════════════════════════════════════════
+    #  Barra de tabs personalizada
+    # ═══════════════════════════════════════════════════════════════
+
+    def _build_custom_tabbar(self):
+        """Frame con botones tk coloreados — reemplaza la tira de tabs nativa."""
+        tabbar = tk.Frame(self, bg="#c0c0c0", height=30)
+        tabbar.pack(fill="x", padx=8, pady=(8, 0))
+        tabbar.pack_propagate(False)
+        tabbar.grid_columnconfigure(4, weight=1)   # col INFORMES se expande
+
+        self._tab_btns  = {}
+        self._tab_activo = 0
+
+        TRABAJO = [
+            (0, "  1. Rubros  "),
+            (1, "  2. Tareas  "),
+            (2, "  3. Insumos y precios  "),
+            (3, "  4. Presupuesto  "),
+        ]
+        INFORMES_TABS = [
+            (4, "  Insumos  "),
+            (5, "  Materiales  "),
+            (6, "  Mano de Obra  "),
+            (7, "  Detalle Tareas  "),
+        ]
+
+        for col, text in TRABAJO:
+            btn = tk.Button(tabbar, text=text, font=FUENTE_S,
+                            relief="flat", borderwidth=0, cursor="hand2",
+                            command=lambda i=col: self._select_nb(i))
+            btn.grid(row=0, column=col, sticky="nsew", ipadx=4, ipady=3)
+            self._tab_btns[col] = btn
+
+        # Lengueta INFORMES — amarilla, columna con weight=1
+        lbl_inf = tk.Label(tabbar, text="  INFORMES  ",
+                           bg="#f5c400", fg="#333333",
+                           font=("Segoe UI", 9, "bold"), anchor="center")
+        lbl_inf.grid(row=0, column=4, sticky="nsew")
+
+        for col, text in INFORMES_TABS:
+            btn = tk.Button(tabbar, text=text, font=FUENTE_S,
+                            relief="flat", borderwidth=0, cursor="hand2",
+                            command=lambda i=col: self._select_nb(i))
+            btn.grid(row=0, column=col + 4, sticky="nsew", ipadx=4, ipady=3)
+            self._tab_btns[col] = btn
+
+        self._actualizar_estilos_tabbar()
+
+    def _select_nb(self, idx: int):
+        """Muestra el frame del tab idx y oculta los demas."""
+        for i, frm in enumerate(self._tab_frames):
+            if i == idx:
+                frm.place(relx=0, rely=0, relwidth=1, relheight=1)
+                frm.lift()
+            else:
+                frm.place_forget()
+        self._tab_activo = idx
+        self._actualizar_estilos_tabbar()
+        self._on_tab_switch(idx)
+
+    def _actualizar_estilos_tabbar(self):
+        idx = getattr(self, "_tab_activo", 0)
+        for i, btn in self._tab_btns.items():
+            if i < 4:   # trabajo
+                bg = COLOR_HDR  if i == idx else "#dce8f0"
+                fg = "white"    if i == idx else COLOR_HDR
+            else:       # informe
+                bg = COLOR_VERDE if i == idx else "#d4e8d4"
+                fg = "white"     if i == idx else "#1d5a2a"
+            btn.config(bg=bg, fg=fg)
+
+    # ═══════════════════════════════════════════════════════════════
+    #  INFORMES
+    # ═══════════════════════════════════════════════════════════════
+
+    @staticmethod
+    def _tipo_insumo(desc: str) -> str:
+        """Clasifica un insumo: 'mdo', 'subcontrato' o 'material'."""
+        d = desc.strip()
+        if any(d.startswith(p) for p in ("M. de Obra", "Oficial", "Ayudante",
+                                          "Prestaci\u00f3n Mano", "Prestacion Mano")):
+            return "mdo"
+        if d.startswith("Subcontrato"):
+            return "subcontrato"
+        return "material"
+
+    def _make_rpt_tabla(self, parent, titulo, cols, anchos, textos, anclas, cmd_actualizar):
+        """Arma la estructura estandar de una pestana de informe."""
+        hdr = tk.Frame(parent, bg=COLOR_VERDE, height=36)
+        hdr.pack(fill="x")
+        hdr.pack_propagate(False)
+        tk.Label(hdr, text=f"  {titulo}", bg=COLOR_VERDE, fg="white",
+                 font=FUENTE_B).pack(side="left", padx=8)
+        tk.Button(hdr, text="Actualizar", bg="#155c38", fg="white",
+                  font=FUENTE_S, relief="flat", padx=8, pady=2,
+                  cursor="hand2", command=cmd_actualizar
+                  ).pack(side="right", padx=8, pady=4)
+        lbl = tk.Label(parent, text="", bg="#e8f0f8",
+                       font=FUENTE_B, anchor="e", fg=COLOR_HDR, pady=4, padx=12)
+        lbl.pack(side="bottom", fill="x", padx=8, pady=(0, 4))
+        tbl = ttk.Treeview(parent, columns=cols, show="headings", selectmode="browse")
+        for c in cols:
+            tbl.heading(c, text=textos[c])
+            tbl.column(c, width=anchos[c], minwidth=24, anchor=anclas.get(c, "center"))
+        scr = ttk.Scrollbar(parent, orient="vertical", command=tbl.yview)
+        tbl.configure(yscrollcommand=scr.set)
+        scr.pack(side="right", fill="y", padx=(0, 8))
+        tbl.pack(fill="both", expand=True, padx=(8, 0), pady=(4, 0))
+        tbl.tag_configure("par",     background="#ffffff")
+        tbl.tag_configure("impar",   background="#f0f4fa")
+        tbl.tag_configure("rub_hdr", background="#d4edda",
+                          font=("Segoe UI", 10, "bold"))
+        tbl.tag_configure("sin_vnc", background="#fde8e8")
+        tbl.tag_configure("ins_a",   background="#eef4fb",
+                          foreground="#1a3a5c", font=("Segoe UI", 9))
+        tbl.tag_configure("ins_b",   background="#e4ecf7",
+                          foreground="#1a3a5c", font=("Segoe UI", 9))
+        return tbl, lbl
+
+    # ── Insumos (todos) ─────────────────────────────────────────────
+    def _build_rpt_insumos(self):
+        cols    = ("cod", "nombre", "unidad", "cantidad")
+        anchos  = {"cod": 80, "nombre": 380, "unidad": 60, "cantidad": 110}
+        textos  = {"cod": "Codigo", "nombre": "Insumo",
+                   "unidad": "Unidad", "cantidad": "Cantidad"}
+        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e"}
+        self.tbl_rpt_ins, self.lbl_rpt_ins = self._make_rpt_tabla(
+            self.tab_rpt_ins, "Listado de Insumos",
+            cols, anchos, textos, anclas, self._cargar_rpt_insumos)
+
+    def _cargar_rpt_insumos(self, tipo=None):
+        for item in self.tbl_rpt_ins.get_children():
+            self.tbl_rpt_ins.delete(item)
+        insumos_raw = self.obra.calcular_insumos(self.maestro["incidencias"])
+        if not insumos_raw:
+            self.tbl_rpt_ins.insert("", "end",
+                values=("", "Sin tareas o cantidades cargadas.", "", ""))
+            self.lbl_rpt_ins.config(text="")
+            return
+        cat = self.maestro["insumos"]
+        i = 0
+        for cod_ins, datos in sorted(insumos_raw.items()):
+            nombre = cat.get(cod_ins, {}).get("nombre", cod_ins)
+            unidad = datos.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
+            cant   = datos["cantidad_total"]
+            if tipo and self._tipo_insumo(nombre) != tipo:
+                continue
+            tag = "par" if i % 2 == 0 else "impar"
+            self.tbl_rpt_ins.insert("", "end", tags=(tag,),
+                values=(cod_ins, nombre, unidad, f"{cant:,.3f}"))
+            i += 1
+        label = {None: "Todos", "material": "Materiales",
+                 "mdo": "M. de Obra", "subcontrato": "Subcontratos"}.get(tipo, tipo)
+        self.lbl_rpt_ins.config(text=f"{label}: {i} insumos")
+
+    # ── Materiales ──────────────────────────────────────────────────
+    def _build_rpt_materiales(self):
+        cols    = ("cod", "nombre", "unidad", "cantidad")
+        anchos  = {"cod": 80, "nombre": 380, "unidad": 60, "cantidad": 110}
+        textos  = {"cod": "Codigo", "nombre": "Material",
+                   "unidad": "Unidad", "cantidad": "Cantidad"}
+        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e"}
+        self.tbl_rpt_mat, self.lbl_rpt_mat = self._make_rpt_tabla(
+            self.tab_rpt_mat, "Materiales",
+            cols, anchos, textos, anclas, self._cargar_rpt_materiales)
+
+    def _cargar_rpt_materiales(self):
+        for item in self.tbl_rpt_mat.get_children():
+            self.tbl_rpt_mat.delete(item)
+        insumos_raw = self.obra.calcular_insumos(self.maestro["incidencias"])
+        if not insumos_raw:
+            self.tbl_rpt_mat.insert("", "end",
+                values=("", "Sin tareas o cantidades cargadas.", "", ""))
+            self.lbl_rpt_mat.config(text="")
+            return
+        cat = self.maestro["insumos"]
+        i = 0
+        for cod_ins, datos in sorted(insumos_raw.items()):
+            nombre = cat.get(cod_ins, {}).get("nombre", cod_ins)
+            if self._tipo_insumo(nombre) != "material":
+                continue
+            unidad = datos.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
+            cant   = datos["cantidad_total"]
+            tag    = "par" if i % 2 == 0 else "impar"
+            self.tbl_rpt_mat.insert("", "end", tags=(tag,),
+                values=(cod_ins, nombre, unidad, f"{cant:,.3f}"))
+            i += 1
+        self.lbl_rpt_mat.config(text=f"Materiales: {i} items")
+
+    # ── Mano de Obra ────────────────────────────────────────────────
+    def _build_rpt_mdo(self):
+        cols    = ("cod", "nombre", "unidad", "cantidad")
+        anchos  = {"cod": 80, "nombre": 380, "unidad": 60, "cantidad": 110}
+        textos  = {"cod": "Codigo", "nombre": "Categoria M. de Obra",
+                   "unidad": "Unidad", "cantidad": "Cantidad"}
+        anclas  = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e"}
+        self.tbl_rpt_mdo, self.lbl_rpt_mdo = self._make_rpt_tabla(
+            self.tab_rpt_mdo, "Mano de Obra",
+            cols, anchos, textos, anclas, self._cargar_rpt_mdo)
+
+    def _cargar_rpt_mdo(self):
+        for item in self.tbl_rpt_mdo.get_children():
+            self.tbl_rpt_mdo.delete(item)
+        insumos_raw = self.obra.calcular_insumos(self.maestro["incidencias"])
+        if not insumos_raw:
+            self.tbl_rpt_mdo.insert("", "end",
+                values=("", "Sin tareas o cantidades cargadas.", "", ""))
+            self.lbl_rpt_mdo.config(text="")
+            return
+        cat = self.maestro["insumos"]
+        i = 0
+        for cod_ins, datos in sorted(insumos_raw.items()):
+            nombre = cat.get(cod_ins, {}).get("nombre", cod_ins)
+            if self._tipo_insumo(nombre) != "mdo":
+                continue
+            unidad = datos.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
+            cant   = datos["cantidad_total"]
+            tag    = "par" if i % 2 == 0 else "impar"
+            self.tbl_rpt_mdo.insert("", "end", tags=(tag,),
+                values=(cod_ins, nombre, unidad, f"{cant:,.3f}"))
+            i += 1
+        self.lbl_rpt_mdo.config(text=f"Categorias M. de Obra: {i}")
+
+    # ── Detalle de Tareas ───────────────────────────────────────────
+    def _build_rpt_detalle(self):
+        cols   = ("rubro", "item", "descripcion", "unidad", "cantidad")
+        anchos = {"rubro": 42, "item": 42, "descripcion": 320,
+                  "unidad": 60, "cantidad": 100}
+        textos = {"rubro": "Rubro", "item": "Item", "descripcion": "Descripcion",
+                  "unidad": "Unidad", "cantidad": "Cantidad"}
+        anclas = {"rubro": "center", "item": "center", "descripcion": "w",
+                  "unidad": "center", "cantidad": "e"}
+        self.tbl_rpt_det, self.lbl_rpt_det = self._make_rpt_tabla(
+            self.tab_rpt_det, "Detalle de Tareas",
+            cols, anchos, textos, anclas, self._cargar_rpt_detalle)
+
+    def _cargar_rpt_detalle(self):
+        for item in self.tbl_rpt_det.get_children():
+            self.tbl_rpt_det.delete(item)
+        items_ppto  = getattr(self.obra, "items_presupuesto", [])
+        incidencias = self.maestro["incidencias"]
+        cat         = self.maestro["insumos"]
+        if not items_ppto:
+            self.tbl_rpt_det.insert("", "end",
+                values=("", "", "Sin items de presupuesto.", "", ""))
+            self.lbl_rpt_det.config(text="")
+            return
+        i_tar = 0
+        n_tar = 0
+        sin_vnc = 0
+        for it in items_ppto:
+            if it.get("es_rubro"):
+                self.tbl_rpt_det.insert("", "end", tags=("rub_hdr",),
+                    values=(it.get("rubro", ""), "",
+                            it.get("descripcion", ""), "", ""))
+                continue
+            cod_tar = it.get("cod_tar", "")
+            subcont = (it.get("subcontrato") or "").strip().upper()
+            cant    = it.get("cantidad") or 0.0
+            desc    = it.get("descripcion", "")
+            unidad  = it.get("unidad", "")
+            rub     = it.get("rubro", "")
+            item_num = it.get("item", "")
+            if not cod_tar:
+                sin_vnc += 1
+                self.tbl_rpt_det.insert("", "end", tags=("sin_vnc",),
+                    values=(rub, item_num, f"[sin vincular]  {desc}", unidad,
+                            f"{cant:,.2f}" if cant else ""))
+                continue
+            n_tar += 1
+            cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
+            lista_inc  = incidencias.get(cod_buscar) or incidencias.get(cod_tar, [])
+            tag_tar    = "par" if i_tar % 2 == 0 else "impar"
+            cod_label  = cod_tar + subcont if subcont else cod_tar
+            cant_str   = f"{cant:,.2f}" if cant else ""
+            self.tbl_rpt_det.insert("", "end", tags=(tag_tar,),
+                values=(rub, item_num, f"{desc}  [{cod_label}]",
+                        unidad, cant_str))
+            for j, inc in enumerate(lista_inc):
+                cod_ins    = inc["cod_ins"]
+                nombre_ins = cat.get(cod_ins, {}).get("nombre", cod_ins)
+                unidad_ins = inc.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
+                inc_cant   = inc.get("cantidad", 0)
+                total_ins  = inc_cant * cant
+                tag_ins    = "ins_a" if j % 2 == 0 else "ins_b"
+                self.tbl_rpt_det.insert("", "end", tags=(tag_ins,),
+                    values=("", "", f"    {nombre_ins}",
+                            unidad_ins, f"{total_ins:,.3f}"))
+            i_tar += 1
+        self.lbl_rpt_det.config(
+            text=f"Tareas vinculadas: {n_tar}  |  Sin vincular: {sin_vnc}")
 
 
 class _DlgInsumosTarea(tk.Toplevel):
