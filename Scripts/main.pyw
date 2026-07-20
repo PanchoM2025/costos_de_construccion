@@ -156,7 +156,6 @@ class AppPrincipal(tk.Tk):
                                     parent=self)
                 return
             try:
-                from pathlib import Path
                 from core.obra import CARPETA_OBRAS
                 carpeta_data = CARPETA_OBRAS / f"Obra{num}" / "data"
                 jsons = sorted(carpeta_data.glob("obra???.json"))
@@ -165,9 +164,15 @@ class AppPrincipal(tk.Tk):
                     self.wait_window(dlg)
                     if not dlg.seleccionados:
                         return
-                    for ruta in dlg.seleccionados:
-                        obra = Obra.cargar_version(ruta)
+                    if len(dlg.seleccionados) == 1:
+                        # Una sola versión — abrir normalmente
+                        obra = Obra.cargar_version(dlg.seleccionados[0])
                         VentanaObra(self, obra)
+                    else:
+                        # Dos o más — combinar en nueva versión
+                        obra = self._combinar_versiones(dlg.seleccionados)
+                        if obra:
+                            VentanaObra(self, obra)
                     return
                 else:
                     obra = Obra.cargar(num)
@@ -175,6 +180,65 @@ class AppPrincipal(tk.Tk):
                 messagebox.showerror("Error", str(e), parent=self)
                 return
         VentanaObra(self, obra)
+
+    def _combinar_versiones(self, rutas: list) -> Obra | None:
+        """Combina items_presupuesto de múltiples versiones y guarda como nueva."""
+        from collections import defaultdict
+        try:
+            rubro_headers  = {}   # (rubro, desc) → item_dict
+            task_dict      = {}   # (cod_tar, subcont) → item_dict acumulado
+            rubro_for_task = {}   # (cod_tar, subcont) → (rubro, desc)
+
+            base_obra = None
+            for ruta in rutas:
+                version_obra = Obra.cargar_version(ruta)
+                if base_obra is None:
+                    base_obra = version_obra
+                cur_rub_key = ("", "")
+                for it in version_obra.items_presupuesto:
+                    if it.get("es_rubro"):
+                        key = (it.get("rubro", ""), it.get("descripcion", ""))
+                        cur_rub_key = key
+                        if key not in rubro_headers:
+                            rubro_headers[key] = dict(it)
+                    else:
+                        cod_tar  = it.get("cod_tar", "")
+                        subcont  = (it.get("subcontrato") or "").strip()
+                        task_key = (cod_tar, subcont)
+                        if task_key in task_dict:
+                            task_dict[task_key]["cantidad"] = (
+                                (task_dict[task_key].get("cantidad") or 0.0)
+                                + (it.get("cantidad") or 0.0)
+                            )
+                        else:
+                            task_dict[task_key] = dict(it)
+                            rubro_for_task[task_key] = cur_rub_key
+
+            # Reconstruir items_presupuesto manteniendo estructura de rubros
+            rubro_tasks = defaultdict(list)
+            for task_key, item in task_dict.items():
+                rub_key = rubro_for_task.get(task_key, ("", ""))
+                rubro_tasks[rub_key].append(item)
+
+            result = []
+            for rub_key, rub_item in rubro_headers.items():
+                result.append(rub_item)
+                result.extend(rubro_tasks[rub_key])
+            # Tareas que no tenían rubro encabezado
+            orphan_key = ("", "")
+            if rubro_tasks[orphan_key] and orphan_key not in rubro_headers:
+                result.append({"es_rubro": True, "rubro": "", "descripcion": "Sin rubro"})
+                result.extend(rubro_tasks[orphan_key])
+
+            base_obra.items_presupuesto = result
+            nombres = ", ".join(r.name for r in rutas)
+            base_obra.guardar(nueva_version=True,
+                              nota=f"Combinación de: {nombres}")
+            return base_obra
+
+        except Exception as e:
+            messagebox.showerror("Error al combinar versiones", str(e), parent=self)
+            return None
 
     def eliminar_obra(self):
         num = self._obra_seleccionada()
@@ -287,14 +351,17 @@ class _DlgVersiones(tk.Toplevel):
             self.tbl.see(str(jsons[-1]))
 
         self.tbl.bind("<Double-1>", lambda _: self._abrir())
+        self.tbl.bind("<<TreeviewSelect>>", self._actualizar_btn)
 
         frm_btn = tk.Frame(self, pady=8)
         frm_btn.pack(fill="x", padx=12)
-        tk.Button(frm_btn, text="Abrir seleccionadas",
-                  bg=COLOR_BTN_ABRIR, fg="white",
-                  font=("Segoe UI", 10, "bold"),
-                  relief="flat", padx=14, pady=6, cursor="hand2",
-                  command=self._abrir).pack(side="right", padx=(4, 0))
+        self.btn_abrir = tk.Button(
+            frm_btn, text="Abrir seleccionada",
+            bg=COLOR_BTN_ABRIR, fg="white",
+            font=("Segoe UI", 10, "bold"),
+            relief="flat", padx=14, pady=6, cursor="hand2",
+            command=self._abrir)
+        self.btn_abrir.pack(side="right", padx=(4, 0))
         tk.Button(frm_btn, text="Cancelar",
                   bg="#888", fg="white",
                   font=("Segoe UI", 10),
@@ -307,6 +374,13 @@ class _DlgVersiones(tk.Toplevel):
         px = parent.winfo_x() + (parent.winfo_width()  - self.winfo_width())  // 2
         py = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
         self.geometry(f"+{px}+{py}")
+
+    def _actualizar_btn(self, _event=None):
+        n = len(self.tbl.selection())
+        if n >= 2:
+            self.btn_abrir.config(text=f"Combinar {n} versiones →")
+        else:
+            self.btn_abrir.config(text="Abrir seleccionada")
 
     def _leer_notas(self, carpeta) -> dict:
         notas = {}

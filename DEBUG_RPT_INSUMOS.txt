@@ -1,0 +1,23 @@
+=== insumos_raw keys (0) ===
+
+=== maestro incidencias cod_ins samples ===
+  cod_ins='000114' type=str
+  cod_ins='000116' type=str
+  cod_ins='1212' type=str
+  cod_ins='1223' type=str
+  cod_ins='1322' type=str
+  cod_ins='1341' type=str
+  cod_ins='1411' type=str
+  cod_ins='1511' type=str
+  cod_ins='2411' type=str
+  cod_ins='4321' type=str
+  cod_ins='2431' type=str
+  cod_ins='1311' type=str
+  cod_ins='000130' type=str
+  cod_ins='0500' type=str
+  cod_ins='000211' type=str
+  cod_ins='000212' type=str
+  cod_ins='0264' type=str
+  cod_ins='000215' type=str
+  cod_ins='0291' type=str
+  cod_ins='0921' type=str

@@ -1,11 +1,5 @@
 """ventana_obra.py"""
 import tkinter as tk
-import os as _os_dbg, datetime as _dt_dbg
-_DBG_LOG = _os_dbg.path.join(_os_dbg.path.dirname(_os_dbg.path.abspath(__file__)), "DEBUG_SUBC.log")
-def _dbg(*a):
-    with open(_DBG_LOG, "a", encoding="utf-8") as _f:
-        _f.write(_dt_dbg.datetime.now().strftime("%H:%M:%S") + " " + " ".join(str(x) for x in a) + "\n")
-_dbg("=== MODULO CARGADO ===", __file__)
 
 from tkinter import ttk, messagebox
 from pathlib import Path
@@ -390,7 +384,6 @@ class VentanaObra(tk.Toplevel):
         if vals:
             vals[0] = subcont
             self.tbl_der.item(cod, values=vals)
-        _dbg("ASIGNAR_DER cod="+str(cod)+" subcont="+str(subcont))
         self._refrescar_der_sel(cod)
         self._poblar_iz()
         self.tbl_iz.item(str(self._item_sel_idx), tags=("sel",))
@@ -402,7 +395,6 @@ class VentanaObra(tk.Toplevel):
             return
         desc = self._subc_var.get()
         val  = self._subc_opts.get(desc, "")
-        _dbg("CONFIRMAR_SUBC iid=", self._subc_iid, "val=", val)
         iid  = self._subc_iid
         vals = list(self.tbl_der.item(iid, "values"))
         vals[0] = val
@@ -416,7 +408,6 @@ class VentanaObra(tk.Toplevel):
         self._subc_cache[iid] = val
         if not hasattr(self, "_subc_cache"): self._subc_cache = {}
         self._subc_cache[iid] = val
-        _dbg("CACHE guardado", iid, "->", val)
         self._subc_combo.place_forget()
         self._subc_iid = None
     def _cargar_tareas(self):
@@ -480,7 +471,7 @@ class VentanaObra(tk.Toplevel):
                 if not vinculado:
                     sin_vnc += 1
                 cant = it.get("cantidad", "")
-                cant_str = f"{cant:,.2f}" if isinstance(cant, (int, float)) else str(cant)
+                cant_str = self._fmt_q(cant, 2) if isinstance(cant, (int, float)) else str(cant)
                 self.tbl_iz.insert("", "end", iid=str(idx), tags=(tag,),
                     values=(rub, display_item,
                             it.get("descripcion", ""),
@@ -552,12 +543,10 @@ class VentanaObra(tk.Toplevel):
         subcont = subcont_cache or subcont_tbl or it.get("subcontrato", "")
         if not subcont:
             subcont = self._auto_variante(cod)
-        _dbg("DOBLE_CLIC cod="+str(cod)+" cache="+str(subcont_cache)+" tbl="+str(subcont_tbl)+" result="+str(subcont))
         it["cod_tar"]     = cod
         it["unidad"]      = it.get("unidad") or t["unidad"]
         it["rubro_std"]   = t["rubro"]
         it["subcontrato"] = subcont
-        _dbg("AFTER_LINK subcontrato="+str(it["subcontrato"]))
         self._refrescar_der_sel(cod)
         self._poblar_iz()
         self.tbl_iz.item(str(self._item_sel_idx), tags=("sel",))
@@ -655,7 +644,16 @@ class VentanaObra(tk.Toplevel):
         except Exception as e:
             messagebox.showerror("Error al importar", str(e), parent=self)
     def _editar_fila_item(self, idx, it):
-        dlg = _DlgEditarFila(self, it)
+        cod_tar = it.get("cod_tar", "")
+        if cod_tar:
+            t = self.maestro["tareas_por_cod"].get(cod_tar, {})
+            subcont = (it.get("subcontrato") or "").strip().upper()
+            cod_label = f"{cod_tar}{subcont}" if subcont else cod_tar
+            nombre_tar = t.get("nombre", "")
+            cod_tar_label = f"{cod_label}  —  {nombre_tar}" if nombre_tar else cod_label
+        else:
+            cod_tar_label = None
+        dlg = _DlgEditarFila(self, it, cod_tar_label=cod_tar_label)
         self.wait_window(dlg)
         if dlg.resultado:
             it.update(dlg.resultado)
@@ -877,8 +875,8 @@ class VentanaObra(tk.Toplevel):
                 sub   = cant * precio
                 total += sub
                 tag   = "ok"
-                p_str = f"$ {precio:,.2f}"
-                s_str = f"$ {sub:,.2f}"
+                p_str = f"$ {self._fmt_pu(precio)}"
+                s_str = f"$ {self._fmt_pt(sub)}"
                 est   = "Con precio"
             else:
                 falt += 1
@@ -888,11 +886,11 @@ class VentanaObra(tk.Toplevel):
                 est   = "Sin precio"
             self.tbl_ins.insert("", "end", iid=cod_ins, tags=(tag,),
                                 values=(cod_ins, nombre, unidad,
-                                        f"{cant:,.2f}", p_str, s_str, est))
+                                        self._fmt_q(cant, 2), p_str, s_str, est))
         n_total = len(insumos)
         pct = int(100 * (n_total - falt) / n_total) if n_total else 0
         self.lbl_total.config(
-            text=f"Total cotizado: $ {total:,.2f}   |   "
+            text=f"Total cotizado: $ {self._fmt_pt(total)}   |   "
                  f"Con precio: {n_total - falt}   |   "
                  f"Sin precio: {falt}   |   "
                  f"Cobertura: {pct}%")
@@ -1007,7 +1005,6 @@ class VentanaObra(tk.Toplevel):
             cant    = it.get("cantidad") or 0.0
             cod_buscar  = cod_tar + subcont if (cod_tar and subcont) else cod_tar
             lista_inc   = incidencias.get(cod_buscar, []) if subcont else incidencias.get(cod_tar, [])
-            _dbg("PRESUP", "cod_tar="+str(cod_tar), "subcont="+str(subcont), "busca="+str(cod_buscar), "incs="+str(len(lista_inc)))
             precio_unit = (self._precios_tarea.get(idx) or
                            sum((precios.get(inc["cod_ins"], 0.0) or 0.0) * inc["cantidad"]
                                for inc in lista_inc))
@@ -1019,7 +1016,7 @@ class VentanaObra(tk.Toplevel):
                 rub  = it.get("rubro", "")
                 desc = it.get("descripcion", "")
                 sub  = totales_rubro.get(idx, 0.0)
-                sub_str = f"$ {sub:,.2f}" if sub else ""
+                sub_str = f"$ {self._fmt_pt(sub)}" if sub else ""
                 self.tbl_ppto.insert("", "end",
                     iid=f"rub_{idx}", tags=("rub_hdr",),
                     values=(rub, "", desc, "", "", "", sub_str))
@@ -1065,17 +1062,17 @@ class VentanaObra(tk.Toplevel):
             iid_tarea = f"tar_{idx}"
             expandido = iid_tarea in self._ppto_expandido
             prefijo   = "▼ " if expandido else "▶ "
-            p_str = f"$ {precio_unit:,.2f}" if precio_unit else "-"
-            t_str = f"$ {total_tarea:,.2f}"  if precio_unit else "-"
-            c_str = f"{cant:,.2f}" if cant else "-"
+            p_str = f"$ {self._fmt_pu(precio_unit)}" if precio_unit else "-"
+            t_str = f"$ {self._fmt_pt(total_tarea)}"  if precio_unit else "-"
+            c_str = self._fmt_q(cant, 2) if cant else "-"
             self.tbl_ppto.insert("", "end", iid=iid_tarea, tags=(tag,),
                 values=(rub, item_num, prefijo + desc,
                         unidad, c_str, p_str, t_str))
             if expandido:
                 for j, ins in enumerate(insumos_detalle):
                     tag_ins = "insumo" if j % 2 == 0 else "insumo_alt"
-                    p_i = f"$ {ins['precio']:,.2f}" if ins['precio'] else "Sin precio"
-                    s_i = f"$ {ins['subtotal']:,.2f}" if ins['precio'] else "-"
+                    p_i = f"$ {self._fmt_pu(ins['precio'])}" if ins['precio'] else "Sin precio"
+                    s_i = f"$ {self._fmt_pt(ins['subtotal'])}" if ins['precio'] else "-"
                     self.tbl_ppto.insert("", "end",
                         iid=f"ins_{idx}_{j}", tags=(tag_ins,),
                         values=("", "", f"    {ins['nombre']}",
@@ -1085,9 +1082,9 @@ class VentanaObra(tk.Toplevel):
             self.tbl_ppto.insert("", "end", iid="total_gen",
                 tags=("total_general",),
                 values=("", "", "TOTAL GENERAL", "", "", "",
-                        f"$ {total_general:,.2f}"))
+                        f"$ {self._fmt_pt(total_general)}"))
         self.lbl_total_ppto.config(
-            text=f"Total general:  $ {total_general:,.2f}   "
+            text=f"Total general:  $ {self._fmt_pt(total_general)}   "
                  f"({'sin precios completos' if not precios else 'basado en precios cargados'})")
     def _toggle_ppto(self, event=None):
         iid = self.tbl_ppto.identify_row(event.y)
@@ -1361,6 +1358,134 @@ class VentanaObra(tk.Toplevel):
 
 
     # ═══════════════════════════════════════════════════════════════
+    #  Exportar Detalle de Tareas (valores numéricos)
+    # ═══════════════════════════════════════════════════════════════
+
+    def _exportar_rpt_detalle(self):
+        """Exporta Detalle de Tareas a Excel con valores numéricos."""
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+        import os
+
+        items_ppto  = getattr(self.obra, "items_presupuesto", [])
+        incidencias = self.maestro["incidencias"]
+        cat         = self.maestro["insumos"]
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Detalle de Tareas"
+
+        headers = ["Rubro", "Item", "Descripcion", "Unidad",
+                   "Cantidad", "P.Unitario", "P.Total"]
+        ws.append(headers)
+        for cell in ws[1]:
+            cell.font      = Font(bold=True, color="FFFFFF")
+            cell.fill      = PatternFill("solid", fgColor="1D5A2A")
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        COLOR_RUB  = "D4EDDA"
+        COLOR_TOT  = "1D5A2A"
+        COLOR_PAR  = "FFFFFF"
+        COLOR_IMPAR = "F0F4FA"
+        COLOR_INSA  = "EEF4FB"
+        COLOR_INSB  = "E4ECF7"
+        COLOR_SIN   = "FDE8E8"
+
+        def _add(vals, bg, fg="000000", bold=False):
+            ws.append(vals)
+            ri = ws.max_row
+            for cell in ws[ri]:
+                cell.fill = PatternFill("solid", fgColor=bg)
+                cell.font = Font(bold=bold, color=fg)
+            # Alinear columnas numéricas a la derecha
+            for ci in (5, 6, 7):
+                ws.cell(ri, ci).alignment = Alignment(horizontal="right")
+
+        i_tar      = 0
+        rub_counts = {}
+        cur_rub_idx = None
+        suma_total  = 0.0
+
+        for idx, it in enumerate(items_ppto):
+            if it.get("es_rubro"):
+                cur_rub_idx = idx
+                rub_counts[cur_rub_idx] = 0
+                _add([it.get("rubro", ""), "", it.get("descripcion", ""),
+                      "", "", "", ""],
+                     COLOR_RUB, bold=True)
+                continue
+
+            cod_tar = it.get("cod_tar", "")
+            subcont = (it.get("subcontrato") or "").strip().upper()
+            cant    = it.get("cantidad") or 0.0
+            desc    = it.get("descripcion", "")
+            unidad  = it.get("unidad", "")
+            rub     = it.get("rubro", "")
+            rub_counts[cur_rub_idx] = rub_counts.get(cur_rub_idx, 0) + 1
+            item_num = f"{rub_counts[cur_rub_idx]:02d}"
+
+            if not cod_tar:
+                _add([rub, item_num, f"[sin vincular]  {desc}",
+                      unidad, cant or None, None, None],
+                     COLOR_SIN)
+                continue
+
+            cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
+            lista_inc  = incidencias.get(cod_buscar) or incidencias.get(cod_tar, [])
+            p_unit = self._precios_tarea.get(idx)
+            if p_unit is None:
+                p_unit = sum(
+                    (self._precios.get(inc["cod_ins"], 0.0) or 0.0)
+                    * inc.get("cantidad", 0.0)
+                    for inc in lista_inc
+                ) or None
+            p_total = (p_unit * cant) if (p_unit is not None and cant) else None
+            if p_total is not None:
+                suma_total += p_total
+
+            bg = COLOR_PAR if i_tar % 2 == 0 else COLOR_IMPAR
+            cod_label = cod_tar + subcont if subcont else cod_tar
+            _add([rub, item_num, f"{desc}  [{cod_label}]",
+                  unidad, cant or None, p_unit, p_total], bg)
+
+            # Insumos expandidos
+            for j, inc in enumerate(lista_inc):
+                cod_ins    = inc["cod_ins"]
+                nombre_ins = cat.get(cod_ins, {}).get("nombre", cod_ins)
+                unidad_ins = inc.get("unidad") or cat.get(cod_ins, {}).get("unidad", "")
+                inc_cant   = inc.get("cantidad", 0)
+                total_ins  = inc_cant * cant
+                p_ins_u    = self._precios.get(cod_ins)
+                p_ins_t    = (p_ins_u * total_ins) if p_ins_u is not None else None
+                bg_ins = COLOR_INSA if j % 2 == 0 else COLOR_INSB
+                _add(["", "", f"    {nombre_ins}",
+                      unidad_ins, total_ins or None, p_ins_u, p_ins_t],
+                     bg_ins, fg="1A3A5C")
+            i_tar += 1
+
+        # Fila TOTAL
+        _add(["", "TOTAL", "", "", "", "", suma_total or None],
+             COLOR_TOT, fg="FFFFFF", bold=True)
+
+        # Ancho automático de columnas
+        col_widths = [10, 6, 50, 10, 12, 14, 14]
+        for i, w in enumerate(col_widths, 1):
+            ws.column_dimensions[
+                openpyxl.utils.get_column_letter(i)].width = w
+
+        obra_nombre = (getattr(self.obra, "nombre", None) or
+                       getattr(self.obra, "titulo", None) or "obra")
+        nombre_safe = "".join(c for c in obra_nombre if c.isalnum() or c in " _-")
+        nombre_archivo = f"{nombre_safe}_Detalle_de_Tareas.xlsx"
+        from pathlib import Path
+        ruta = Path(str(self.obra.carpeta)) / nombre_archivo
+        try:
+            wb.save(str(ruta))
+            os.startfile(str(ruta))
+        except Exception as e:
+            messagebox.showerror("Error al exportar", str(e), parent=self)
+
+    # ═══════════════════════════════════════════════════════════════
     #  Barra de tabs personalizada
     # ═══════════════════════════════════════════════════════════════
 
@@ -1437,6 +1562,24 @@ class VentanaObra(tk.Toplevel):
     # ═══════════════════════════════════════════════════════════════
 
     @staticmethod
+    @staticmethod
+    def _fmt_q(v, dec=3) -> str:
+        """Cantidad: notación argentina, `dec` decimales."""
+        s = f"{v:,.{dec}f}"                          # "1,234.567"
+        return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")  # "1.234,567"
+
+    @staticmethod
+    def _fmt_pu(v) -> str:
+        """Precio Unitario: #.##0,00  (notación argentina, 2 decimales)."""
+        s = f"{v:,.2f}"                          # "1,234.56"
+        return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")  # "1.234,56"
+
+    @staticmethod
+    def _fmt_pt(v) -> str:
+        """Precio Total: #.##0  (notación argentina, sin decimales)."""
+        return f"{round(v):,}".replace(",", ".")  # "1.234"
+
+    @staticmethod
     def _tipo_insumo(desc: str) -> str:
         """Clasifica un insumo: 'mdo', 'subcontrato' o 'material'."""
         d = desc.strip()
@@ -1447,21 +1590,30 @@ class VentanaObra(tk.Toplevel):
             return "subcontrato"
         return "material"
 
-    def _make_rpt_tabla(self, parent, titulo, cols, anchos, textos, anclas, cmd_actualizar):
+    def _make_rpt_tabla(self, parent, titulo, cols, anchos, textos, anclas,
+                        cmd_actualizar, export_fn=None):
         """Arma la estructura estandar de una pestana de informe."""
         hdr = tk.Frame(parent, bg=COLOR_VERDE, height=36)
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
         tk.Label(hdr, text=f"  {titulo}", bg=COLOR_VERDE, fg="white",
                  font=FUENTE_B).pack(side="left", padx=8)
-        tk.Button(hdr, text="Actualizar", bg="#155c38", fg="white",
+        # Botón Exportar — se conecta al tbl después de crearlo (via lista mutable)
+        _tbl_ref = [None]
+        def _exportar():
+            if export_fn is not None:
+                export_fn()
+            else:
+                self._exportar_rpt(_tbl_ref[0], titulo, textos, cols)
+        tk.Button(hdr, text="Exportar", bg="#155c38", fg="white",
                   font=FUENTE_S, relief="flat", padx=8, pady=2,
-                  cursor="hand2", command=cmd_actualizar
+                  cursor="hand2", command=_exportar
                   ).pack(side="right", padx=8, pady=4)
         lbl = tk.Label(parent, text="", bg="#e8f0f8",
                        font=FUENTE_B, anchor="e", fg=COLOR_HDR, pady=4, padx=12)
         lbl.pack(side="bottom", fill="x", padx=8, pady=(0, 4))
         tbl = ttk.Treeview(parent, columns=cols, show="headings", selectmode="browse")
+        _tbl_ref[0] = tbl
         for c in cols:
             tbl.heading(c, text=textos[c])
             tbl.column(c, width=anchos[c], minwidth=24, anchor=anclas.get(c, "center"))
@@ -1481,6 +1633,98 @@ class VentanaObra(tk.Toplevel):
         tbl.tag_configure("total_row", background="#1d5a2a", foreground="white",
                           font=("Segoe UI", 10, "bold"))
         return tbl, lbl
+
+    def _exportar_rpt(self, tbl, titulo, textos, cols):
+        """Exporta el contenido de una pestaña de informe a un archivo Excel."""
+        import openpyxl
+        from openpyxl.styles import Font, PatternFill, Alignment
+        import os
+        from pathlib import Path
+        from tkinter import messagebox
+
+        if tbl is None:
+            return
+
+        # Recolectar filas: adjuntas + hijos detachados (Detalle Tareas)
+        all_rows = []
+        for iid in tbl.get_children(""):
+            vals = list(tbl.item(iid)["values"])
+            tags = list(tbl.item(iid).get("tags") or [])
+            all_rows.append((vals, tags))
+            if hasattr(self, "_det_children") and iid in self._det_children:
+                for child in self._det_children[iid]:
+                    try:
+                        cvals = list(tbl.item(child)["values"])
+                        ctags = list(tbl.item(child).get("tags") or [])
+                        all_rows.append((cvals, ctags))
+                    except Exception:
+                        pass
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = titulo[:31]
+
+        # Encabezado
+        headers = [textos[c] for c in cols]
+        ws.append(headers)
+        for cell in ws[1]:
+            cell.font      = Font(bold=True, color="FFFFFF")
+            cell.fill      = PatternFill("solid", fgColor="1D5A2A")
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+        ws.row_dimensions[1].height = 18
+
+        # Filas de datos
+        COLOR_RUB  = "D4EDDA"
+        COLOR_TOT  = "1D5A2A"
+        COLOR_JOR  = "C8E6C9"
+        COLOR_PAR  = "FFFFFF"
+        COLOR_IMPAR = "F0F4FA"
+        COLOR_INSA  = "EEF4FB"
+        COLOR_INSB  = "E4ECF7"
+        COLOR_SIN   = "FDE8E8"
+
+        fill_map = {
+            "total_row": (COLOR_TOT, "FFFFFF", True),
+            "jornal_row": (COLOR_JOR, "1B5E20", True),
+            "rub_hdr":   (COLOR_RUB,  "000000", True),
+            "par":       (COLOR_PAR,  "000000", False),
+            "impar":     (COLOR_IMPAR,"000000", False),
+            "ins_a":     (COLOR_INSA, "1A3A5C", False),
+            "ins_b":     (COLOR_INSB, "1A3A5C", False),
+            "sin_vnc":   (COLOR_SIN,  "000000", False),
+        }
+
+        for vals, tags in all_rows:
+            ws.append(vals)
+            ri = ws.max_row
+            bg, fg, bold = COLOR_PAR, "000000", False
+            for tag in tags:
+                if tag in fill_map:
+                    bg, fg, bold = fill_map[tag]
+                    break
+            for cell in ws[ri]:
+                cell.fill = PatternFill("solid", fgColor=bg)
+                cell.font = Font(bold=bold, color=fg)
+
+        # Anchos de columna automáticos
+        for col_cells in ws.columns:
+            max_len = max((len(str(c.value or "")) for c in col_cells), default=8)
+            ws.column_dimensions[col_cells[0].column_letter].width = min(max_len + 4, 55)
+
+        # Guardar en carpeta de la obra
+        obra_nombre = (getattr(self.obra, "nombre", None) or
+                       getattr(self.obra, "titulo", None) or "obra")
+        nombre_safe = "".join(c for c in obra_nombre if c.isalnum() or c in " _-")
+        titulo_safe = titulo.replace(" ", "_")
+        nombre_archivo = f"{nombre_safe}_{titulo_safe}.xlsx"
+        carpeta = Path(str(self.obra.carpeta))
+        ruta = carpeta / nombre_archivo
+
+        try:
+            wb.save(str(ruta))
+            os.startfile(str(ruta))
+        except Exception as e:
+            messagebox.showerror("Error al exportar", str(e))
 
     # ── Insumos (todos) ─────────────────────────────────────────────
     def _build_rpt_insumos(self):
@@ -1504,7 +1748,7 @@ class VentanaObra(tk.Toplevel):
             data = [(tbl.item(k)["values"], k)
                     for k in kids if "total_row" not in (tbl.item(k)["tags"] or [])]
             def _n(v):
-                try: return float(str(v[-2]).replace(",", ""))
+                try: return float(str(v[-2]).replace(".", "").replace(",", "."))
                 except: return -1
             data.sort(key=lambda x: _n(x[0]), reverse=not _asc_ins[0])
             _asc_ins[0] = not _asc_ins[0]
@@ -1550,25 +1794,24 @@ class VentanaObra(tk.Toplevel):
             pt_num  = p_total if p_total is not None else 0.0
             if p_total is not None:
                 suma_total += p_total
-            p_u_str = f"{p_unit:,.2f}"  if p_unit  is not None else ""
-            p_t_str = f"{p_total:,.2f}" if p_total is not None else ""
+            p_u_str = self._fmt_pu(p_unit)  if p_unit  is not None else ""
+            p_t_str = self._fmt_pt(p_total) if p_total is not None else ""
             tag     = "par" if i % 2 == 0 else "impar"
-            iid = self.tbl_rpt_ins.insert("", "end", tags=(tag,),
-                values=(cod_ins, nombre, unidad, f"{cant:,.3f}", p_u_str, p_t_str, ""))
-            rows_pt.append((iid, pt_num))
+            orig_vals = [cod_ins, nombre, unidad, self._fmt_q(cant, 2), p_u_str, p_t_str, ""]
+            iid = self.tbl_rpt_ins.insert("", "end", tags=(tag,), values=orig_vals)
+            rows_pt.append((iid, pt_num, orig_vals))
             i += 1
         # calcular % acumulado
-        self._ins_ptmap = dict(rows_pt)
+        self._ins_ptmap = {iid: pt for iid, pt, _ in rows_pt}
         self._ins_stot  = suma_total
         acum = 0.0
-        for iid, pt in rows_pt:
+        for iid, pt, orig_vals in rows_pt:
             if suma_total:
                 acum += pt / suma_total * 100
-            vals = list(self.tbl_rpt_ins.item(iid)["values"])
-            vals[-1] = f"{acum:.1f}%" if suma_total else ""
-            self.tbl_rpt_ins.item(iid, values=vals)
+            orig_vals[-1] = f"{acum:.1f}%" if suma_total else ""
+            self.tbl_rpt_ins.item(iid, values=orig_vals)
         self.tbl_rpt_ins.insert("", "end", iid="ins_total_row", tags=("total_row",),
-            values=("", "TOTAL", "", "", "", f"{suma_total:,.2f}", "100%"))
+            values=("", "TOTAL", "", "", "", self._fmt_pt(suma_total), "100%"))
         label = {None: "Todos", "material": "Materiales",
                  "mdo": "M. de Obra", "subcontrato": "Subcontratos"}.get(tipo, tipo)
         self.lbl_rpt_ins.config(text=f"{label}: {i} insumos")
@@ -1595,7 +1838,7 @@ class VentanaObra(tk.Toplevel):
             data = [(tbl.item(k)["values"], k)
                     for k in kids if "total_row" not in (tbl.item(k)["tags"] or [])]
             def _n(v):
-                try: return float(str(v[-2]).replace(",", ""))
+                try: return float(str(v[-2]).replace(".", "").replace(",", "."))
                 except: return -1
             data.sort(key=lambda x: _n(x[0]), reverse=not _asc_mat[0])
             _asc_mat[0] = not _asc_mat[0]
@@ -1640,24 +1883,23 @@ class VentanaObra(tk.Toplevel):
             pt_num  = p_total if p_total is not None else 0.0
             if p_total is not None:
                 suma_total += p_total
-            p_u_str = f"{p_unit:,.2f}"  if p_unit  is not None else ""
-            p_t_str = f"{p_total:,.2f}" if p_total is not None else ""
+            p_u_str = self._fmt_pu(p_unit)  if p_unit  is not None else ""
+            p_t_str = self._fmt_pt(p_total) if p_total is not None else ""
             tag     = "par" if i % 2 == 0 else "impar"
-            iid = self.tbl_rpt_mat.insert("", "end", tags=(tag,),
-                values=(cod_ins, nombre, unidad, f"{cant:,.3f}", p_u_str, p_t_str, ""))
-            rows_pt.append((iid, pt_num))
+            orig_vals = [cod_ins, nombre, unidad, self._fmt_q(cant, 2), p_u_str, p_t_str, ""]
+            iid = self.tbl_rpt_mat.insert("", "end", tags=(tag,), values=orig_vals)
+            rows_pt.append((iid, pt_num, orig_vals))
             i += 1
-        self._mat_ptmap = dict(rows_pt)
+        self._mat_ptmap = {iid: pt for iid, pt, _ in rows_pt}
         self._mat_stot  = suma_total
         acum = 0.0
-        for iid, pt in rows_pt:
+        for iid, pt, orig_vals in rows_pt:
             if suma_total:
                 acum += pt / suma_total * 100
-            vals = list(self.tbl_rpt_mat.item(iid)["values"])
-            vals[-1] = f"{acum:.1f}%" if suma_total else ""
-            self.tbl_rpt_mat.item(iid, values=vals)
+            orig_vals[-1] = f"{acum:.1f}%" if suma_total else ""
+            self.tbl_rpt_mat.item(iid, values=orig_vals)
         self.tbl_rpt_mat.insert("", "end", iid="mat_total_row", tags=("total_row",),
-            values=("", "TOTAL", "", "", "", f"{suma_total:,.2f}", "100%"))
+            values=("", "TOTAL", "", "", "", self._fmt_pt(suma_total), "100%"))
         self.lbl_rpt_mat.config(text=f"Materiales: {i} items")
 
     # ── Mano de Obra ────────────────────────────────────────────────
@@ -1681,7 +1923,7 @@ class VentanaObra(tk.Toplevel):
             data = [(tbl.item(k)["values"], k)
                     for k in kids if not (_fixed & set(tbl.item(k)["tags"] or []))]
             def _n(v):
-                try: return float(str(v[-1]).replace(",", ""))
+                try: return float(str(v[-1]).replace(".", "").replace(",", "."))
                 except: return -1
             data.sort(key=lambda x: _n(x[0]), reverse=not _asc_mdo[0])
             _asc_mdo[0] = not _asc_mdo[0]
@@ -1720,17 +1962,17 @@ class VentanaObra(tk.Toplevel):
                 hs_oficial  += cant
             elif nombre.strip().startswith("Ayudante"):
                 hs_ayudante += cant
-            p_u_str = f"{p_unit:,.2f}"  if p_unit  is not None else ""
-            p_t_str = f"{p_total:,.2f}" if p_total is not None else ""
+            p_u_str = self._fmt_pu(p_unit)  if p_unit  is not None else ""
+            p_t_str = self._fmt_pt(p_total) if p_total is not None else ""
             tag     = "par" if i % 2 == 0 else "impar"
             self.tbl_rpt_mdo.insert("", "end", tags=(tag,),
-                values=(cod_ins, nombre, unidad, f"{cant:,.3f}", p_u_str, p_t_str))
+                values=(cod_ins, nombre, unidad, self._fmt_q(cant, 2), p_u_str, p_t_str))
             i += 1
         self.tbl_rpt_mdo.tag_configure("jornal_row", background="#c8e6c9",
                                         foreground="#1b5e20",
                                         font=("Segoe UI", 10, "bold"))
         self.tbl_rpt_mdo.insert("", "end", iid="mdo_total_row", tags=("total_row",),
-            values=("", "TOTAL", "", "", "", f"{suma_total:,.2f}"))
+            values=("", "TOTAL", "", "", "", self._fmt_pt(suma_total)))
         jof  = hs_oficial  / 8
         jay  = hs_ayudante / 8
         jtot = jof + jay
@@ -1757,7 +1999,8 @@ class VentanaObra(tk.Toplevel):
                   "p_unitario": "e", "p_total": "e"}
         self.tbl_rpt_det, self.lbl_rpt_det = self._make_rpt_tabla(
             self.tab_rpt_det, "Detalle de Tareas",
-            cols, anchos, textos, anclas, self._cargar_rpt_detalle)
+            cols, anchos, textos, anclas, self._cargar_rpt_detalle,
+            export_fn=self._exportar_rpt_detalle)
         self._det_children = {}   # tarea_iid → [child_iids]
         self._det_open     = set()  # iids actualmente abiertos
         def _toggle_det(event):
@@ -1830,14 +2073,14 @@ class VentanaObra(tk.Toplevel):
                 sin_vnc += 1
                 self.tbl_rpt_det.insert("", "end", tags=("sin_vnc",),
                     values=(rub, item_num, f"  [sin vincular]  {desc}", unidad,
-                            f"{cant:,.2f}" if cant else "", "", ""))
+                            self._fmt_q(cant, 2) if cant else "", "", ""))
                 continue
             n_tar += 1
             cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
             lista_inc  = incidencias.get(cod_buscar) or incidencias.get(cod_tar, [])
             tag_tar    = "par" if i_tar % 2 == 0 else "impar"
             cod_label  = cod_tar + subcont if subcont else cod_tar
-            cant_str   = f"{cant:,.2f}" if cant else ""
+            cant_str   = self._fmt_q(cant, 2) if cant else ""
             p_unit_tar = self._precios_tarea.get(idx)
             if p_unit_tar is None:
                 p_unit_tar = sum(
@@ -1847,8 +2090,8 @@ class VentanaObra(tk.Toplevel):
             p_total_tar = p_unit_tar * cant if (p_unit_tar and cant) else None
             if p_total_tar is not None:
                 suma_total += p_total_tar
-            pu_str = f"{p_unit_tar:,.2f}"  if p_unit_tar  is not None else ""
-            pt_str = f"{p_total_tar:,.2f}" if p_total_tar is not None else ""
+            pu_str = self._fmt_pu(p_unit_tar)  if p_unit_tar  is not None else ""
+            pt_str = self._fmt_pt(p_total_tar) if p_total_tar is not None else ""
             tar_iid = f"dtar_{idx}"
             flecha  = "▶ " if lista_inc else "  "
             self.tbl_rpt_det.insert("", "end", iid=tar_iid, tags=(tag_tar,),
@@ -1863,13 +2106,13 @@ class VentanaObra(tk.Toplevel):
                 total_ins  = inc_cant * cant
                 p_ins_u    = self._precios.get(cod_ins)
                 p_ins_t    = p_ins_u * total_ins if p_ins_u is not None else None
-                p_iu_str   = f"{p_ins_u:,.2f}" if p_ins_u is not None else ""
-                p_it_str   = f"{p_ins_t:,.2f}" if p_ins_t is not None else ""
+                p_iu_str   = self._fmt_pu(p_ins_u) if p_ins_u is not None else ""
+                p_it_str   = self._fmt_pt(p_ins_t) if p_ins_t is not None else ""
                 tag_ins    = "ins_a" if j % 2 == 0 else "ins_b"
                 ins_iid    = f"dins_{idx}_{j}"
                 self.tbl_rpt_det.insert("", "end", iid=ins_iid, tags=(tag_ins,),
                     values=("", "", f"    {nombre_ins}",
-                            unidad_ins, f"{total_ins:,.3f}", p_iu_str, p_it_str))
+                            unidad_ins, self._fmt_q(total_ins, 2), p_iu_str, p_it_str))
                 child_iids.append(ins_iid)
             if child_iids:
                 self._det_children[tar_iid] = child_iids
@@ -1878,7 +2121,7 @@ class VentanaObra(tk.Toplevel):
                     self.tbl_rpt_det.detach(c)
             i_tar += 1
         self.tbl_rpt_det.insert("", "end", iid="det_total_row", tags=("total_row",),
-            values=("", "TOTAL", "", "", "", "", f"{suma_total:,.2f}"))
+            values=("", "TOTAL", "", "", "", "", self._fmt_pt(suma_total)))
         self.lbl_rpt_det.config(
             text=f"Tareas vinculadas: {n_tar}  |  Sin vincular: {sin_vnc}")
 
@@ -1948,23 +2191,35 @@ class _DlgGuardarVersion(tk.Toplevel):
                  bg=COLOR_HDR, fg="white", font=FUENTE_B).pack(side="left", padx=12)
         frm = tk.Frame(self, padx=20, pady=14)
         frm.pack(fill="both", expand=True)
+
+        # ── Opción 1: Actualizar ──────────────────────────────────
         tk.Button(frm, text=f"Actualizar  {nombre_actual}",
                   bg=COLOR_VERDE, fg="white", font=FUENTE_B,
                   relief="flat", padx=12, pady=8, cursor="hand2", anchor="w",
                   command=lambda: self._elegir("pisar")
-                  ).pack(fill="x", pady=(0, 8))
-        tk.Label(frm, text="Guardar como nueva versión:",
-                 bg="#f5f5f5", font=FUENTE_S, fg="#555", anchor="w").pack(fill="x")
-        self.var_nota = tk.StringVar()
-        ttk.Entry(frm, textvariable=self.var_nota, font=FUENTE, width=38
-                  ).pack(fill="x", pady=(2, 6))
-        tk.Label(frm, text="(describí los cambios — opcional)",
-                 bg="#f5f5f5", font=("Segoe UI", 8), fg="#888").pack(anchor="w")
+                  ).pack(fill="x", pady=(0, 10))
+
+        ttk.Separator(frm, orient="horizontal").pack(fill="x", pady=(0, 10))
+
+        # ── Opción 2: Nueva versión ───────────────────────────────
         tk.Button(frm, text="Guardar como nueva versión...",
                   bg=COLOR_SEC, fg="white", font=FUENTE_B,
                   relief="flat", padx=12, pady=8, cursor="hand2",
                   command=lambda: self._elegir("nueva")
-                  ).pack(fill="x", pady=(6, 8))
+                  ).pack(fill="x", pady=(0, 8))
+
+        tk.Label(frm, text="Nombre de la versión:",
+                 font=FUENTE_S, fg="#555", anchor="w").pack(fill="x", pady=(4, 0))
+        self.var_nombre = tk.StringVar()
+        ttk.Entry(frm, textvariable=self.var_nombre, font=FUENTE, width=38
+                  ).pack(fill="x", pady=(2, 8))
+
+        tk.Label(frm, text="Descripción de cambios (opcional):",
+                 font=FUENTE_S, fg="#555", anchor="w").pack(fill="x")
+        self.var_nota = tk.StringVar()
+        ttk.Entry(frm, textvariable=self.var_nota, font=FUENTE, width=38
+                  ).pack(fill="x", pady=(2, 10))
+
         tk.Button(frm, text="Cancelar", bg="#888", fg="white", font=FUENTE,
                   relief="flat", padx=12, pady=6, cursor="hand2",
                   command=self.destroy).pack(fill="x")
@@ -1973,14 +2228,22 @@ class _DlgGuardarVersion(tk.Toplevel):
         self.geometry(
             f"+{parent.winfo_x()+(parent.winfo_width()-self.winfo_width())//2}"
             f"+{parent.winfo_y()+(parent.winfo_height()-self.winfo_height())//2}")
+
     def _elegir(self, accion: str):
         self.accion = accion
-        self.nota   = self.var_nota.get().strip()
+        nombre = self.var_nombre.get().strip()
+        desc   = self.var_nota.get().strip()
+        if nombre and desc:
+            self.nota = f"{nombre} — {desc}"
+        elif nombre:
+            self.nota = nombre
+        else:
+            self.nota = desc
         self.destroy()
 
 
 class _DlgEditarFila(tk.Toplevel):
-    def __init__(self, parent, it: dict, es_rubro=False):
+    def __init__(self, parent, it: dict, es_rubro=False, cod_tar_label=None):
         super().__init__(parent)
         self.title("Encabezado de Rubro" if es_rubro else "Editar ítem")
         self.resizable(False, False)
@@ -2003,13 +2266,43 @@ class _DlgEditarFila(tk.Toplevel):
             v_desc, _    = fila("Descripción:", it.get("descripcion", ""), 1)
             e_rub.focus_set()
         else:
-            v_rub,  e_rub = fila("Rubro:",      it.get("rubro", ""), 0)
-            v_item, _     = fila("Ítem:",        it.get("item", ""),  1)
-            v_desc, _     = fila("Descripción:", it.get("descripcion", ""), 2)
-            v_un,   _     = fila("Unidad:",      it.get("unidad", ""), 3)
-            v_cant, _     = fila("Cantidad:",    it.get("cantidad", ""), 4)
+            next_row = [0]
+            def next_r():
+                r = next_row[0]; next_row[0] += 1; return r
+            v_rub,  e_rub = fila("Rubro:",      it.get("rubro", ""),      next_r())
+            v_item, _     = fila("Ítem:",        it.get("item", ""),       next_r())
+            v_desc, _     = fila("Descripción:", it.get("descripcion", ""),next_r())
+            v_un,   _     = fila("Unidad:",      it.get("unidad", ""),     next_r())
+            v_cant, _     = fila("Cantidad:",    it.get("cantidad", ""),   next_r())
+            v_sub = None
             if it.get("cod_tar"):
-                v_sub, _ = fila("Subcontrato:", it.get("subcontrato", ""), 5)
+                v_sub, _ = fila("Subcontrato:", it.get("subcontrato", ""), next_r())
+                # Tarea vinculada — solo lectura + botón Desvincular
+                row_tar = next_r()
+                tk.Label(frm, text="Tarea std:", font=FUENTE_S, anchor="e", width=12
+                         ).grid(row=row_tar, column=0, sticky="e", pady=(6, 2))
+                frm_tar = tk.Frame(frm)
+                frm_tar.grid(row=row_tar, column=1, sticky="ew", padx=(8, 0), pady=(6, 2))
+                lbl_cod = cod_tar_label or it.get("cod_tar", "")
+                tk.Label(frm_tar, text=lbl_cod[:55], font=FUENTE_S,
+                         fg="#1a3a5c", anchor="w").pack(side="left", fill="x", expand=True)
+                def _desvincular():
+                    self.resultado = {
+                        "es_rubro":    False,
+                        "rubro":       v_rub.get().strip(),
+                        "item":        v_item.get().strip(),
+                        "descripcion": v_desc.get().strip(),
+                        "unidad":      v_un.get().strip(),
+                        "cantidad":    (float(v_cant.get().replace(",", "."))
+                                        if v_cant.get().strip() else 0.0),
+                        "cod_tar":     "",
+                        "subcontrato": "",
+                    }
+                    self.destroy()
+                tk.Button(frm_tar, text="Desvincular", bg=COLOR_ROJO, fg="white",
+                          font=FUENTE_S, relief="flat", padx=6, pady=1,
+                          cursor="hand2", command=_desvincular
+                          ).pack(side="right")
             e_rub.focus_set()
         frm.grid_columnconfigure(1, weight=1)
         frm_btn = tk.Frame(self, pady=8)
@@ -2029,7 +2322,7 @@ class _DlgEditarFila(tk.Toplevel):
                 except ValueError:
                     messagebox.showwarning("Valor inválido", "Cantidad debe ser un número.", parent=self)
                     return
-                if it.get("cod_tar"):
+                if it.get("cod_tar") and v_sub is not None:
                     res["subcontrato"] = v_sub.get().strip().upper()[:1]
             self.resultado = res
             self.destroy()
@@ -2149,3 +2442,5 @@ class _DlgGuardarPrecios(tk.Toplevel):
         if ruta:
             self.ruta_destino = Path(ruta)
             self.destroy()
+
+

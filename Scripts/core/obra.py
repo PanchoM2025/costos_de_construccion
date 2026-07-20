@@ -59,6 +59,31 @@ CREATE TABLE IF NOT EXISTS obras (
 """
 
 
+
+_SCHEMA_CERTIFICADOS = """
+CREATE TABLE IF NOT EXISTS certificados (
+    id_certificado  INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre          TEXT    NOT NULL,
+    fecha           TEXT    DEFAULT '',
+    estado          TEXT    DEFAULT 'borrador',
+    notas           TEXT    DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS certificado_tareas (
+    id_certificado  INTEGER NOT NULL REFERENCES certificados(id_certificado) ON DELETE CASCADE,
+    cod_tar         TEXT    NOT NULL,
+    subcontrato     TEXT    DEFAULT '',
+    porcentaje      REAL    DEFAULT 100.0,
+    PRIMARY KEY (id_certificado, cod_tar, subcontrato)
+);
+"""
+
+
+def _asegurar_tablas_certificados(conn: sqlite3.Connection):
+    conn.executescript(_SCHEMA_CERTIFICADOS)
+    conn.commit()
+
+
 def _inicializar_datos_obras():
     if DATOS_OBRAS_DB.exists():
         try:
@@ -154,6 +179,9 @@ def crear_base_particular(carpeta_data: Path):
     if dest.exists():
         dest.unlink()
     shutil.copy2(str(CATALOGO_DB), str(dest))
+    _conn = sqlite3.connect(str(dest))
+    _asegurar_tablas_certificados(_conn)
+    _conn.close()
 
 
 def conectar_base_particular(carpeta_data: Path) -> sqlite3.Connection:
@@ -162,6 +190,7 @@ def conectar_base_particular(carpeta_data: Path) -> sqlite3.Connection:
     conn = sqlite3.connect(str(ruta))
     conn.execute("PRAGMA foreign_keys = ON")
     conn.row_factory = sqlite3.Row
+    _asegurar_tablas_certificados(conn)  # migración automática para obras existentes
     return conn
 
 
@@ -212,6 +241,19 @@ def _build_id_rs_lookup(cur) -> tuple[list, callable, callable]:
     return rubros_ui, id_rs_to_rubro_padre, id_rs_to_subrubro
 
 
+
+def _normalizar_cod_ins(v) -> str:
+    """Normaliza cod_ins preservando ceros significativos.
+    SQLite INTEGER affinity elimina ceros: '000114' -> 114, '000258' -> 258.
+    Regla: codigo numerico de 1-3 digitos -> zero-pad a 6.
+    Codigos de 4+ digitos tienen su formato correcto en el DB y no se tocan.
+    """
+    s = str(v).strip()
+    if s.isdigit() and len(s) <= 3:
+        return s.zfill(6)
+    return s
+
+
 def cargar_maestro_desde_db(carpeta_data: Path) -> dict:
     conn = conectar_base_particular(carpeta_data)
     cur  = conn.cursor()
@@ -246,8 +288,9 @@ def cargar_maestro_desde_db(carpeta_data: Path) -> dict:
 
     insumos = {}
     for row in cur.execute("SELECT cod_ins, descripcion, unidad FROM insumos").fetchall():
-        insumos[row["cod_ins"]] = {
-            "cod":    row["cod_ins"],
+        cod = _normalizar_cod_ins(row["cod_ins"])
+        insumos[cod] = {
+            "cod":    cod,
             "nombre": row["descripcion"] or "",
             "unidad": row["unidad"] or "",
         }
@@ -258,12 +301,38 @@ def cargar_maestro_desde_db(carpeta_data: Path) -> dict:
         if cod_tar not in incidencias:
             incidencias[cod_tar] = []
         incidencias[cod_tar].append({
-            "cod_ins":  row["cod_ins"],
+            "cod_ins":  _normalizar_cod_ins(row["cod_ins"]),
             "unidad":   row["unidad"] or "",
             "cantidad": row["cantidad"] or 0.0,
         })
 
     conn.close()
+
+    # DEBUG — remove after fix
+    try:
+        _dbg = Path(r"C:\Dropbox\Claude\Costos_de_construccion\DEBUG_MAESTRO.txt")
+        with open(_dbg, "w", encoding="utf-8") as _f:
+            # Sample of insumos keys
+            _f.write(f"=== insumos keys ({len(insumos)}) — first 20 ===\n")
+            for _k in sorted(insumos.keys())[:20]:
+                _f.write(f"  {repr(_k)}\n")
+            # Sample of incidencias cod_ins values
+            _f.write(f"\n=== incidencias cod_ins unique values — first 20 ===\n")
+            _seen = set()
+            for _ct, _lst in incidencias.items():
+                for _inc in _lst:
+                    _c = _inc["cod_ins"]
+                    if _c not in _seen:
+                        _seen.add(_c)
+                        _raw = _c
+                        _f.write(f"  cod_ins={repr(_raw)} type={type(_raw).__name__}\n")
+                    if len(_seen) >= 20:
+                        break
+                if len(_seen) >= 20:
+                    break
+    except Exception:
+        pass
+    # END DEBUG
 
     return {
         "rubros":         rubros_con_tareas,
@@ -604,3 +673,146 @@ def crear_comitente(nombre: str, contacto: str = "", telefono: str = "",
     conn.commit()
     conn.close()
     return id_nuevo
+
+
+# ---------------------------------------------------------------------------
+# Certificados / Etapas
+# ---------------------------------------------------------------------------
+
+def listar_certificados(carpeta_data: Path) -> list[dict]:
+    """Devuelve todos los certificados de la obra, ordenados por id."""
+    conn = conectar_base_particular(carpeta_data)
+    rows = conn.execute(
+        "SELECT id_certificado, nombre, fecha, estado, notas "
+        "FROM certificados ORDER BY id_certificado"
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def crear_certificado(carpeta_data: Path, nombre: str,
+                      fecha: str = "", notas: str = "") -> int:
+    """Crea un certificado nuevo en estado 'borrador'. Devuelve su id."""
+    from datetime import date
+    conn = conectar_base_particular(carpeta_data)
+    cur = conn.execute(
+        "INSERT INTO certificados (nombre, fecha, estado, notas) VALUES (?,?,?,?)",
+        (nombre, fecha or date.today().isoformat(), "borrador", notas)
+    )
+    id_nuevo = cur.lastrowid
+    conn.commit()
+    conn.close()
+    return id_nuevo
+
+
+def agregar_tareas_certificado(carpeta_data: Path, id_certificado: int,
+                               tareas: list[dict]):
+    """
+    Agrega o actualiza tareas en un certificado.
+    Cada elemento de `tareas` debe ser:
+        {"cod_tar": str, "subcontrato": str (opcional), "porcentaje": float (opcional)}
+    """
+    conn = conectar_base_particular(carpeta_data)
+    for t in tareas:
+        conn.execute(
+            """INSERT INTO certificado_tareas (id_certificado, cod_tar, subcontrato, porcentaje)
+               VALUES (?,?,?,?)
+               ON CONFLICT(id_certificado, cod_tar, subcontrato)
+               DO UPDATE SET porcentaje = excluded.porcentaje""",
+            (id_certificado, t["cod_tar"], t.get("subcontrato", ""), t.get("porcentaje", 100.0))
+        )
+    conn.commit()
+    conn.close()
+
+
+def listar_tareas_certificado(carpeta_data: Path, id_certificado: int) -> list[dict]:
+    """Devuelve las tareas asignadas a un certificado."""
+    conn = conectar_base_particular(carpeta_data)
+    rows = conn.execute(
+        "SELECT cod_tar, subcontrato, porcentaje "
+        "FROM certificado_tareas WHERE id_certificado=? ORDER BY cod_tar",
+        (id_certificado,)
+    ).fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
+def quitar_tareas_certificado(carpeta_data: Path, id_certificado: int,
+                              tareas: list[dict]):
+    """Elimina tareas específicas de un certificado."""
+    conn = conectar_base_particular(carpeta_data)
+    for t in tareas:
+        conn.execute(
+            "DELETE FROM certificado_tareas "
+            "WHERE id_certificado=? AND cod_tar=? AND subcontrato=?",
+            (id_certificado, t["cod_tar"], t.get("subcontrato", ""))
+        )
+    conn.commit()
+    conn.close()
+
+
+def cerrar_certificado(carpeta_data: Path, id_certificado: int):
+    """Marca un certificado como 'cerrado' (no editable)."""
+    conn = conectar_base_particular(carpeta_data)
+    conn.execute(
+        "UPDATE certificados SET estado='cerrado' WHERE id_certificado=?",
+        (id_certificado,)
+    )
+    conn.commit()
+    conn.close()
+
+
+def eliminar_certificado(carpeta_data: Path, id_certificado: int):
+    """Elimina un certificado y sus tareas (CASCADE)."""
+    conn = conectar_base_particular(carpeta_data)
+    conn.execute("DELETE FROM certificados WHERE id_certificado=?", (id_certificado,))
+    conn.commit()
+    conn.close()
+
+
+def resumen_certificados(carpeta_data: Path, items_presupuesto: list) -> list[dict]:
+    """
+    Resumen comparativo por certificado.
+    Calcula total ejecutado = precio_unitario * cantidad * porcentaje/100
+    para cada tarea del certificado, usando los datos del presupuesto activo.
+
+    Retorna lista de dicts:
+        {id_certificado, nombre, estado, fecha, total_ejecutado, tareas_count}
+    """
+    # Índice (cod_tar, subcontrato) -> item del presupuesto
+    idx = {}
+    for it in items_presupuesto:
+        if it.get("es_rubro"):
+            continue
+        key = (it.get("cod_tar", ""), (it.get("subcontrato") or "").strip())
+        idx[key] = it
+
+    conn = conectar_base_particular(carpeta_data)
+    certs = conn.execute(
+        "SELECT id_certificado, nombre, estado, fecha FROM certificados ORDER BY id_certificado"
+    ).fetchall()
+    resultado = []
+    for c in certs:
+        tareas = conn.execute(
+            "SELECT cod_tar, subcontrato, porcentaje "
+            "FROM certificado_tareas WHERE id_certificado=?",
+            (c["id_certificado"],)
+        ).fetchall()
+        total = 0.0
+        for t in tareas:
+            key = (t["cod_tar"], (t["subcontrato"] or "").strip())
+            it = idx.get(key)
+            if it:
+                precio = it.get("precio_unitario", 0) or 0
+                cant   = it.get("cantidad", 0) or 0
+                total += precio * cant * (t["porcentaje"] / 100.0)
+        resultado.append({
+            "id_certificado":  c["id_certificado"],
+            "nombre":          c["nombre"],
+            "estado":          c["estado"],
+            "fecha":           c["fecha"],
+            "total_ejecutado": total,
+            "tareas_count":    len(tareas),
+        })
+    conn.close()
+    return resultado

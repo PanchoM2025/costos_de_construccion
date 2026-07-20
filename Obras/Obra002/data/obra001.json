@@ -50,83 +50,6 @@
       "cod_tar": "0334",
       "subcontrato": "",
       "rubro_std": "TAREAS PRELIMINARES"
-    },
-    {
-      "es_rubro": true,
-      "rubro": "02",
-      "item": "",
-      "descripcion": "Estructura de Hormigón armado",
-      "unidad": "",
-      "cantidad": 0.0,
-      "cod_tar": "",
-      "subcontrato": "",
-      "rubro_std": ""
-    },
-    {
-      "es_rubro": false,
-      "rubro": "02",
-      "item": "01",
-      "descripcion": "Bases aisladas",
-      "unidad": "m3",
-      "cantidad": 111.0,
-      "cod_tar": "1113",
-      "subcontrato": "",
-      "rubro_std": "HORMIGON ARMADO"
-    },
-    {
-      "es_rubro": false,
-      "rubro": "02",
-      "item": "02",
-      "descripcion": "Zapata de fundación ZF2 (30x25)",
-      "unidad": "m3",
-      "cantidad": 333.0,
-      "cod_tar": "1132",
-      "subcontrato": "",
-      "rubro_std": "HORMIGON ARMADO"
-    },
-    {
-      "es_rubro": false,
-      "rubro": "02",
-      "item": "03",
-      "descripcion": "Troncos de columna",
-      "unidad": "m3",
-      "cantidad": 55.0,
-      "cod_tar": "1210",
-      "subcontrato": "S",
-      "rubro_std": "HORMIGON ARMADO"
-    },
-    {
-      "es_rubro": true,
-      "rubro": "03",
-      "item": "",
-      "descripcion": "Albañilería",
-      "unidad": "",
-      "cantidad": 0.0,
-      "cod_tar": "",
-      "subcontrato": "",
-      "rubro_std": ""
-    },
-    {
-      "es_rubro": false,
-      "rubro": "03",
-      "item": "01",
-      "descripcion": "Capa aisladora doble muros exteriores e interiores 0,18m",
-      "unidad": "m2",
-      "cantidad": 111.0,
-      "cod_tar": "2330",
-      "subcontrato": "",
-      "rubro_std": "ALBAÑILERIA"
-    },
-    {
-      "es_rubro": false,
-      "rubro": "03",
-      "item": "02",
-      "descripcion": "Mamposteria de 10 cm",
-      "unidad": "m2",
-      "cantidad": 333.0,
-      "cod_tar": "2421",
-      "subcontrato": "",
-      "rubro_std": "ALBAÑILERIA"
     }
   ],
   "tareas": {
@@ -162,61 +85,8 @@
       "rubro": "OTRAS PRESTACIONES",
       "cantidad": 222.0,
       "subcontrato": ""
-    },
-    "1113": {
-      "cod": "1113",
-      "base": "1113",
-      "variante": " ",
-      "nombre": "Bases Esquineras.",
-      "nombre_editado": "Bases aisladas",
-      "unidad": "m3",
-      "rubro": "ESTRUCTURAS RESISTENTES",
-      "cantidad": 111.0,
-      "subcontrato": ""
-    },
-    "1132": {
-      "cod": "1132",
-      "base": "1132",
-      "variante": " ",
-      "nombre": "Viga Portamuros.",
-      "nombre_editado": "Zapata de fundación ZF2 (30x25)",
-      "unidad": "m3",
-      "rubro": "ESTRUCTURAS RESISTENTES",
-      "cantidad": 333.0,
-      "subcontrato": ""
-    },
-    "1210": {
-      "cod": "1210",
-      "base": "1210",
-      "variante": " ",
-      "nombre": "Tronco de Columnas.",
-      "nombre_editado": "Troncos de columna",
-      "unidad": "m3",
-      "rubro": "ESTRUCTURAS RESISTENTES",
-      "cantidad": 55.0,
-      "subcontrato": "S"
-    },
-    "2330": {
-      "cod": "2330",
-      "base": "2330",
-      "variante": " ",
-      "nombre": "Capa aisladora horizontal en muros.",
-      "nombre_editado": "Capa aisladora doble muros exteriores e interiores 0,18m",
-      "unidad": "m2",
-      "rubro": "CONTRAPISOS y CAPAS AISLADORAS",
-      "cantidad": 111.0,
-      "subcontrato": ""
-    },
-    "2421": {
-      "cod": "2421",
-      "base": "2421",
-      "variante": " ",
-      "nombre": "Ladrillos huecos cerámicos 08/15/20",
-      "nombre_editado": "Mamposteria de 10 cm",
-      "unidad": "m2",
-      "rubro": "MAPOSTERÍAS y TABIQUES",
-      "cantidad": 333.0,
-      "subcontrato": ""
     }
-  }
+  },
+  "precios": {},
+  "precios_tarea": {}
 }
