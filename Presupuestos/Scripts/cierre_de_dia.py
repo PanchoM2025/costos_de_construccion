@@ -1,24 +1,23 @@
 """
 cierre_de_dia.py
-Backup del proyecto: git add -A + commit con timestamp + push a GitHub.
-Llamado desde el menú de la app o directamente: python cierre_de_dia.py
+Backup del proyecto: git add -A + commit con timestamp + descripción + push a GitHub.
+Repo: https://github.com/PanchoM2025/costos_de_construccion
+Raíz del repo: Analisis_de_costos_y_Presupuestacion/ (tres niveles arriba de Scripts/)
 """
 import subprocess
 import shutil
 from pathlib import Path
 from datetime import datetime
 
-# Raíz del proyecto (un nivel arriba de Scripts/)
-RAIZ = Path(__file__).resolve().parent.parent
+# Raíz del repo git = Analisis_de_costos_y_Presupuestacion/
+# Scripts/cierre_de_dia.py → Scripts/ → Presupuestos/ → Analisis_de_costos_y_Presupuestacion/
+RAIZ = Path(__file__).resolve().parent.parent.parent
 
 
 def _encontrar_git() -> str:
-    """Devuelve la ruta completa a git.exe, o None si no se encuentra."""
-    # 1. Buscar en el PATH del sistema
     git = shutil.which("git")
     if git:
         return git
-    # 2. Ubicaciones típicas en Windows
     candidatos = [
         r"C:\Program Files\Git\cmd\git.exe",
         r"C:\Program Files\Git\bin\git.exe",
@@ -34,7 +33,6 @@ def _encontrar_git() -> str:
 
 
 def _run(git_exe: str, *args):
-    """Ejecuta un comando git usando la ruta completa al ejecutable."""
     try:
         return subprocess.run(
             [git_exe] + list(args),
@@ -52,16 +50,17 @@ def _run(git_exe: str, *args):
         return _Falso()
 
 
-def cierre(parent_window=None):
+def cierre(parent_window=None, descripcion: str = ""):
     """
-    Hace git add -A, commit con timestamp y push.
-    parent_window: ventana Tkinter padre para messageboxes (None si se corre solo).
+    Hace git add -A, commit con timestamp + descripción y push a GitHub.
+
+    parent_window : ventana Tkinter padre para messageboxes (None si se corre solo).
+    descripcion   : texto opcional que se agrega al mensaje del commit.
     """
     import tkinter as tk
-    from tkinter import messagebox
+    from tkinter import messagebox, simpledialog
 
-    timestamp  = datetime.now().strftime("%Y-%m-%d %H:%M")
-    msg_commit = f"Cierre {timestamp}"
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
 
     _root_temporal = None
     if parent_window is None:
@@ -72,7 +71,19 @@ def cierre(parent_window=None):
         parent = parent_window
 
     try:
-        # 0. Encontrar git
+        # 0. Pedir descripción si no viene
+        if not descripcion:
+            descripcion = simpledialog.askstring(
+                "Cierre de día",
+                "Descripción de los cambios realizados\n(opcional — Enter para omitir):",
+                parent=parent,
+            ) or ""
+
+        msg_commit = f"Cierre {timestamp}"
+        if descripcion.strip():
+            msg_commit += f" — {descripcion.strip()}"
+
+        # 1. Encontrar git
         git = _encontrar_git()
         if not git:
             messagebox.showerror(
@@ -83,7 +94,7 @@ def cierre(parent_window=None):
                 parent=parent)
             return
 
-        # 1. Verificar que hay repo git
+        # 2. Verificar repo
         r = _run(git, "status")
         if r.returncode != 0:
             messagebox.showerror(
@@ -93,14 +104,13 @@ def cierre(parent_window=None):
                 parent=parent)
             return
 
-        # 2. git add -A
+        # 3. git add -A
         r = _run(git, "add", "-A")
         if r.returncode != 0:
-            messagebox.showerror("Error — git add",
-                                 r.stderr or r.stdout, parent=parent)
+            messagebox.showerror("Error — git add", r.stderr or r.stdout, parent=parent)
             return
 
-        # 3. Verificar si hay cambios para commitear
+        # 4. Verificar si hay cambios
         status = _run(git, "status", "--short")
         if not status.stdout.strip():
             messagebox.showinfo(
@@ -114,24 +124,24 @@ def cierre(parent_window=None):
         if len(lineas) > 12:
             resumen += f"\n... y {len(lineas)-12} archivos más"
 
-        # 4. git commit
+        # 5. git commit
         r = _run(git, "commit", "-m", msg_commit)
         if r.returncode != 0:
-            messagebox.showerror("Error — git commit",
-                                 r.stderr or r.stdout, parent=parent)
+            messagebox.showerror("Error — git commit", r.stderr or r.stdout, parent=parent)
             return
 
-        # 5. git push
-        r        = _run(git, "push")
-        push_ok  = r.returncode == 0
+        # 6. git push
+        r       = _run(git, "push")
+        push_ok = r.returncode == 0
         push_msg = r.stdout.strip() or r.stderr.strip()
 
         if push_ok:
             messagebox.showinfo(
-                "Cierre de día — OK",
+                "Cierre de día — OK ✓",
                 f"✓ Commit: {msg_commit}\n\n"
                 f"Archivos guardados:\n{resumen}\n\n"
-                f"✓ Push a GitHub exitoso.",
+                f"✓ Push a GitHub exitoso.\n"
+                f"  github.com/PanchoM2025/costos_de_construccion",
                 parent=parent)
         else:
             messagebox.showwarning(
@@ -142,10 +152,7 @@ def cierre(parent_window=None):
                 parent=parent)
 
     except Exception as e:
-        messagebox.showerror(
-            "Error inesperado — Cierre de día",
-            f"Ocurrió un error:\n{e}",
-            parent=parent)
+        messagebox.showerror("Error inesperado — Cierre de día", f"Ocurrió un error:\n{e}", parent=parent)
     finally:
         if _root_temporal:
             _root_temporal.destroy()

@@ -33,7 +33,8 @@ class VentanaObra(tk.Toplevel):
             self.destroy()
             return
         self._precios = dict(getattr(obra, "precios", {}) or {})
-        self._precios_tarea = dict(getattr(obra, "precios_tarea", {}) or {})
+        raw_pt = getattr(obra, "precios_tarea", {}) or {}
+        self._precios_tarea = {int(k): v for k, v in raw_pt.items()}
         self._nombre_precios = getattr(obra, "archivo_precios", "") or ""
         self._ruta_precios = None
         self._build_ui()
@@ -793,7 +794,7 @@ class VentanaObra(tk.Toplevel):
         frm_prc.pack(side="top", fill="x", padx=16, pady=(0, 6))
         tk.Label(frm_prc, text="Archivo de precios:",
                  bg=COLOR_BG, font=FUENTE_S, fg="#555").pack(side="left")
-        self.var_arch_prc = tk.StringVar(value="Sin archivo seleccionado")
+        self.var_arch_prc = tk.StringVar(value=self._nombre_precios or "Sin archivo seleccionado")
         tk.Label(frm_prc, textvariable=self.var_arch_prc,
                  bg=COLOR_BG, font=FUENTE_S, fg=COLOR_HDR).pack(side="left", padx=6)
         tk.Button(frm_prc, text="Seleccionar archivo...",
@@ -1321,8 +1322,9 @@ class VentanaObra(tk.Toplevel):
             return 0
     def _guardar(self, silencioso=False):
         try:
-            self.obra.precios       = dict(self._precios)
-            self.obra.precios_tarea = dict(self._precios_tarea)
+            self.obra.precios          = dict(self._precios)
+            self.obra.precios_tarea    = {str(k): v for k, v in self._precios_tarea.items()}
+            self.obra.archivo_precios  = self._nombre_precios
             self.obra.tareas = {}
             for it in self.obra.items_presupuesto:
                 if it.get("es_rubro") or not it.get("cod_tar"):

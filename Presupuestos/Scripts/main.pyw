@@ -18,26 +18,22 @@ from ui.ventana_obra import VentanaObra
 from cierre_de_dia import cierre as _cierre_de_dia
 
 # ── Rutas de integración con el módulo Costos ─────────────────────────────────
-RAIZ             = Path(__file__).resolve().parent.parent.parent  # Analisis_de_costos_y_Presupuestacion
-APP_TAREAS       = RAIZ / "Costos" / "Scripts" / "app_tareas.py"
-CATALOGO_DB      = RAIZ / "Costos" / "Data" / "Master_FINAL.db"
-PRESUPUESTOS_DB  = CARPETA_DATA / "Master_FINAL.db"               # Presupuestos/Data/
+RAIZ            = Path(__file__).resolve().parent.parent.parent  # Analisis_de_costos_y_Presupuestacion
+APP_TAREAS      = RAIZ / "Costos" / "Scripts" / "app_tareas.py"
+CATALOGO_DB     = RAIZ / "Costos" / "Data" / "Master_FINAL.db"
+PRESUPUESTOS_DB = CARPETA_DATA / "Master_FINAL.db"               # Presupuestos/Data/
 
 TITULO_APP      = "Análisis de Costos y Presupuestación"
 COLOR_HEADER    = "#1a3a5c"
 COLOR_BTN_NUEVO = "#1d7a4a"
 COLOR_BTN_ABRIR = "#1a5c9e"
 COLOR_BTN_ELIM  = "#b03030"
-COLOR_BTN_DB    = "#7b1fa2"    # violeta oscuro para botones de DB
+COLOR_BTN_DB    = "#7b1fa2"
 COLOR_BTN_TEXTO = "white"
 PYTHON          = sys.executable
 
 
 def _lanzar_app_tareas(db_path: Path, titulo: str, copiar_a: Path = None):
-    """
-    Lanza app_tareas.py en un proceso separado.
-    Si se indica copiar_a, al cerrar la app copia db_path → copiar_a.
-    """
     proc = subprocess.Popen(
         [PYTHON, str(APP_TAREAS), "--db", str(db_path), "--title", titulo],
         creationflags=subprocess.CREATE_NO_WINDOW if sys.platform == "win32" else 0,
@@ -54,49 +50,28 @@ def _lanzar_app_tareas(db_path: Path, titulo: str, copiar_a: Path = None):
 
 # ═══════════════════════════════════════════════════════════
 class AlertaBaseDatosDialog(tk.Toplevel):
-    """Diálogo de alerta rojo antes de abrir la base de datos."""
-
     def __init__(self, parent, mensaje: str, on_confirmar):
         super().__init__(parent)
         self.on_confirmar = on_confirmar
-        self.confirmado   = False
-
         self.title("⚠  ATENCIÓN — Base de Datos")
         self.resizable(False, False)
         self.grab_set()
         self.configure(bg="#C0392B")
-
-        # Header rojo intenso
-        hdr = tk.Frame(self, bg="#922B21", pady=14)
-        hdr.pack(fill="x")
-        tk.Label(hdr, text="⚠  ATENCIÓN",
-                 bg="#922B21", fg="white",
+        hdr = tk.Frame(self, bg="#922B21", pady=14); hdr.pack(fill="x")
+        tk.Label(hdr, text="⚠  ATENCIÓN", bg="#922B21", fg="white",
                  font=("Segoe UI", 15, "bold")).pack()
-
-        # Mensaje
-        frm = tk.Frame(self, bg="#C0392B", padx=24, pady=16)
-        frm.pack(fill="both")
-        tk.Label(frm, text=mensaje,
-                 bg="#C0392B", fg="white",
-                 font=("Segoe UI", 11),
-                 wraplength=440, justify="center").pack()
-
-        # Botones
-        bf = tk.Frame(self, bg="#C0392B", pady=14)
-        bf.pack()
-        tk.Button(bf, text="  Cancelar  ",
-                  bg="#7B241C", fg="white",
-                  font=("Segoe UI", 10, "bold"),
-                  relief="flat", padx=16, pady=8, cursor="hand2",
-                  activebackground="#641E16", activeforeground="white",
+        frm = tk.Frame(self, bg="#C0392B", padx=24, pady=16); frm.pack(fill="both")
+        tk.Label(frm, text=mensaje, bg="#C0392B", fg="white",
+                 font=("Segoe UI", 11), wraplength=440, justify="center").pack()
+        bf = tk.Frame(self, bg="#C0392B", pady=14); bf.pack()
+        tk.Button(bf, text="  Cancelar  ", bg="#7B241C", fg="white",
+                  font=("Segoe UI", 10, "bold"), relief="flat", padx=16, pady=8,
+                  cursor="hand2", activebackground="#641E16", activeforeground="white",
                   command=self.destroy).pack(side="left", padx=8)
-        tk.Button(bf, text="  Entendido, continuar  ",
-                  bg="#FDFEFE", fg="#C0392B",
-                  font=("Segoe UI", 10, "bold"),
-                  relief="flat", padx=16, pady=8, cursor="hand2",
-                  activebackground="#EAEDED", activeforeground="#C0392B",
+        tk.Button(bf, text="  Entendido, continuar  ", bg="#FDFEFE", fg="#C0392B",
+                  font=("Segoe UI", 10, "bold"), relief="flat", padx=16, pady=8,
+                  cursor="hand2", activebackground="#EAEDED", activeforeground="#C0392B",
                   command=self._confirmar).pack(side="left", padx=8)
-
         self.bind("<Escape>", lambda _: self.destroy())
         self.update_idletasks()
         px = parent.winfo_x() + (parent.winfo_width()  - self.winfo_width())  // 2
@@ -104,11 +79,8 @@ class AlertaBaseDatosDialog(tk.Toplevel):
         self.geometry(f"+{px}+{py}")
 
     def _confirmar(self):
-        self.confirmado = True
         cb = self.on_confirmar
-        self.grab_release()
-        self.destroy()
-        cb()
+        self.grab_release(); self.destroy(); cb()
 
 
 # ═══════════════════════════════════════════════════════════
@@ -116,52 +88,38 @@ class AppPrincipal(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title(TITULO_APP)
-        self.geometry("920x520")
-        self.minsize(720, 400)
+        self.geometry("920x520"); self.minsize(720, 400)
         self.configure(bg="#f0f0f0")
-        self._build_menu()
-        self._build_ui()
-        self.actualizar_lista()
+        self._build_menu(); self._build_ui(); self.actualizar_lista()
 
     def _build_menu(self):
-        menubar = tk.Menu(self)
-        self.config(menu=menubar)
+        menubar = tk.Menu(self); self.config(menu=menubar)
         men_her = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Herramientas", menu=men_her)
         men_her.add_command(label="Cierre de día  (backup + GitHub)",
                             command=lambda: _cierre_de_dia(parent_window=self))
 
     def _build_ui(self):
-        # Header
         header = tk.Frame(self, bg=COLOR_HEADER, height=56)
         header.pack(fill="x"); header.pack_propagate(False)
-        tk.Label(header, text=f"  {TITULO_APP}",
-                 bg=COLOR_HEADER, fg="white",
+        tk.Label(header, text=f"  {TITULO_APP}", bg=COLOR_HEADER, fg="white",
                  font=("Segoe UI", 14, "bold")).pack(side="left", padx=12, pady=10)
 
-        # Barra de botones
-        barra = tk.Frame(self, bg="#e0e0e0", pady=8)
-        barra.pack(fill="x")
-
-        # Izquierda: acciones sobre obras
+        barra = tk.Frame(self, bg="#e0e0e0", pady=8); barra.pack(fill="x")
         self._btn(barra, "Nueva obra",    COLOR_BTN_NUEVO, self.nueva_obra   ).pack(side="left", padx=(12,4))
         self._btn(barra, "Abrir obra",    COLOR_BTN_ABRIR, self.abrir_obra   ).pack(side="left", padx=4)
         self._btn(barra, "Eliminar obra", COLOR_BTN_ELIM,  self.eliminar_obra).pack(side="left", padx=4)
         self._btn(barra, "↑ BackUp",      "#555555",       self.hacer_backup ).pack(side="left", padx=(16,4))
 
-        # Derecha: acceso a bases de datos
         self._btn(barra, "🗄 Base de datos Costos",
                   COLOR_BTN_DB, self._abrir_db_catalogo).pack(side="right", padx=(4,12))
-
         self.btn_db_obra = self._btn(barra, "🗄 Base de datos Costos Obra ---",
                                      COLOR_BTN_DB, self._abrir_db_obra)
         self.btn_db_obra.pack(side="right", padx=4)
         self.btn_db_obra.config(state="disabled")
 
-        # Tabla de obras
         frame_tabla = tk.Frame(self, bg="#f0f0f0")
         frame_tabla.pack(fill="both", expand=True, padx=16, pady=(12,16))
-
         cols = ("numero","nombre","ubicacion","comitente","fecha")
         self.tabla = ttk.Treeview(frame_tabla, columns=cols, show="headings", selectmode="browse")
         for col,(txt,ancho) in {"numero":("Nro",60),"nombre":("Nombre",240),"ubicacion":("Ubicación",180),"comitente":("Comitente",160),"fecha":("Creación",90)}.items():
@@ -174,7 +132,6 @@ class AppPrincipal(tk.Tk):
         self.tabla.tag_configure("par",   background="#ffffff")
         self.tabla.tag_configure("impar", background="#eaf2fb")
 
-        # Barra de estado
         self.lbl_estado = tk.Label(self, text="", bg="#e0e0e0", fg="#444",
                                    font=("Segoe UI",9), anchor="w", padx=12, pady=4)
         self.lbl_estado.pack(fill="x", side="bottom")
@@ -185,41 +142,27 @@ class AppPrincipal(tk.Tk):
                          cursor="hand2", activebackground=color, activeforeground="white",
                          command=comando)
 
-    # ── Selección de obra → actualiza botón DB obra ───────────────────────────
     def _on_obra_select(self, _=None):
         num = self._obra_seleccionada()
         if num:
-            self.btn_db_obra.config(
-                text=f"🗄 Base de datos Costos Obra {num}",
-                state="normal")
+            self.btn_db_obra.config(text=f"🗄 Base de datos Costos Obra {num}", state="normal")
         else:
-            self.btn_db_obra.config(
-                text="🗄 Base de datos Costos Obra ---",
-                state="disabled")
+            self.btn_db_obra.config(text="🗄 Base de datos Costos Obra ---", state="disabled")
 
-    # ── Botones de Base de Datos ──────────────────────────────────────────────
     def _abrir_db_catalogo(self):
         if not APP_TAREAS.exists():
-            messagebox.showerror("Error",
-                f"No se encontró app_tareas.py en:\n{APP_TAREAS}", parent=self)
-            return
-        AlertaBaseDatosDialog(
-            self,
-            mensaje=(
-                "Está por hacer modificaciones a la Base de Datos\n"
-                "de las Tareas, Insumos e Incidencias MASTER.\n\n"
-                "Cualquier cambio modificará las incidencias\n"
-                "en FUTURAS OBRAS."
-            ),
-            on_confirmar=self._confirmar_db_catalogo,
-        )
+            messagebox.showerror("Error", f"No se encontró app_tareas.py en:\n{APP_TAREAS}", parent=self); return
+        AlertaBaseDatosDialog(self,
+            mensaje=("Está por hacer modificaciones a la Base de Datos\n"
+                     "de las Tareas, Insumos e Incidencias MASTER.\n\n"
+                     "Cualquier cambio modificará las incidencias\n"
+                     "en FUTURAS OBRAS."),
+            on_confirmar=self._confirmar_db_catalogo)
 
     def _confirmar_db_catalogo(self):
-        _lanzar_app_tareas(
-            db_path   = CATALOGO_DB,
-            titulo    = "Base de Datos Costos — CATÁLOGO MAESTRO",
-            copiar_a  = PRESUPUESTOS_DB,   # ← copia automática al cerrar
-        )
+        _lanzar_app_tareas(db_path=CATALOGO_DB,
+                           titulo="Base de Datos Costos — CATÁLOGO MAESTRO",
+                           copiar_a=PRESUPUESTOS_DB)
 
     def _abrir_db_obra(self):
         num = self._obra_seleccionada()
@@ -227,26 +170,18 @@ class AppPrincipal(tk.Tk):
         from core.obra import CARPETA_OBRAS
         db_obra = CARPETA_OBRAS / f"Obra{num}" / "data" / "BaseParticular.db"
         if not db_obra.exists():
-            messagebox.showerror("Error",
-                f"No se encontró BaseParticular.db para la Obra {num}.", parent=self)
-            return
-        AlertaBaseDatosDialog(
-            self,
-            mensaje=(
-                f"Está por hacer modificaciones a la Base de Datos\n"
-                f"de las Tareas, Insumos e Incidencias de la\n\n"
-                f"OBRA  {num}\n\n"
-                f"Podés hacer cualquier cambio.\n"
-                f"Solo modificará las incidencias de esta obra."
-            ),
+            messagebox.showerror("Error", f"No se encontró BaseParticular.db para la Obra {num}.", parent=self); return
+        AlertaBaseDatosDialog(self,
+            mensaje=(f"Está por hacer modificaciones a la Base de Datos\n"
+                     f"de las Tareas, Insumos e Incidencias de la\n\n"
+                     f"OBRA  {num}\n\n"
+                     f"Podés hacer cualquier cambio.\n"
+                     f"Solo modificará las incidencias de esta obra."),
             on_confirmar=lambda: _lanzar_app_tareas(
-                db_path  = db_obra,
-                titulo   = f"Base de Datos Costos — Obra {num}",
-                copiar_a = None,    # no se copia a ningún lado
-            ),
-        )
+                db_path=db_obra,
+                titulo=f"Base de Datos Costos — Obra {num}",
+                copiar_a=None))
 
-    # ── Datos ─────────────────────────────────────────────────────────────────
     def actualizar_lista(self):
         for item in self.tabla.get_children(): self.tabla.delete(item)
         obras = listar_obras()
@@ -254,14 +189,13 @@ class AppPrincipal(tk.Tk):
             tag = "par" if i%2==0 else "impar"
             self.tabla.insert("","end",iid=o["numero"],tags=(tag,),
                               values=(o["numero"],o["nombre"],o.get("ubicacion",""),o.get("comitente",""),o.get("fecha_creacion","")))
-        n=len(obras)
+        n = len(obras)
         self.lbl_estado.config(text=f"  {n} obra{'s' if n!=1 else ''} registrada{'s' if n!=1 else ''}")
 
     def _obra_seleccionada(self) -> str | None:
         sel = self.tabla.selection()
         return sel[0] if sel else None
 
-    # ── Acciones sobre obras ──────────────────────────────────────────────────
     def nueva_obra(self):
         dlg = DialogoNuevaObra(self); self.wait_window(dlg)
         if dlg.obra_creada:
@@ -338,10 +272,35 @@ class AppPrincipal(tk.Tk):
         if ok: obra.eliminar(); self.actualizar_lista()
 
     def hacer_backup(self):
-        from core.obra import CARPETA_DATA as CD
-        origen=CD/"Datos_Obras.db"; destino=CD/"Datos_Obras_BUP.db"
-        try: shutil.copy2(str(origen),str(destino))
-        except Exception as e: messagebox.showerror("Error en backup",f"No se pudo copiar la DB:\n{e}",parent=self); return
+        from core.obra import CARPETA_DATA as CD, CARPETA_OBRAS
+        errores = []
+
+        # 1. Datos_Obras.db
+        try:
+            shutil.copy2(str(CD / "Datos_Obras.db"), str(CD / "Datos_Obras_BUP.db"))
+        except Exception as e:
+            errores.append(f"Datos_Obras.db: {e}")
+
+        # 2. Master_FINAL.db
+        try:
+            shutil.copy2(str(CD / "Master_FINAL.db"), str(CD / "Master_FINAL_BUP.db"))
+        except Exception as e:
+            errores.append(f"Master_FINAL.db: {e}")
+
+        # 3. BaseParticular.db de cada obra → BaseParticular_BUP.db en su misma carpeta
+        for carpeta_obra in sorted(CARPETA_OBRAS.glob("Obra*")):
+            db = carpeta_obra / "data" / "BaseParticular.db"
+            if db.exists():
+                bup = carpeta_obra / "data" / "BaseParticular_BUP.db"
+                try:
+                    shutil.copy2(str(db), str(bup))
+                except Exception as e:
+                    errores.append(f"{carpeta_obra.name}/BaseParticular.db: {e}")
+
+        if errores:
+            messagebox.showwarning("Backup parcial",
+                "Algunos backups fallaron:\n" + "\n".join(errores), parent=self)
+
         _cierre_de_dia(parent_window=self)
 
 
@@ -352,17 +311,22 @@ class _DlgVersiones(tk.Toplevel):
         self.geometry("520x340"); self.minsize(420,240); self.resizable(True,True)
         self.grab_set(); self.seleccionados=[]
         hdr=tk.Frame(self,bg=COLOR_HEADER,height=40); hdr.pack(fill="x"); hdr.pack_propagate(False)
-        tk.Label(hdr,text=f"  Versiones de la Obra {numero}",bg=COLOR_HEADER,fg="white",font=("Segoe UI",11,"bold")).pack(side="left",padx=12)
+        tk.Label(hdr,text=f"  Versiones de la Obra {numero}",bg=COLOR_HEADER,fg="white",
+                 font=("Segoe UI",11,"bold")).pack(side="left",padx=12)
         tk.Label(self,text="Seleccioná una o más versiones (Shift/Ctrl) y hacé clic en Abrir:",
                  font=("Segoe UI",9),fg="#555",bg="#f5f5f5",anchor="w",padx=12,pady=6).pack(fill="x")
         frame=tk.Frame(self); frame.pack(fill="both",expand=True,padx=12,pady=(0,6))
         cols=("archivo","version","fecha","nota")
         self.tbl=ttk.Treeview(frame,columns=cols,show="headings",selectmode="extended")
         for col,txt,w in [("archivo","Archivo",120),("version","Versión",60),("fecha","Fecha",100),("nota","Nota",200)]:
-            self.tbl.heading(col,text=txt); self.tbl.column(col,width=w,minwidth=40,anchor="center" if col!="archivo" and col!="nota" else "w")
+            self.tbl.heading(col,text=txt)
+            self.tbl.column(col,width=w,minwidth=40,anchor="w" if col in ("archivo","nota") else "center")
         scr=ttk.Scrollbar(frame,orient="vertical",command=self.tbl.yview)
-        self.tbl.configure(yscrollcommand=scr.set); scr.pack(side="right",fill="y"); self.tbl.pack(side="left",fill="both",expand=True)
-        self.tbl.tag_configure("par",background="#ffffff"); self.tbl.tag_configure("impar",background="#eaf2fb"); self.tbl.tag_configure("last",background="#d4edda")
+        self.tbl.configure(yscrollcommand=scr.set); scr.pack(side="right",fill="y")
+        self.tbl.pack(side="left",fill="both",expand=True)
+        self.tbl.tag_configure("par",background="#ffffff")
+        self.tbl.tag_configure("impar",background="#eaf2fb")
+        self.tbl.tag_configure("last",background="#d4edda")
         import json as _json
         notas=self._leer_notas(jsons[0].parent)
         for i,j in enumerate(jsons):
@@ -378,7 +342,8 @@ class _DlgVersiones(tk.Toplevel):
         self.tbl.bind("<<TreeviewSelect>>",self._actualizar_btn)
         frm_btn=tk.Frame(self,pady=8); frm_btn.pack(fill="x",padx=12)
         self.btn_abrir=tk.Button(frm_btn,text="Abrir seleccionada",bg=COLOR_BTN_ABRIR,fg="white",
-                                 font=("Segoe UI",10,"bold"),relief="flat",padx=14,pady=6,cursor="hand2",command=self._abrir)
+                                 font=("Segoe UI",10,"bold"),relief="flat",padx=14,pady=6,
+                                 cursor="hand2",command=self._abrir)
         self.btn_abrir.pack(side="right",padx=(4,0))
         tk.Button(frm_btn,text="Cancelar",bg="#888",fg="white",font=("Segoe UI",10),
                   relief="flat",padx=14,pady=6,cursor="hand2",command=self.destroy).pack(side="right")
