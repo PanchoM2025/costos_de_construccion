@@ -1,1 +1,0 @@
-obra.py NUEVO cargado correctamente (v_smart_norm)

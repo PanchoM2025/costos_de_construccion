@@ -1,0 +1,41 @@
+TIPOS DE CONTRATACIÓN — INDICADORES DE TAREAS
+==============================================
+
+Las tareas tienen en su nombre un indicador que identifica
+el tipo de contratación a realizar.
+
+SIN INDICADOR
+  El Comitente contrata la Mano de Obra y compra los
+  materiales directamente.
+
+INDICADOR "S" — Subcontrato de Mano de Obra
+  Subcontrata la MdeO y el Comitente compra los materiales.
+
+INDICADOR "T" — Subcontrato total
+  Subcontrata el total (MdeO y Materiales).
+
+
+ESTRUCTURAS DE HORMIGÓN ARMADO — variantes:
+
+  Sin indicador
+    Comitente contrata la MdeO (con elaboración de mezcla
+    manual) y compra todos los materiales (Cemento, Hierro,
+    Áridos, maderas, clavos, alambre, aditivos).
+
+  "S" — Subcontrato parcial
+    Subcontrata la MdeO (con elaboración manual, Madera,
+    clavos y alambre). El Comitente compra áridos y hierros.
+
+  "E" — Hormigón Elaborado
+    Subcontrata la MdeO (sin elaboración manual, con Madera,
+    clavos y alambre). El Comitente compra el Hormigón
+    Elaborado y los hierros.
+
+  "X" — Solo Mano de Obra
+    Subcontrata la MdeO (sin elaboración manual). El Comitente
+    compra el Hormigón Elaborado, hierros, Madera, clavos
+    y alambre.
+
+  "T" — Subcontrato total
+    Subcontrato por el total de la Tarea (MdeO y todos
+    los materiales).

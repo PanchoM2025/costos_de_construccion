@@ -1,0 +1,26 @@
+Estructura de: C:\Dropbox\Presupuestos\Presupuestos con Python 
+ 
+Listado de rutas de carpetas para el volumen Windows
+El número de serie del volumen es 000001EE BAC2:D2AE
+C:\DROPBOX\PRESUPUESTOS\PRESUPUESTOS CON PYTHON
+    app_tareas.py
+    ayuda_subcontratacion.txt
+    BAT Dispara App.bat
+    Costos Brief Chandias.pdf
+    Estructura de Carpetas de ? Presupuestos con Python.txt
+    Explicacion conversion a Base36.txt
+    Incidencias FINALES.xlsx
+    Insumos_Master.xlsx
+    Master_FINAL - BUP.db
+    Master_FINAL.db
+    Master_FINAL.xlsx
+    README_DB.docx
+    README_Sistema.docx
+    rubros_tareas.py
+    seleccion_tareas.py
+    Tareas, Insumos e Incidencias.xlsx
+    tareas_insumos.py
+    Tareas_Master.xlsx
+    
+No existe ninguna subcarpeta 
+

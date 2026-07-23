@@ -1,0 +1,62 @@
+Conversión decimal a Código Marllan e Inversa
+
+BASE36 ORDENADA UTILIZADA:
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+  (posición 1 = A, posición 36 = 9)
+
+1. CONVERSIÓN DE NÚMERO DECIMAL A CÓDIGO CM
+
+Ejemplo: Convertir 3558876 a Base36
+
+PASO 1: Inicializar
+  numero = 3558876
+  resultado = ""
+
+PASO 2: Dividir sucesivamente por 36
+
+  3558876 ÷ 36 = 98857 resto 24 → "Y"
+  98857 ÷ 36 = 2746 resto 1 → "B"
+  2746 ÷ 36 = 76 resto 10 → "K"
+  76 ÷ 36 = 2 resto 4 → "E"
+
+PASO 3: Unir caracteres en orden inverso
+  Resultado: "EKBY"
+
+→ Decimal_a_Base36_Ordenada(3558876) = "EKBY"
+
+2. CONVERSIÓN DE CÓDIGO CM A NÚMERO DECIMAL
+
+Ejemplo: Convertir "EKBY" a decimal
+
+PASO 1: Obtener valores de cada letra
+
+  E → posición 5 → valor = 4
+  K → posición 11 → valor = 10
+  B → posición 2 → valor = 1
+  Y → posición 25 → valor = 24
+
+PASO 2: Aplicar potencias de 36
+
+  decimal =
+    4 × 36^3 = 186624
+  +10 × 36^2 = 12960
+  + 1 × 36^1 = 36
+  +24 × 36^0 = 24
+
+PASO 3: Sumar
+  Total = 3558876
+
+→ Base36_a_decimal_Ordenada("EKBY") = 3558876
+
+Este proceso se aplica por igual a coordenadas absolutas
+en Marllan VIII: latitud y longitud convertidas
+a números enteros multiplicados por 10.000 y luego a Base36.
+
+Ejemplo:
+  Latitud +74.603824 → latAbs = 164.603824
+  → latNum = 1646038 → CM = "Z7U6"
+
+  Longitud +175.887654 → lonAbs = 355.887654
+  → lonNum = 3558876 → CM = "EKBY"
+
+  Resultado final: Z7U6 EKBY

@@ -1,30 +1,21 @@
+﻿# Bases de datos (no subir al repo)
+*.db
+*.db-shm
+*.db-wal
+
+# Backups locales
+*_BUP.*
+*.bak
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
-*.pyd
 
-# Archivos temporales
-*.tmp
-*.bak
-~$*
+# Debug logs
+DEBUG_*.txt
+*.log
 
-# IDEs
-.vscode/
-.idea/
-
-# DBs por obra — se regeneran desde Master_Obras.db
-Obras/*/data/BaseParticular.db
-
-# DBs viejas / de prueba (no son la fuente de verdad)
-Data/Master.db
-Bien/
-
-# Archivos de precios (xlsx grandes, cambian poco)
-Data/Precios/
-
-# Lo que SÍ entra al repo:
-#   Data/Master_Obras.db          ← catálogo + índice de obras
-#   Obras/*/data/obra*.json       ← presupuestos con tareas, cantidades y precios
-#   Obras/*/data/variaciones.txt  ← log de versiones
-#   Scripts/                      ← todo el código
+# Excel temporales
+~$*.xlsx
+~$*.xls
