@@ -217,7 +217,7 @@ class VentanaObra(tk.Toplevel):
         for c in cols_iz:
             self.tbl_iz.heading(c, text=textos_iz[c])
             self.tbl_iz.column(c, width=anchos_iz[c], minwidth=30,
-                               anchor="w" if c == "descripcion" else "center")
+                               anchor="w" if c == "descripcion" else "e" if c == "cantidad" else "center")
         scr_iz = ttk.Scrollbar(izq, orient="vertical", command=self.tbl_iz.yview)
         self.tbl_iz.configure(yscrollcommand=scr_iz.set)
         scr_iz.pack(side="right", fill="y")

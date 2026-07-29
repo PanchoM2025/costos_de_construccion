@@ -31,6 +31,14 @@ def _ensure_extra_columns():
                 pass
 
 
+def _fmt_cant(v):
+    """Formatea cantidad con notación argentina: ##0,00"""
+    if v is None:
+        return ""
+    s = f"{v:,.2f}"
+    return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+
+
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -57,6 +65,8 @@ class App(tk.Tk):
         s.map("Del.TButton", background=[("active","#CB4335"),("disabled","#BDC3C7")], foreground=[("disabled","#888")])
         s.configure("Export.TButton", background="#8E44AD", foreground="white", font=("Segoe UI",10,"bold"))
         s.map("Export.TButton", background=[("active","#7D3C98"),("disabled","#BDC3C7")], foreground=[("disabled","#888")])
+        s.configure("Insumos.TButton", background="#16A085", foreground="white", font=("Segoe UI",10,"bold"))
+        s.map("Insumos.TButton", background=[("active","#138D75")])
 
     def _build_ui(self):
         hdr = tk.Frame(self, bg="#2C3E50", height=50); hdr.pack(fill=tk.X); hdr.pack_propagate(False)
@@ -99,6 +109,9 @@ class App(tk.Tk):
         self.tv_ins.pack(side=tk.LEFT, fill=tk.BOTH, expand=True); sb_i.pack(side=tk.LEFT, fill=tk.Y)
         self.tv_ins.bind("<<TreeviewSelect>>", self._on_ins_select)
         btn_frm = tk.Frame(lf_ins, bg="#F0F2F5"); btn_frm.pack(fill=tk.X, pady=(8,0))
+        # Botón Ver Insumos — siempre habilitado, a la derecha
+        ttk.Button(btn_frm, text="📋 Ver Insumos", style="Insumos.TButton",
+                   command=self._open_ver_insumos).pack(side=tk.RIGHT)
         self.btn_add = ttk.Button(btn_frm, text="＋  Agregar", style="Add.TButton", state=tk.DISABLED, command=self._open_agregar)
         self.btn_add.pack(side=tk.LEFT, padx=(0,4))
         self.btn_edit = ttk.Button(btn_frm, text="✎  Editar", style="Edit.TButton", state=tk.DISABLED, command=self._open_editar)
@@ -112,6 +125,9 @@ class App(tk.Tk):
         self.sv_status = tk.StringVar(value="Listo")
         tk.Label(self, textvariable=self.sv_status, anchor=tk.W, bg="#2C3E50", fg="white",
                  font=("Segoe UI",9), padx=8).pack(fill=tk.X, side=tk.BOTTOM)
+
+    def _open_ver_insumos(self):
+        VentanaInsumos(self)
 
     def _load_tareas(self):
         with get_conn() as conn:
@@ -282,7 +298,7 @@ class App(tk.Tk):
                 FROM incidencias inc LEFT JOIN insumos ins ON ins.cod_ins=inc.cod_ins
                 WHERE inc.cod_tar=? ORDER BY inc.cod_ins""", (cod_tar,)).fetchall()
         for i,(cod_ins,desc_ins,unidad,cantidad) in enumerate(rows):
-            self.tv_ins.insert("",tk.END,iid=f"i_{i}",values=(cod_ins,desc_ins,unidad or "",f"{cantidad:.4f}" if cantidad is not None else ""))
+            self.tv_ins.insert("",tk.END,iid=f"i_{i}",values=(cod_ins,desc_ins,unidad or "",_fmt_cant(cantidad)))
         n=len(rows); self.sv_status.set(f"{n} insumo{'s' if n!=1 else ''}  ·  tarea {cod_tar}")
 
     def _on_ins_select(self, _=None):
@@ -369,6 +385,93 @@ class App(tk.Tk):
 
 
 # ═══════════════════════════════════════════════════════════
+class VentanaInsumos(tk.Toplevel):
+    """Ventana independiente con el listado completo de insumos del catálogo."""
+
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.title("Catálogo de Insumos")
+        self.geometry("780x560")
+        self.minsize(560, 380)
+        self.configure(bg="#F0F2F5")
+
+        hdr = tk.Frame(self, bg="#16A085", height=48)
+        hdr.pack(fill=tk.X)
+        hdr.pack_propagate(False)
+        tk.Label(hdr, text="  📋  Catálogo de Insumos",
+                 bg="#16A085", fg="white",
+                 font=("Segoe UI", 13, "bold")).pack(side=tk.LEFT, padx=10, pady=8)
+        self.lbl_count = tk.Label(hdr, text="", bg="#16A085", fg="#A9DFBF",
+                                  font=("Segoe UI", 10))
+        self.lbl_count.pack(side=tk.RIGHT, padx=14)
+
+        sf = tk.Frame(self, bg="#F0F2F5")
+        sf.pack(fill=tk.X, padx=12, pady=(8, 4))
+        tk.Label(sf, text="Buscar:", bg="#F0F2F5",
+                 font=("Segoe UI", 10)).pack(side=tk.LEFT)
+        self.sv_bus = tk.StringVar()
+        self.sv_bus.trace_add("write", lambda *_: self._filtrar())
+        ent = ttk.Entry(sf, textvariable=self.sv_bus, font=("Segoe UI", 10), width=36)
+        ent.pack(side=tk.LEFT, padx=6)
+        ttk.Button(sf, text="✕", width=3,
+                   command=lambda: self.sv_bus.set("")).pack(side=tk.LEFT)
+        ent.focus_set()
+
+        frame_t = tk.Frame(self, bg="#F0F2F5")
+        frame_t.pack(fill=tk.BOTH, expand=True, padx=12, pady=(0, 8))
+
+        cols = ("cod", "desc", "unidad")
+        self.tv = ttk.Treeview(frame_t, columns=cols, show="headings", selectmode="browse")
+        self.tv.heading("cod",    text="Código")
+        self.tv.heading("desc",   text="Descripción")
+        self.tv.heading("unidad", text="Unidad")
+        self.tv.column("cod",    width=90,  anchor=tk.CENTER, stretch=False)
+        self.tv.column("desc",   width=530, minwidth=200)
+        self.tv.column("unidad", width=80,  anchor=tk.CENTER, stretch=False)
+        self.tv.tag_configure("par",   background="#FFFFFF")
+        self.tv.tag_configure("impar", background="#F0F8FF")
+
+        sb = ttk.Scrollbar(frame_t, orient=tk.VERTICAL, command=self.tv.yview)
+        self.tv.configure(yscrollcommand=sb.set)
+        self.tv.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        sb.pack(side=tk.LEFT, fill=tk.Y)
+
+        pie = tk.Frame(self, bg="#F0F2F5")
+        pie.pack(fill=tk.X, padx=12, pady=(0, 10))
+        ttk.Button(pie, text="Cerrar", command=self.destroy).pack(side=tk.RIGHT)
+
+        self._cargar()
+
+    def _cargar(self):
+        with get_conn() as conn:
+            self._todos = conn.execute(
+                "SELECT cod_ins, descripcion, unidad FROM insumos "
+                "WHERE activo=1 ORDER BY cod_ins"
+            ).fetchall()
+        self._poblar(self._todos)
+
+    def _poblar(self, rows):
+        self.tv.delete(*self.tv.get_children())
+        for i, (cod, desc, unidad) in enumerate(rows):
+            tag = "par" if i % 2 == 0 else "impar"
+            self.tv.insert("", tk.END, values=(cod, desc or "", unidad or ""), tags=(tag,))
+        n = len(rows)
+        total = len(self._todos)
+        if n == total:
+            self.lbl_count.config(text=f"{total} insumos")
+        else:
+            self.lbl_count.config(text=f"{n} de {total} insumos")
+
+    def _filtrar(self):
+        q = self.sv_bus.get().lower().strip()
+        if not q:
+            self._poblar(self._todos)
+        else:
+            filtrados = [r for r in self._todos if q in r[0].lower() or q in (r[1] or "").lower()]
+            self._poblar(filtrados)
+
+
+# ═══════════════════════════════════════════════════════════
 class InsumoContextDialog(tk.Toplevel):
     def __init__(self,parent,tar_id,cod_tar,desc_tar,on_incorporar):
         super().__init__(parent)
@@ -390,7 +493,7 @@ class InsumoContextDialog(tk.Toplevel):
         with get_conn() as conn:
             rows=conn.execute("SELECT inc.cod_ins,COALESCE(ins.descripcion,'(sin descripción)'),inc.unidad,inc.cantidad FROM incidencias inc LEFT JOIN insumos ins ON ins.cod_ins=inc.cod_ins WHERE inc.cod_tar=? ORDER BY inc.cod_ins",(cod_tar,)).fetchall()
         for i,(c,d,u,q) in enumerate(rows):
-            self.tv.insert("",tk.END,iid=f"i_{i}",values=(c,d,u or "",f"{q:.4f}" if q is not None else ""))
+            self.tv.insert("",tk.END,iid=f"i_{i}",values=(c,d,u or "",_fmt_cant(q)))
         if not rows: self.tv.insert("",tk.END,values=("","(sin insumos)","",""))
 
     def _incorporar(self):
@@ -542,14 +645,14 @@ class InsumoDialog(tk.Toplevel):
             for c,d,q in vecinos:
                 marca="  ►" if c==cod_ins else "   "
                 lineas.append(f"{marca} {c}  {(d or '')[:40]}  [{q}]")
-            lineas.append(f"\n  Nuevo valor: cantidad = {cantidad}")
+            lineas.append(f"\n  Nuevo valor: cantidad = {_fmt_cant(cantidad)}")
             if not messagebox.askyesno("Confirmar reemplazo","\n".join(lineas),parent=self): return
         with get_conn() as conn:
             conn.execute("""INSERT INTO incidencias (cod_tar,cod_ins,unidad,cantidad) VALUES (?,?,?,?)
                 ON CONFLICT(cod_tar,cod_ins) DO UPDATE SET unidad=excluded.unidad,cantidad=excluded.cantidad""",
                 (self.cod_tar,cod_ins,unidad,cantidad))
         accion="agregado" if self.mode=="add" else "actualizado"
-        messagebox.showinfo("Guardado",f"Insumo  {cod_ins}  {accion}  ·  cantidad: {cantidad:.4f}",parent=self)
+        messagebox.showinfo("Guardado",f"Insumo  {cod_ins}  {accion}  ·  cantidad: {_fmt_cant(cantidad)}",parent=self)
         self.on_save(); self.destroy()
 
 
