@@ -1,0 +1,27 @@
+Codigo	Insumo	Unidad
+000114	Oficial.	hs
+000116	Ayudante.	hs
+000191	Oficial Pintor.	hs
+000193	Ayudante Pintor.	hs
+0264	Alquiler Martillo Neumático.	hs
+1129	H. Torsionado Tek=4200Kgr/cm2 - Diam. promedio	Kg
+1131	Malla de Acero tipo Sima 15x15 - Diam. 6mm Q188.	Kg
+1212	Alambre negro recocido Nro. 16.	Kg
+1223	Clavos Punta París  2-3" promedio.	Kg
+1311	Tablas de madera p/encofrado s/cepillar 1".	m2
+1341	Tirante de pino 3x3	ml
+1411	Cemento Portland normal bolsa de 50Kgr - 3 pliegos	Kg
+1511	Arena gruesa lavada	m3
+1630	Canto Rodado / Piedra partida	m3
+2111	Ladrillo común	un
+2211	Cal Hidraúlica	Kg
+2212	Cal Aerea	m2
+2221	Arena Mediana	m3
+2222	Arena Fina	m3
+2251	Hidrófugo Inorgánico tipo SIKA	Kg
+5121	Ceramico Esmaltado 30/30	m2
+6211	Puerta entrada en madera, tablero marco BWG 0,90m.	un
+6212	Puerta placa pino 2", marco BWG 0,80m.	un
+9131	Latex Blanco	lt
+9191	Imprimación fijador sellador	lt
+9192	Enduído plástico al agua	lt

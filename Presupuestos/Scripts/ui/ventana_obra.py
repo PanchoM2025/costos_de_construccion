@@ -222,10 +222,11 @@ class VentanaObra(tk.Toplevel):
         self.tbl_iz.configure(yscrollcommand=scr_iz.set)
         scr_iz.pack(side="right", fill="y")
         self.tbl_iz.pack(side="left", fill="both", expand=True)
-        self.tbl_iz.tag_configure("sel",       background="#cce0ff")
-        self.tbl_iz.tag_configure("vinculada", background="#d4edda")
-        self.tbl_iz.tag_configure("sin_vnc",   background="#fde8e8")
-        self.tbl_iz.tag_configure("rubro_hdr", background="#ddeeff",
+        self.tbl_iz.tag_configure("sel",        background="#cce0ff")
+        self.tbl_iz.tag_configure("con_precio", background="#b3e5fc")
+        self.tbl_iz.tag_configure("vinculada",  background="#d4edda")
+        self.tbl_iz.tag_configure("sin_vnc",    background="#fde8e8")
+        self.tbl_iz.tag_configure("rubro_hdr",  background="#ddeeff",
                                   font=("Segoe UI", 10, "bold"))
         self.tbl_iz.bind("<ButtonRelease-1>", self._clic_fila_iz)
         self.tbl_iz.bind("<Double-1>",        self._doble_clic_iz)
@@ -304,14 +305,11 @@ class VentanaObra(tk.Toplevel):
         iid    = self.tbl_der.identify_row(event.y)
         if region != "cell" or not iid or iid.startswith("__rub_"):
             return
-        # Clic en columna nombre/unidad con item del pliego seleccionado -> asignar directo
-        if col != "#1":
-            if hasattr(self, "_subc_combo"):
-                self._subc_combo.place_forget()
-            if self._item_sel_idx is not None:
-                self._asignar_tarea_der(iid)
-            return
-        bbox = self.tbl_der.bbox(iid, col)
+        # Clic simple: mostrar combo de subcontrato (sin asignar).
+        # La asignación ocurre en doble clic (_doble_clic_der).
+        if hasattr(self, "_subc_combo"):
+            self._subc_combo.place_forget()
+        bbox = self.tbl_der.bbox(iid, "#1")
         if not bbox:
             return
         x, y, w, h = bbox
@@ -354,7 +352,9 @@ class VentanaObra(tk.Toplevel):
                                y=self.tbl_der.winfo_y() + y,
                                width=combo_w, height=h)
         self._subc_combo.focus_set()
-        self._subc_combo.after(50, lambda: self._subc_combo.event_generate("<Button-1>"))
+        # Auto-abrir dropdown solo si el usuario clickeó directamente en la columna Subc.
+        if col == "#1":
+            self._subc_combo.after(50, lambda: self._subc_combo.event_generate("<Button-1>"))
     def _asignar_tarea_der(self, cod: str):
         """Vincula la tarea cod a la fila del pliego seleccionada, con variante automatica."""
         items = getattr(self.obra, "items_presupuesto", [])
@@ -414,7 +414,9 @@ class VentanaObra(tk.Toplevel):
     def _cargar_tareas(self):
         if not hasattr(self, "tbl_iz") or not hasattr(self, "tbl_der"):
             return
-        self._subc_cache = {}
+        if hasattr(self, "_subc_combo"):
+            self._subc_combo.place_forget()
+        self._subc_iid   = None
         self._subc_cache = {}
         self._poblar_iz()
         for item in self.tbl_der.get_children():
@@ -468,8 +470,13 @@ class VentanaObra(tk.Toplevel):
                 display_item = f"{rubro_counts[cur_rubro_idx]:02d}"
                 rub = it.get("rubro", "")
                 vinculado = bool(it.get("cod_tar"))
-                tag = "vinculada" if vinculado else "sin_vnc"
-                if not vinculado:
+                tiene_precio = idx in self._precios_tarea
+                if tiene_precio:
+                    tag = "con_precio"
+                elif vinculado:
+                    tag = "vinculada"
+                else:
+                    tag = "sin_vnc"
                     sin_vnc += 1
                 cant = it.get("cantidad", "")
                 cant_str = self._fmt_q(cant, 2) if isinstance(cant, (int, float)) else str(cant)
@@ -513,6 +520,8 @@ class VentanaObra(tk.Toplevel):
         else:
             self._editar_fila_item(idx, it)
     def _doble_clic_der(self, event=None):
+        if hasattr(self, "_subc_combo"):
+            self._subc_combo.place_forget()
         sel_der = self.tbl_der.selection()
         if not sel_der:
             return
@@ -537,13 +546,14 @@ class VentanaObra(tk.Toplevel):
                 parent=self)
             if not ok:
                 return
-        cache         = getattr(self, "_subc_cache", {})
-        subcont_cache = cache.get(cod, "").strip().upper()
-        vals_der      = self.tbl_der.item(cod, "values")
-        subcont_tbl   = (vals_der[0] if vals_der else "").strip().upper()
-        subcont = subcont_cache or subcont_tbl or it.get("subcontrato", "")
-        if not subcont:
-            subcont = self._auto_variante(cod)
+        cache    = getattr(self, "_subc_cache", {})
+        vals_der = self.tbl_der.item(cod, "values")
+        if cod in cache:
+            # El usuario eligió explícitamente (puede ser "" para MdeO propia)
+            subcont = cache[cod].strip().upper()
+        else:
+            # Sin selección explícita: mantiene el subcontrato previo o MdeO propia ("")
+            subcont = it.get("subcontrato", "")
         it["cod_tar"]     = cod
         it["unidad"]      = it.get("unidad") or t["unidad"]
         it["rubro_std"]   = t["rubro"]
@@ -801,6 +811,10 @@ class VentanaObra(tk.Toplevel):
                   bg=COLOR_SEC, fg="white", font=FUENTE_S,
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   command=self._elegir_precios).pack(side="left", padx=(8, 0))
+        tk.Button(frm_prc, text="Generar Archivo",
+                  bg=COLOR_VERDE, fg="white", font=FUENTE_S,
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  command=self._generar_archivo_precios).pack(side="left", padx=(6, 0))
         frm_btn = tk.Frame(f, bg=COLOR_BG)
         frm_btn.pack(side="bottom", fill="x", padx=16, pady=6)
         tk.Button(frm_btn, text="Exportar faltantes (.txt)",
@@ -835,6 +849,7 @@ class VentanaObra(tk.Toplevel):
         self.tbl_ins.bind("<Double-1>", lambda _: self._editar_precio())
         self.tbl_ins.bind("<F2>",       lambda _: self._editar_precio())
     def _elegir_precios(self):
+        """Selecciona un Excel de precios y abre la pantalla de revisión/edición."""
         from tkinter import filedialog
         carpeta_precios_obra = self.obra.carpeta_precios
         initial = str(carpeta_precios_obra) if carpeta_precios_obra.exists() \
@@ -848,13 +863,40 @@ class VentanaObra(tk.Toplevel):
         if not ruta:
             return
         try:
-            self._precios = cargar_precios(ruta)
-            self._nombre_precios = Path(ruta).name
-            self._ruta_precios = Path(ruta)
-            self.var_arch_prc.set(self._nombre_precios)
-            self._cargar_ins()
+            precios_archivo = cargar_precios(ruta)
         except Exception as e:
             messagebox.showerror("Error al leer precios", str(e), parent=self)
+            return
+        # Merge con precios en memoria y abrir pantalla de revisión
+        precios_merged = {**self._precios, **precios_archivo}
+        self._abrir_pantalla_precios(precios_merged,
+                                     nombre_origen=Path(ruta).name,
+                                     ruta_origen=Path(ruta))
+
+    def _generar_archivo_precios(self):
+        """Abre la pantalla de revisión/edición de precios desde cero (o con los ya cargados)."""
+        self._abrir_pantalla_precios(self._precios)
+
+    def _abrir_pantalla_precios(self, precios_iniciales: dict,
+                                 nombre_origen: str = "", ruta_origen=None):
+        """Punto de entrada único a _DlgGenerarPrecios."""
+        insumos_obra = self.obra.calcular_insumos(self.maestro["incidencias"])
+        # Si no hay cantidades calculadas, armar lista con todos los insumos del catálogo
+        if not insumos_obra:
+            insumos_obra = {
+                cod: {"unidad": datos["unidad"], "cantidad_total": 0.0, "tareas_origen": []}
+                for cod, datos in self.maestro["insumos"].items()
+            }
+        dlg = _DlgGenerarPrecios(self, insumos_obra, self.maestro["insumos"],
+                                  precios_iniciales, self.obra)
+        self.wait_window(dlg)
+        if dlg.precios_guardados:
+            self._precios        = dlg.precios_guardados
+            self._nombre_precios = dlg.nombre_archivo
+            self._ruta_precios   = dlg.ruta_archivo
+            self.var_arch_prc.set(self._nombre_precios)
+            self._cargar_ins()
+
     def _cargar_ins(self):
         for item in self.tbl_ins.get_children():
             self.tbl_ins.delete(item)
@@ -1237,15 +1279,31 @@ class VentanaObra(tk.Toplevel):
         desc   = it.get("descripcion", "") or it.get("cod_tar", "")
         unidad = it.get("unidad", "")
         actual = self._precios_tarea.get(idx, "")
-        dlg = _DlgVal(self, f"Precio directo — ítem {it.get('item','')}", desc, unidad, actual, es_precio=True)
-        self.wait_window(dlg)
-        if dlg.resultado is None:
-            return
-        if dlg.resultado > 0:
-            self._precios_tarea[idx] = dlg.resultado
-        else:
-            self._precios_tarea.pop(idx, None)
-        self._cargar_presupuesto()
+
+        # Cerrar el anterior si sigue abierto
+        dlg_prev = getattr(self, "_dlg_precio_tarea", None)
+        if dlg_prev and dlg_prev.winfo_exists():
+            dlg_prev.destroy()
+
+        def _aplicar(valor):
+            if valor > 0:
+                self._precios_tarea[idx] = valor
+            else:
+                self._precios_tarea.pop(idx, None)
+            self._cargar_presupuesto()
+            self._cargar_tareas()
+
+        # Parent = root Tk (no VentanaObra) para evitar "owned window" de Windows
+        # que bloquea el foco aunque no haya grab_set().
+        root = self.nametowidget(".")
+        dlg = _DlgVal(root, f"Precio directo — ítem {it.get('item','')}", desc, unidad,
+                      actual, es_precio=True, on_confirmar=_aplicar)
+        # Reposicionar relativo a esta ventana (el __init__ se centra sobre root)
+        dlg.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width()  - dlg.winfo_width())  // 2
+        y = self.winfo_y() + (self.winfo_height() - dlg.winfo_height()) // 2
+        dlg.geometry(f"+{x}+{y}")
+        self._dlg_precio_tarea = dlg
     def _on_tab_switch(self, idx: int):
         """Carga el contenido del tab activo."""
         if idx == 1:
@@ -1342,16 +1400,18 @@ class VentanaObra(tk.Toplevel):
                     "cantidad":       it.get("cantidad", 0.0),
                     "subcontrato":    it.get("subcontrato", ""),
                 }
-            nueva_version = False
-            nota = ""
             if not silencioso and self.obra.ruta_json.exists():
-                dlg = _DlgGuardarVersion(self, self.obra.ruta_json.name)
+                dlg = _DlgGuardarVersion(self, self.obra)
                 self.wait_window(dlg)
                 if dlg.accion is None:
                     return
-                nueva_version = dlg.accion == "nueva"
-                nota = dlg.nota
-            self.obra.guardar(nueva_version=nueva_version, nota=nota)
+                if dlg.accion == "pisar":
+                    self.obra.version = dlg.version_destino
+                    self.obra.guardar(nueva_version=False, nota=dlg.nota)
+                else:
+                    self.obra.guardar(nueva_version=True, nota=dlg.nota)
+            else:
+                self.obra.guardar(nueva_version=False, nota="")
             if not silencioso:
                 ver = f"obra{self.obra.version:03d}.json"
                 self.lbl_st.config(text=f"  Guardado en {ver}.")
@@ -2179,68 +2239,127 @@ class _DlgInsumosTarea(tk.Toplevel):
 
 
 class _DlgGuardarVersion(tk.Toplevel):
-    def __init__(self, parent, nombre_actual: str):
+    def __init__(self, parent, obra):
         super().__init__(parent)
         self.title("Guardar obra")
-        self.resizable(False, False)
+        self.geometry("580x400")
+        self.minsize(480, 300)
         self.grab_set()
-        self.accion = None
-        self.nota   = ""
-        hdr = tk.Frame(self, bg=COLOR_HDR, height=40)
-        hdr.pack(fill="x")
-        hdr.pack_propagate(False)
-        tk.Label(hdr, text="  ¿Cómo querés guardar?",
-                 bg=COLOR_HDR, fg="white", font=FUENTE_B).pack(side="left", padx=12)
-        frm = tk.Frame(self, padx=20, pady=14)
-        frm.pack(fill="both", expand=True)
-
-        # ── Opción 1: Actualizar ──────────────────────────────────
-        tk.Button(frm, text=f"Actualizar  {nombre_actual}",
-                  bg=COLOR_VERDE, fg="white", font=FUENTE_B,
-                  relief="flat", padx=12, pady=8, cursor="hand2", anchor="w",
-                  command=lambda: self._elegir("pisar")
-                  ).pack(fill="x", pady=(0, 10))
-
-        ttk.Separator(frm, orient="horizontal").pack(fill="x", pady=(0, 10))
-
-        # ── Opción 2: Nueva versión ───────────────────────────────
-        tk.Button(frm, text="Guardar como nueva versión...",
-                  bg=COLOR_SEC, fg="white", font=FUENTE_B,
-                  relief="flat", padx=12, pady=8, cursor="hand2",
-                  command=lambda: self._elegir("nueva")
-                  ).pack(fill="x", pady=(0, 8))
-
-        tk.Label(frm, text="Nombre de la versión:",
-                 font=FUENTE_S, fg="#555", anchor="w").pack(fill="x", pady=(4, 0))
-        self.var_nombre = tk.StringVar()
-        ttk.Entry(frm, textvariable=self.var_nombre, font=FUENTE, width=38
-                  ).pack(fill="x", pady=(2, 8))
-
-        tk.Label(frm, text="Descripción de cambios (opcional):",
-                 font=FUENTE_S, fg="#555", anchor="w").pack(fill="x")
-        self.var_nota = tk.StringVar()
-        ttk.Entry(frm, textvariable=self.var_nota, font=FUENTE, width=38
-                  ).pack(fill="x", pady=(2, 10))
-
-        tk.Button(frm, text="Cancelar", bg="#888", fg="white", font=FUENTE,
-                  relief="flat", padx=12, pady=6, cursor="hand2",
-                  command=self.destroy).pack(fill="x")
+        self.accion          = None   # "pisar" | "nueva"
+        self.nota            = ""
+        self.version_destino = None   # int, solo cuando accion == "pisar"
+        self._obra = obra
+        self._build_ui()
         self.bind("<Escape>", lambda _: self.destroy())
         self.update_idletasks()
         self.geometry(
             f"+{parent.winfo_x()+(parent.winfo_width()-self.winfo_width())//2}"
             f"+{parent.winfo_y()+(parent.winfo_height()-self.winfo_height())//2}")
 
+    def _build_ui(self):
+        # ── Cabecera ──────────────────────────────────────────────
+        hdr = tk.Frame(self, bg=COLOR_HDR, height=40)
+        hdr.pack(fill="x")
+        hdr.pack_propagate(False)
+        tk.Label(hdr, text="  Guardar obra — seleccioná la versión destino",
+                 bg=COLOR_HDR, fg="white", font=FUENTE_B).pack(side="left", padx=12)
+
+        # ── Barra inferior ────────────────────────────────────────
+        frm_bot = tk.Frame(self, bg=COLOR_BG, pady=8, padx=10)
+        frm_bot.pack(side="bottom", fill="x")
+
+        tk.Button(frm_bot, text="Cancelar",
+                  bg="#888", fg="white", font=FUENTE,
+                  relief="flat", padx=10, pady=5, cursor="hand2",
+                  command=self.destroy).pack(side="right", padx=(4, 0))
+        tk.Button(frm_bot, text="↑ Nueva versión",
+                  bg=COLOR_SEC, fg="white", font=FUENTE_B,
+                  relief="flat", padx=10, pady=5, cursor="hand2",
+                  command=lambda: self._elegir("nueva")).pack(side="right", padx=(4, 0))
+        tk.Button(frm_bot, text="Guardar sobre seleccionada",
+                  bg=COLOR_VERDE, fg="white", font=FUENTE_B,
+                  relief="flat", padx=10, pady=5, cursor="hand2",
+                  command=lambda: self._elegir("pisar")).pack(side="right", padx=(4, 0))
+
+        tk.Label(frm_bot, text="Nota:", bg=COLOR_BG,
+                 font=FUENTE_S, fg="#555").pack(side="left", padx=(0, 4))
+        self.var_nota = tk.StringVar()
+        ttk.Entry(frm_bot, textvariable=self.var_nota,
+                  font=FUENTE, width=22).pack(side="left")
+
+        # ── Treeview de versiones ─────────────────────────────────
+        cols = ("archivo", "version", "fecha", "nota_ver")
+        self.tbl = ttk.Treeview(self, columns=cols, show="headings", selectmode="browse")
+        self.tbl.heading("archivo",  text="Archivo")
+        self.tbl.heading("version",  text="Ver.")
+        self.tbl.heading("fecha",    text="Fecha")
+        self.tbl.heading("nota_ver", text="Nota")
+        self.tbl.column("archivo",   width=120, minwidth=80)
+        self.tbl.column("version",   width=50,  minwidth=40, anchor="center")
+        self.tbl.column("fecha",     width=130, minwidth=90, anchor="center")
+        self.tbl.column("nota_ver",  width=230, minwidth=80)
+
+        scr = ttk.Scrollbar(self, orient="vertical", command=self.tbl.yview)
+        self.tbl.configure(yscrollcommand=scr.set)
+        scr.pack(side="right", fill="y", padx=(0, 8))
+        self.tbl.pack(fill="both", expand=True, padx=(8, 0), pady=(6, 0))
+
+        self.tbl.tag_configure("actual", background="#d4edda")
+        self.tbl.tag_configure("par",    background="#ffffff")
+        self.tbl.tag_configure("impar",  background="#eaf2fb")
+
+        self.tbl.bind("<Double-1>", lambda _: self._elegir("pisar"))
+
+        self._poblar()
+
+    def _poblar(self):
+        import json as _json
+        jsons = sorted(self._obra.carpeta_data.glob("obra???.json"))
+        notas = self._leer_notas()
+        for i, j in enumerate(jsons):
+            try:
+                with open(j, encoding="utf-8") as f:
+                    d = _json.load(f)
+                ver   = d.get("version", i)
+                fecha = d.get("fecha_creacion", "")
+            except Exception:
+                ver, fecha = i, ""
+            nota_ver = notas.get(j.name, "")
+            es_actual = (ver == self._obra.version)
+            tag = "actual" if es_actual else ("par" if i % 2 == 0 else "impar")
+            self.tbl.insert("", "end", iid=str(j), tags=(tag,),
+                            values=(j.name, ver, fecha, nota_ver))
+            if es_actual:
+                self.tbl.selection_set(str(j))
+                self.tbl.see(str(j))
+
+    def _leer_notas(self) -> dict:
+        notas = {}
+        ruta = self._obra.carpeta_data / "variaciones.txt"
+        if not ruta.exists():
+            return notas
+        for linea in ruta.read_text(encoding="utf-8").splitlines():
+            partes = linea.split("  —  ")
+            if partes:
+                archivo = partes[0].strip()
+                nota_v  = partes[-1].strip() if len(partes) >= 3 else ""
+                notas[archivo] = nota_v
+        return notas
+
     def _elegir(self, accion: str):
+        if accion == "pisar":
+            sel = self.tbl.selection()
+            if not sel:
+                messagebox.showwarning("Sin selección",
+                    "Seleccioná una versión de la lista.", parent=self)
+                return
+            import re
+            m = re.search(r"obra(\d+)\.json", Path(sel[0]).name)
+            if not m:
+                return
+            self.version_destino = int(m.group(1))
         self.accion = accion
-        nombre = self.var_nombre.get().strip()
-        desc   = self.var_nota.get().strip()
-        if nombre and desc:
-            self.nota = f"{nombre} — {desc}"
-        elif nombre:
-            self.nota = nombre
-        else:
-            self.nota = desc
+        self.nota   = self.var_nota.get().strip()
         self.destroy()
 
 
@@ -2344,13 +2463,20 @@ class _DlgEditarFila(tk.Toplevel):
 
 
 class _DlgVal(tk.Toplevel):
-    def __init__(self, parent, titulo, nombre, unidad, valor_actual, es_precio=False):
+    def __init__(self, parent, titulo, nombre, unidad, valor_actual,
+                 es_precio=False, on_confirmar=None):
+        """
+        on_confirmar: callable(valor: float) para modo no-modal (sin grab_set).
+        Si es None → modal clásico con grab_set + wait_window.
+        """
         super().__init__(parent)
         self.title(titulo)
         self.geometry("380x180")
         self.resizable(False, False)
-        self.grab_set()
-        self.resultado = None
+        self.resultado     = None
+        self._on_confirmar = on_confirmar
+        if on_confirmar is None:
+            self.grab_set()
         tk.Label(self, text=nombre[:58], font=("Segoe UI", 9),
                  fg="#444", wraplength=360).pack(padx=16, pady=(14, 4), anchor="w")
         if unidad:
@@ -2383,10 +2509,206 @@ class _DlgVal(tk.Toplevel):
     def _ok(self):
         txt = self.var.get().replace(",", ".").strip()
         try:
-            self.resultado = float(txt) if txt else 0.0
+            valor = float(txt) if txt else 0.0
+            self.resultado = valor
             self.destroy()
+            if self._on_confirmar is not None:
+                self._on_confirmar(valor)
         except ValueError:
             messagebox.showwarning("Valor invalido", "Ingresa un numero.", parent=self)
+
+
+class _DlgGenerarPrecios(tk.Toplevel):
+    """Pantalla para cargar precios unitarios y guardar PU_Fecha.xlsx en la carpeta de la obra."""
+
+    def __init__(self, parent, insumos_obra: dict, insumos_cat: dict,
+                 precios_actuales: dict, obra):
+        super().__init__(parent)
+        self.title("Generar archivo de precios")
+        self.geometry("800x520")
+        self.minsize(620, 380)
+        self.grab_set()
+
+        self.precios_guardados = {}   # se rellena al guardar con éxito
+        self.nombre_archivo    = ""
+        self.ruta_archivo      = None
+
+        self._insumos_obra = insumos_obra
+        self._insumos_cat  = insumos_cat
+        self._precios      = dict(precios_actuales)   # copia local
+        self._obra         = obra
+
+        self._build_ui()
+        self.update_idletasks()
+        px = parent.winfo_x() + (parent.winfo_width()  - self.winfo_width())  // 2
+        py = parent.winfo_y() + (parent.winfo_height() - self.winfo_height()) // 2
+        self.geometry(f"+{px}+{py}")
+
+    def _build_ui(self):
+        # Cabecera
+        hdr = tk.Frame(self, bg=COLOR_HDR, height=40)
+        hdr.pack(fill="x")
+        hdr.pack_propagate(False)
+        tk.Label(hdr, text="  Cargar precios unitarios",
+                 bg=COLOR_HDR, fg="white", font=FUENTE_B).pack(side="left", padx=12)
+        tk.Label(hdr, text="Buscar:", bg=COLOR_HDR, fg="white",
+                 font=FUENTE_S).pack(side="left", padx=(24, 4))
+        self._var_buscar = tk.StringVar()
+        self._var_buscar.trace_add("write", lambda *_: self._filtrar())
+        tk.Entry(hdr, textvariable=self._var_buscar, font=FUENTE_S,
+                 width=24, relief="flat").pack(side="left", pady=6)
+
+        # Botones (bottom)
+        frm_btn = tk.Frame(self, bg=COLOR_BG, pady=8, padx=12)
+        frm_btn.pack(side="bottom", fill="x")
+        tk.Button(frm_btn, text="Guardar Excel",
+                  bg=COLOR_VERDE, fg="white", font=FUENTE_B,
+                  relief="flat", padx=14, pady=5, cursor="hand2",
+                  command=self._guardar).pack(side="right", padx=(4, 0))
+        tk.Button(frm_btn, text="Cancelar",
+                  bg="#888", fg="white", font=FUENTE,
+                  relief="flat", padx=12, pady=5, cursor="hand2",
+                  command=self.destroy).pack(side="right")
+        tk.Label(frm_btn, text="Doble clic en un insumo para cargar su precio",
+                 bg=COLOR_BG, font=FUENTE_S, fg="#777").pack(side="left")
+
+        # Resumen
+        self.lbl_res = tk.Label(self, text="", bg="#e8f0f8",
+                                font=FUENTE_S, anchor="e", fg=COLOR_HDR,
+                                pady=3, padx=12)
+        self.lbl_res.pack(side="bottom", fill="x", padx=8, pady=(0, 2))
+
+        # Treeview
+        cols = ("cod", "nombre", "unidad", "cantidad", "precio")
+        self.tbl = ttk.Treeview(self, columns=cols, show="headings", selectmode="browse")
+        anchos = {"cod": 74, "nombre": 310, "unidad": 58, "cantidad": 90, "precio": 120}
+        textos = {"cod": "Código", "nombre": "Insumo", "unidad": "Unidad",
+                  "cantidad": "Cantidad total", "precio": "Precio Unit."}
+        anclas = {"cod": "w", "nombre": "w", "unidad": "center", "cantidad": "e", "precio": "e"}
+        for c in cols:
+            self.tbl.heading(c, text=textos[c])
+            self.tbl.column(c, width=anchos[c], minwidth=28, anchor=anclas[c])
+
+        scr = ttk.Scrollbar(self, orient="vertical", command=self.tbl.yview)
+        self.tbl.configure(yscrollcommand=scr.set)
+        scr.pack(side="right", fill="y", padx=(0, 8))
+        self.tbl.pack(fill="both", expand=True, padx=(8, 0), pady=(6, 0))
+
+        self.tbl.tag_configure("con_precio", background="#d4edda")
+        self.tbl.tag_configure("sin_precio", background="#fde8e8")
+
+        self.tbl.bind("<Double-1>", self._doble_clic)
+        self.bind("<F2>", self._doble_clic)
+
+        self._poblar()
+
+    def _filtrar(self):
+        self._poblar()
+
+    def _poblar(self):
+        filtro = self._var_buscar.get().strip().lower()
+        for item in self.tbl.get_children():
+            self.tbl.delete(item)
+        con = 0
+        visibles = 0
+        for cod, datos in sorted(self._insumos_obra.items()):
+            nombre = self._insumos_cat.get(cod, {}).get("nombre", cod)
+            if filtro and filtro not in cod.lower() and filtro not in nombre.lower():
+                continue
+            unidad = datos["unidad"]
+            cant   = datos["cantidad_total"]
+            cant_str = f"{cant:,.2f}" if cant else "-"
+            precio = self._precios.get(cod)
+            p_str  = f"$ {precio:,.2f}" if precio else ""
+            tag    = "con_precio" if precio else "sin_precio"
+            if precio:
+                con += 1
+            visibles += 1
+            self.tbl.insert("", "end", iid=cod, tags=(tag,),
+                            values=(cod, nombre, unidad, cant_str, p_str))
+        total = len(self._insumos_obra)
+        resumen = f"Con precio: {con}  |  Sin precio: {total - con}  |  Total: {total}"
+        if filtro:
+            resumen += f"  (mostrando {visibles} de {total})"
+        self.lbl_res.config(text=resumen)
+
+    def _doble_clic(self, event=None):
+        if event and self.tbl.identify_region(event.x, event.y) == "heading":
+            return
+        sel = self.tbl.selection()
+        if event:
+            iid = self.tbl.identify_row(event.y)
+            if iid:
+                self.tbl.selection_set(iid)
+                sel = (iid,)
+        if not sel:
+            return
+        cod    = sel[0]
+        datos  = self._insumos_obra[cod]
+        nombre = self._insumos_cat.get(cod, {}).get("nombre", cod)
+        actual = self._precios.get(cod, "")
+        dlg = _DlgVal(self, f"Precio — {cod}", nombre, datos["unidad"],
+                      actual, es_precio=True)
+        self.wait_window(dlg)
+        if dlg.resultado is not None:
+            if dlg.resultado > 0:
+                self._precios[cod] = dlg.resultado
+            else:
+                self._precios.pop(cod, None)
+            self._poblar()
+            if self.tbl.exists(cod):
+                self.tbl.selection_set(cod)
+                self.tbl.see(cod)
+
+    def _guardar(self):
+        try:
+            import openpyxl
+        except ImportError:
+            messagebox.showerror("Falta librería",
+                "Instalá openpyxl:  pip install openpyxl", parent=self)
+            return
+
+        from datetime import date
+        from tkinter import filedialog
+        fecha   = date.today().strftime("%Y-%m-%d")
+        nombre_sugerido = f"PU_{fecha}.xlsx"
+        carpeta = self._obra.carpeta_precios
+        carpeta.mkdir(parents=True, exist_ok=True)
+
+        ruta_str = filedialog.asksaveasfilename(
+            parent=self,
+            title="Guardar archivo de precios",
+            initialdir=str(carpeta),
+            initialfile=nombre_sugerido,
+            defaultextension=".xlsx",
+            filetypes=[("Excel", "*.xlsx"), ("Todos", "*.*")],
+        )
+        if not ruta_str:
+            return
+        ruta   = Path(ruta_str)
+        nombre = ruta.name
+
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "Insumos"
+        ws.append(["Codigo Insumo", "Descripcion", "Unidad", "Precio Unitario"])
+        for cod in sorted(self._insumos_obra):
+            ins    = self._insumos_cat.get(cod, {})
+            precio = self._precios.get(cod)
+            ws.append([cod, ins.get("nombre", ""), ins.get("unidad", ""), precio])
+
+        try:
+            wb.save(str(ruta))
+        except Exception as e:
+            messagebox.showerror("Error al guardar", str(e), parent=self)
+            return
+
+        self.precios_guardados = dict(self._precios)
+        self.nombre_archivo    = nombre
+        self.ruta_archivo      = ruta
+        messagebox.showinfo("Guardado",
+            f"Archivo guardado en:\n{ruta}", parent=self)
+        self.destroy()
 
 
 class _DlgGuardarPrecios(tk.Toplevel):

@@ -139,8 +139,9 @@ def _inicializar_datos_obras():
 
 def _base_particular_es_valida(ruta: Path) -> bool:
     """
-    Valida esquema Y sincronía con Master_FINAL.db.
-    Si el maestro tiene más tareas o insumos, devuelve False → se recrea la copia.
+    Valida solo que el schema mínimo existe.
+    NO compara conteos con el master: cada obra tiene su propia BaseParticular.db
+    con tareas, insumos e incidencias propios que no deben pisarse.
     """
     try:
         conn = sqlite3.connect(str(ruta))
@@ -150,19 +151,7 @@ def _base_particular_es_valida(ruta: Path) -> bool:
         cur.execute("SELECT designacion FROM rubros LIMIT 1")
         cur.execute("SELECT id_tarea FROM tareas LIMIT 1")
         cur.execute("SELECT id_insumo FROM insumos LIMIT 1")
-        n_tar = cur.execute("SELECT COUNT(*) FROM tareas").fetchone()[0]
-        n_ins = cur.execute("SELECT COUNT(*) FROM insumos").fetchone()[0]
-        n_inc = cur.execute("SELECT COUNT(*) FROM incidencias").fetchone()[0]
         conn.close()
-        # Comparar con el maestro — si tiene más registros, forzar recreación
-        if CATALOGO_DB.exists():
-            m = sqlite3.connect(str(CATALOGO_DB))
-            m_tar = m.execute("SELECT COUNT(*) FROM tareas").fetchone()[0]
-            m_ins = m.execute("SELECT COUNT(*) FROM insumos").fetchone()[0]
-            m_inc = m.execute("SELECT COUNT(*) FROM incidencias").fetchone()[0]
-            m.close()
-            if m_tar > n_tar or m_ins > n_ins or m_inc > n_inc:
-                return False
         return True
     except Exception:
         try: conn.close()
