@@ -20,6 +20,29 @@ def cod_tar_existe(cod):
     return row is not None
 
 
+_B36 = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+
+def _nuevo_id_insumo(conn, cod_ins):
+    """id_insumo (base 36, 4 caracteres) para un insumo nuevo: el punto medio entre
+    los id de sus vecinos en orden de cod_ins (los id existentes van de a 500)."""
+    dec = lambda s: sum(_B36.index(ch) * 36**i for i, ch in enumerate(reversed(s.upper())))
+    def enc(n):
+        s = ""
+        while n: s = _B36[n % 36] + s; n //= 36
+        return s.rjust(4, "0")
+    ant = conn.execute("SELECT id_insumo FROM insumos WHERE cod_ins<? AND id_insumo IS NOT NULL "
+                       "ORDER BY cod_ins DESC LIMIT 1", (cod_ins,)).fetchone()
+    sig = conn.execute("SELECT id_insumo FROM insumos WHERE cod_ins>? AND id_insumo IS NOT NULL "
+                       "ORDER BY cod_ins LIMIT 1", (cod_ins,)).fetchone()
+    usados = {dec(r[0]) for r in conn.execute("SELECT id_insumo FROM insumos WHERE id_insumo IS NOT NULL")}
+    a = dec(ant[0]) if ant else -1
+    b = dec(sig[0]) if sig else (max(usados, default=0) + 1000)
+    n = (a + b) // 2 if b - a > 1 else max(usados, default=0) + 500
+    while n in usados: n += 1
+    return enc(n)
+
+
 def _ensure_extra_columns():
     with get_conn() as conn:
         cols = [r[1] for r in conn.execute("PRAGMA table_info(tareas)").fetchall()]
@@ -774,7 +797,8 @@ class NuevoInsumoDialog(tk.Toplevel):
         with get_conn() as conn:
             if conn.execute("SELECT 1 FROM insumos WHERE cod_ins=? LIMIT 1",(cod,)).fetchone():
                 self.lbl_error.config(text=f"El código «{cod}» ya existe en insumos."); return
-            conn.execute("INSERT INTO insumos (cod_ins,descripcion,unidad,activo) VALUES (?,?,?,1)",(cod,desc,unid))
+            conn.execute("INSERT INTO insumos (cod_ins,descripcion,unidad,activo,id_insumo) VALUES (?,?,?,1,?)",
+                         (cod,desc,unid,_nuevo_id_insumo(conn,cod)))
         cb=self.on_creado; self.grab_release(); self.destroy()
         self.master.after(50,lambda: cb(cod,desc,unid))
 
