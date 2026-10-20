@@ -4,7 +4,7 @@ query_insumos.py — Busca a qué tareas pertenecen los insumos 101243, 101246, 
 import sqlite3
 from pathlib import Path
 
-DB = Path(__file__).resolve().parent.parent / "Data" / "Master_FINAL.db"
+DB = Path(__file__).resolve().parent.parent.parent / "Costos" / "Data" / "Master_FINAL.db"
 INSUMOS = ("101243", "101246", "101247")
 
 con = sqlite3.connect(DB)

@@ -20,8 +20,7 @@ from cierre_de_dia import cierre as _cierre_de_dia
 # ── Rutas de integración con el módulo Costos ─────────────────────────────────
 RAIZ            = Path(__file__).resolve().parent.parent.parent  # Analisis_de_costos_y_Presupuestacion
 APP_TAREAS      = RAIZ / "Costos" / "Scripts" / "app_tareas.py"
-CATALOGO_DB     = RAIZ / "Costos" / "Data" / "Master_FINAL.db"
-PRESUPUESTOS_DB = CARPETA_DATA / "Master_FINAL.db"               # Presupuestos/Data/
+CATALOGO_DB     = RAIZ / "Costos" / "Data" / "Master_FINAL.db"   # Master único (se copia a cada obra nueva)
 
 TITULO_APP      = "Análisis de Costos y Presupuestación"
 COLOR_HEADER    = "#1a3a5c"
@@ -161,8 +160,7 @@ class AppPrincipal(tk.Tk):
 
     def _confirmar_db_catalogo(self):
         _lanzar_app_tareas(db_path=CATALOGO_DB,
-                           titulo="Base de Datos Costos — CATÁLOGO MAESTRO",
-                           copiar_a=PRESUPUESTOS_DB)
+                           titulo="Base de Datos Costos — CATÁLOGO MAESTRO")
 
     def _abrir_db_obra(self):
         num = self._obra_seleccionada()
@@ -184,7 +182,11 @@ class AppPrincipal(tk.Tk):
 
     def actualizar_lista(self):
         for item in self.tabla.get_children(): self.tabla.delete(item)
-        obras = listar_obras()
+        try:
+            obras = listar_obras()
+        except RuntimeError as e:
+            messagebox.showerror("Índice de obras", str(e), parent=self)
+            obras = []
         for i,o in enumerate(obras):
             tag = "par" if i%2==0 else "impar"
             self.tabla.insert("","end",iid=o["numero"],tags=(tag,),
@@ -281,9 +283,9 @@ class AppPrincipal(tk.Tk):
         except Exception as e:
             errores.append(f"Datos_Obras.db: {e}")
 
-        # 2. Master_FINAL.db
+        # 2. Master_FINAL.db (Master único, en Costos/Data)
         try:
-            shutil.copy2(str(CD / "Master_FINAL.db"), str(CD / "Master_FINAL_BUP.db"))
+            shutil.copy2(str(CATALOGO_DB), str(CATALOGO_DB.with_name("Master_FINAL_BUP.db")))
         except Exception as e:
             errores.append(f"Master_FINAL.db: {e}")
 

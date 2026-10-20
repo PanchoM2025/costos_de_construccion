@@ -7,12 +7,13 @@ Archivos por obra (Obras/Obra001/data/):
   obra001.json ...    — variantes/alternativas
   variaciones.txt     — log de versiones
   BaseParticular.db   — tareas/insumos/incidencias propias de esta obra
-                        (copiadas desde Master_FINAL.db al crear, editables libremente)
+                        (copiadas desde el Master de Costos al crear, editables libremente)
 
 Bases de datos centrales:
-  Master_FINAL.db    — catálogo maestro (rubros, tareas, insumos, incidencias)
-                       SOLO LECTURA — nunca se modifica desde acá
-  Datos_Obras.db     — índice de obras y comitentes (lectura/escritura)
+  Costos/Data/Master_FINAL.db       — catálogo maestro ÚNICO (rubros, tareas, insumos,
+                                      incidencias). Se edita desde la app de Costos.
+                                      Desde acá es SOLO LECTURA: se copia al crear una obra.
+  Presupuestos/Data/Datos_Obras.db  — índice de obras y comitentes (lectura/escritura)
 """
 import json
 import sqlite3
@@ -25,7 +26,7 @@ RAIZ             = Path(__file__).resolve().parent.parent.parent
 CARPETA_OBRAS    = RAIZ / "Obras"
 CARPETA_DATA     = RAIZ / "Data"
 CARPETA_PRECIOS  = CARPETA_DATA / "Precios"
-CATALOGO_DB      = CARPETA_DATA / "Master_FINAL.db"
+CATALOGO_DB      = RAIZ.parent / "Costos" / "Data" / "Master_FINAL.db"  # Master único
 DATOS_OBRAS_DB   = CARPETA_DATA / "Datos_Obras.db"
 MASTER_DB        = DATOS_OBRAS_DB
 
@@ -86,16 +87,21 @@ def _asegurar_tablas_certificados(conn: sqlite3.Connection):
 
 def _inicializar_datos_obras():
     if DATOS_OBRAS_DB.exists():
+        # Nunca borrar el índice de obras: si no se puede abrir (p. ej. Dropbox
+        # lo tiene bloqueado sincronizando) se avisa y se deja intacto.
         try:
             _c = sqlite3.connect(str(DATOS_OBRAS_DB))
             n = _c.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table'").fetchone()[0]
-            if n > 0:
-                _c.close()
-                return
             _c.close()
-        except Exception:
-            pass
-        DATOS_OBRAS_DB.unlink()
+        except Exception as e:
+            raise RuntimeError(
+                f"No se pudo abrir el índice de obras:\n{DATOS_OBRAS_DB}\n\n"
+                f"Detalle: {e}\n\n"
+                "El archivo NO fue modificado. Si Dropbox está sincronizando, "
+                "esperá a que termine y volvé a intentar.") from e
+        if n > 0:
+            return
+        # Archivo vacío (sin tablas): se crean las tablas en el mismo archivo.
 
     conn = sqlite3.connect(str(DATOS_OBRAS_DB))
     conn.executescript(_SCHEMA_DATOS_OBRAS)
@@ -137,36 +143,49 @@ def _inicializar_datos_obras():
     conn.close()
 
 
-def _base_particular_es_valida(ruta: Path) -> bool:
+def _error_base_particular(ruta: Path) -> str | None:
     """
-    Valida solo que el schema mínimo existe.
+    Valida solo que el schema mínimo existe. Devuelve None si está bien,
+    o el texto del error si no se pudo validar.
     NO compara conteos con el master: cada obra tiene su propia BaseParticular.db
     con tareas, insumos e incidencias propios que no deben pisarse.
     """
+    conn = None
     try:
         conn = sqlite3.connect(str(ruta))
         cur  = conn.cursor()
-        for tabla in ("rubros", "tareas", "insumos", "incidencias", "incidencias_v2"):
+        for tabla in ("rubros", "tareas", "insumos", "incidencias"):
             cur.execute(f"SELECT 1 FROM [{tabla}] LIMIT 1")
         cur.execute("SELECT designacion FROM rubros LIMIT 1")
         cur.execute("SELECT id_tarea FROM tareas LIMIT 1")
         cur.execute("SELECT id_insumo FROM insumos LIMIT 1")
-        conn.close()
-        return True
-    except Exception:
-        try: conn.close()
-        except: pass
-        return False
+        return None
+    except Exception as e:
+        return str(e)
+    finally:
+        if conn is not None:
+            conn.close()
+
+
+def _base_particular_es_valida(ruta: Path) -> bool:
+    return _error_base_particular(ruta) is None
 
 
 def crear_base_particular(carpeta_data: Path):
     dest = carpeta_data / "BaseParticular.db"
-    if not CATALOGO_DB.exists():
-        raise FileNotFoundError(f"No se encontró Master_FINAL.db en {CARPETA_DATA}")
-    if dest.exists() and _base_particular_es_valida(dest):
-        return
     if dest.exists():
-        dest.unlink()
+        # La base de la obra existe: nunca se pisa ni se borra.
+        error = _error_base_particular(dest)
+        if error is None:
+            return
+        raise RuntimeError(
+            f"No se pudo abrir la base de la obra:\n{dest}\n\n"
+            f"Detalle: {error}\n\n"
+            "El archivo NO fue modificado. Si Dropbox está sincronizando, "
+            "esperá a que termine y volvé a intentar. Si el problema sigue, "
+            "restaurá BaseParticular_BUP.db.")
+    if not CATALOGO_DB.exists():
+        raise FileNotFoundError(f"No se encontró el Master de Costos:\n{CATALOGO_DB}")
     shutil.copy2(str(CATALOGO_DB), str(dest))
     _conn = sqlite3.connect(str(dest))
     _asegurar_tablas_certificados(_conn)
@@ -297,32 +316,6 @@ def cargar_maestro_desde_db(carpeta_data: Path) -> dict:
 
     conn.close()
 
-    # DEBUG — remove after fix
-    try:
-        _dbg = Path(r"C:\Dropbox\Claude\Costos_de_construccion\DEBUG_MAESTRO.txt")
-        with open(_dbg, "w", encoding="utf-8") as _f:
-            # Sample of insumos keys
-            _f.write(f"=== insumos keys ({len(insumos)}) — first 20 ===\n")
-            for _k in sorted(insumos.keys())[:20]:
-                _f.write(f"  {repr(_k)}\n")
-            # Sample of incidencias cod_ins values
-            _f.write(f"\n=== incidencias cod_ins unique values — first 20 ===\n")
-            _seen = set()
-            for _ct, _lst in incidencias.items():
-                for _inc in _lst:
-                    _c = _inc["cod_ins"]
-                    if _c not in _seen:
-                        _seen.add(_c)
-                        _raw = _c
-                        _f.write(f"  cod_ins={repr(_raw)} type={type(_raw).__name__}\n")
-                    if len(_seen) >= 20:
-                        break
-                if len(_seen) >= 20:
-                    break
-    except Exception:
-        pass
-    # END DEBUG
-
     return {
         "rubros":         rubros_con_tareas,
         "tareas":         tareas_por_rubro,
@@ -425,10 +418,18 @@ class Obra:
         _inicializar_datos_obras()
         self.carpeta_data.mkdir(parents=True, exist_ok=True)
         if nueva_version:
-            self.version += 1
-            self._registrar_variacion(nota)
+            # La nueva versión va siempre DESPUÉS de la última que existe en disco,
+            # no después de la que está abierta: así nunca se pisa una versión existente.
+            version_origen = self.version
+            self.version   = self._ultima_version_en_disco() + 1
+            self._registrar_variacion(nota, version_origen)
         self._escribir_json()
         _actualizar_db(self)
+
+    def _ultima_version_en_disco(self) -> int:
+        numeros = [int(p.stem[4:]) for p in self.carpeta_data.glob("obra???.json")
+                   if p.stem[4:].isdigit()]
+        return max(numeros, default=-1)
 
     def _escribir_json(self):
         datos = {
@@ -447,13 +448,16 @@ class Obra:
         with open(self.ruta_json, "w", encoding="utf-8") as f:
             json.dump(datos, f, ensure_ascii=False, indent=2)
 
-    def _registrar_variacion(self, nota: str):
+    def _registrar_variacion(self, nota: str, version_origen: int | None = None):
         ruta = self.carpeta_data / "variaciones.txt"
         fecha = datetime.now().strftime("%Y-%m-%d %H:%M")
+        origen = (f"  (desde obra{version_origen:03d}.json)"
+                  if version_origen is not None and version_origen != self.version - 1 else "")
         linea = (f"obra{self.version:03d}.json  —  {fecha}"
-                 + (f"  —  {nota}" if nota else "") + "\n")
+                 + (f"  —  {nota}" if nota else "") + origen + "\n")
+        es_primera = not ruta.exists()
         with open(ruta, "a", encoding="utf-8") as f:
-            if self.version == 1:
+            if es_primera and self.version == 1:
                 f.write(f"obra000.json  —  {self.fecha_creacion}  —  Cotización inicial\n")
             f.write(linea)
 
@@ -640,6 +644,8 @@ def listar_obras() -> list:
         """).fetchall()
         conn.close()
         return [dict(r) for r in rows]
+    except RuntimeError:
+        raise  # índice de obras inaccesible: que lo vea el usuario
     except Exception:
         return []
 

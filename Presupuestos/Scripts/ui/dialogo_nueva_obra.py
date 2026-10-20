@@ -96,7 +96,12 @@ class DialogoNuevaObra(tk.Toplevel):
             messagebox.showwarning("Dato inválido", "El número debe ser numérico.",
                                    parent=self)
             return
-        if Obra.existe(num):
+        try:
+            existe = Obra.existe(num)
+        except Exception as e:
+            messagebox.showerror("Error", str(e), parent=self)
+            return
+        if existe:
             ok = messagebox.askyesno(
                 "Obra existente",
                 f"Ya existe la Obra {num.zfill(3)}.\n¿Querés sobreescribirla?",
