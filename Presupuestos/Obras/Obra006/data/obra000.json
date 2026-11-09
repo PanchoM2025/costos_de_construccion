@@ -1,0 +1,78 @@
+{
+  "numero": "006",
+  "nombre": "Pisos Moquehue",
+  "ubicacion": "Villa la Angostura",
+  "comitente": "Bisel",
+  "fecha_creacion": "2026-11-02",
+  "version": 0,
+  "archivo_precios": "PU_2026-11-02.xlsx",
+  "items_presupuesto": [
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "01",
+      "descripcion": "Piso de Hormigón Armado - Mezcla",
+      "unidad": "m2",
+      "cantidad": 700.0,
+      "cod_tar": "5162",
+      "subcontrato": "",
+      "rubro_std": "PAVIMENTOS"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "02",
+      "descripcion": "Pavimento articulado",
+      "unidad": "m2",
+      "cantidad": 700.0,
+      "cod_tar": "5190S",
+      "subcontrato": "",
+      "rubro_std": "PAVIMENTOS"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "03",
+      "descripcion": "Piso de Hormigón Armado - Elaborado",
+      "unidad": "m2",
+      "cantidad": 700.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    }
+  ],
+  "tareas": {
+    "5162": {
+      "cod": "5162",
+      "base": "5162",
+      "variante": " ",
+      "nombre": "Piso de Hormigón Armado fratazado esp. 0,15m.",
+      "nombre_editado": "Piso de Hormigón Armado - Mezcla",
+      "unidad": "m2",
+      "rubro": "PAVIMENTOS",
+      "cantidad": 700.0,
+      "subcontrato": ""
+    },
+    "5190S": {
+      "cod": "5190S",
+      "base": "5190",
+      "variante": "S",
+      "nombre": "Pavimento de bloques articulados",
+      "nombre_editado": "Pavimento articulado",
+      "unidad": "m2",
+      "rubro": "PAVIMENTOS",
+      "cantidad": 700.0,
+      "subcontrato": ""
+    }
+  },
+  "precios": {
+    "1411": 300.0,
+    "1511": 180000.0,
+    "1630": 200000.0,
+    "5170": 1070.0,
+    "1131": 3400.0,
+    "000114": 15000.0,
+    "000116": 12000.0
+  },
+  "precios_tarea": {}
+}

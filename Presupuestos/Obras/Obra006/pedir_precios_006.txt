@@ -1,0 +1,8 @@
+Codigo	Insumo	Unidad
+000114	Oficial.	hs
+000116	Ayudante.	hs
+1131	Malla de Acero tipo Sima 15x15 - Diam. 6mm Q188.	Kg
+1411	Cemento Portland normal bolsa de 50Kgr - 3 pliegos	Kg
+1511	Arena gruesa lavada	m3
+1630	Canto Rodado / Piedra partida	m3
+5170	Pavimento Articulado	m2

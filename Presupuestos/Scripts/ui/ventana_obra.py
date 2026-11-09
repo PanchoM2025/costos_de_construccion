@@ -309,6 +309,10 @@ class VentanaObra(tk.Toplevel):
         # La asignación ocurre en doble clic (_doble_clic_der).
         if hasattr(self, "_subc_combo"):
             self._subc_combo.place_forget()
+        # El combo solo se abre al clicar la columna Subc.: si se abriera sobre
+        # toda la fila, taparía el segundo clic y el doble clic nunca asignaría.
+        if col != "#1":
+            return
         bbox = self.tbl_der.bbox(iid, "#1")
         if not bbox:
             return
