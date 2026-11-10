@@ -644,3 +644,160 @@ Rubro 21 terminado (2026-11-09).
 
 ---
 **Fin de sesión 2026-11-09.** Copia: `Costos/Data/Master_FINAL_cierre_2026-11-09.db` (689 tareas, 2672 incidencias, sincronizadas). Se retoma por el rubro 22 Calefacción.
+
+## Rubro 22 — Calefacción (2026-11-10)
+
+| Tarea | Antes | Después |
+|---|---|---|
+| 8950T Instalación de calefacción | tarea "Instalacion de Calefacción"; insumo 8400 "Instalacion Calefaccion completa" | tarea "**Instalación de calefacción completa**"; insumo 8400 "**Mat. y MdeO. para Instalación de calefacción completa**". 1 gl sin cambio. Id H800 sin cambio |
+
+Subrubro 22.b Artefactos sin tareas. Rubro 22 terminado (2026-11-10).
+
+Verificación rubro 21 (2026-11-10): las 16 tareas son T con un único insumo "Mat. y MdeO."; no hubo que generar ninguna.
+
+## Rubro 20 — variantes T de artefactos (2026-11-10)
+
+| Tarea | Antes | Después |
+|---|---|---|
+| **8331T** Cocina (NUEVA) | no existía | Id FU08: Mat. y MdeO. (8T8331, Id 75IU) 1 un |
+| **8332T** Anafe dos quemadores (NUEVA) | no existía | Id FU09: Mat. y MdeO. (8T8332, Id 75MB) 1 un |
+| **8333T** Termotanque 90 lts (NUEVA) | no existía | Id FU0A: Mat. y MdeO. (8T8333, Id 75O1) 1 un |
+| **8335T** Termotanque 150 lts (NUEVA) | no existía | Id FU0B: Mat. y MdeO. (8T8335, Id 75OW) 1 un |
+| **8337T** Calefón a botonera (NUEVA) | no existía | Id FU0C: Mat. y MdeO. (8T8337, Id 75PC) 1 un |
+| **8338T** Estufa 2500/3000 (NUEVA) | no existía | Id FU0D: Mat. y MdeO. (8T8338, Id 75PK) 1 un |
+| **8339T** Estufa 5000/6000 (NUEVA) | no existía | Id FU0E: Mat. y MdeO. (8T8339, Id 75PO) 1 un |
+| **8341T** Medidor de gas (NUEVA) | no existía | Id FU0F: Mat. y MdeO. (8T8341, Id 75PQ) 1 un |
+
+- Insumos nuevos 8T8331, 8T8332, 8T8333, 8T8335, 8T8337, 8T8338, 8T8339, 8T8341 (un) — falta precio en PUnitarios.
+- Las propias (artefacto + subcontrato gasista 808330) quedan sin cambio. Total: 697 tareas, 2680 incidencias, sincronizadas.
+| 8330T Instalación de gas completa | tarea "Instalacion de Gas completa" | tarea "**Instalación de gas completa**" (2026-11-10). Id FK00 sin cambio |
+
+## Rubro 23 — Aire acondicionado, refrigeración (desde 2026-11-10)
+
+| Tarea | Antes | Después |
+|---|---|---|
+| 8500T Instalación de aire acondicionado | tarea "Instalacion de aire acondicionado"; insumo 8960 "Instalacion de aire acondicionado completa" | tarea "**Instalación de aire acondicionado completa**"; insumo 8960 "**Mat. y MdeO. para Instalación de aire acondicionado completa**". 1 gl sin cambio. Id HS00 sin cambio |
+| 8965 Artefactos | tarea "Artefactos"; insumo 8965 "Artefactos A.A." | tarea e insumo "**Artefactos de aire acondicionado**" (gl, 1 gl sin cambio; propia = provisión del equipo). Id I200 sin cambio |
+| **8965T** Artefactos de aire acondicionado (NUEVA) | no existía | gl: Mat. y MdeO. (insumo nuevo 8T8965) 1 gl |
+
+- Insumo nuevo 8T8965 Mat. y MdeO. para Artefactos de aire acondicionado, gl — falta precio en PUnitarios.
+
+Rubro 23 terminado (2026-11-10).
+
+## Rubro 24 — Ascensores y montacargas (desde 2026-11-10)
+
+| Tarea | Antes | Después |
+|---|---|---|
+| Instalación de ascensores completa | código 8970 (figuraba como propia), tarea "Instalación ascensores (Mano de Obra y Materiales)"; insumo 8975 "Instalacion de ascensores completa" | código **8970T**, tarea "**Instalación de ascensores completa**"; insumo 8975 "**Mat. y MdeO. para Instalación de ascensores completa**". 1 gl sin cambio. Id IC00 sin cambio |
+| 8911 Ascensor normal | tarea "Ascensores normales" en un; insumo 8911 "Ascensor normal 500 Kgr. 45 mts/min pta. telescop." en pd | tarea en **pd** (por parada); tarea e insumo "**Ascensor normal 500 kg, 45 m/min, puerta telescópica**". 1 pd sin cambio. Id IH00 sin cambio |
+| **8911T** (NUEVA) | no existía | pd: Mat. y MdeO. (insumo nuevo 8T8911) 1 pd |
+| 8912 Ascensor hidráulico | tarea "Ascensores hidraulicos" en un; insumo 8912 "Ascensor hidráulico 400 Kgr. 24mts/min. pta. teles" en pd | tarea en **pd**; tarea e insumo "**Ascensor hidráulico 400 kg, 24 m/min, puerta telescópica**". 1 pd sin cambio. Id IH01 sin cambio |
+| **8912T** (NUEVA) | no existía | pd: Mat. y MdeO. (insumo nuevo 8T8912) 1 pd |
+
+- Insumos nuevos 8T8911 y 8T8912 (pd) — falta precio en PUnitarios.
+
+Rubro 24 terminado (2026-11-10).
+
+## Rubro 25 — Instalación contra incendio (desde 2026-11-10)
+
+| Tarea | Antes | Después |
+|---|---|---|
+| Instalación contra incendio completa | código 8980 (figuraba como propia), tarea "Instalación contra incendio (Mano de Obra y Materiales)"; insumo 8980 "Instalacion contra incendio" | código **8980T**, tarea "**Instalación contra incendio completa**"; insumo 8980 "**Mat. y MdeO. para Instalación contra incendio completa**". 1 gl sin cambio. Id IM00 sin cambio |
+| 8981 Equipos contra incendio | tarea "Artefactos"; insumo 8981 "Equipos contra incendio" | tarea "**Equipos contra incendio**" (igual que el insumo; gl, 1 gl sin cambio; propia = provisión del equipo). Id IR00 sin cambio |
+| **8981T** Equipos contra incendio (NUEVA) | no existía | gl: Mat. y MdeO. (insumo nuevo 8T8981) 1 gl |
+
+- Insumo nuevo 8T8981 Mat. y MdeO. para Equipos contra incendio, gl — falta precio en PUnitarios.
+
+Rubro 25 terminado (2026-11-10).
+
+## Rubro 26 — Pinturas (desde 2026-11-10)
+
+**Criterio del rubro (usuario, 2026-11-10):** toda tarea con horas de pintor y materiales lleva una variante **S** (subcontrato de MdeO 90<tarea> + los mismos materiales de la propia), y **todas** las tareas tienen su **T**.
+
+| Tarea | Antes | Después |
+|---|---|---|
+| 9111 Pintura a la cal en muros y cielorrasos | Oficial 0,15 + Ayudante 0,10 h, cal aérea 0,3 kg | sin cambio |
+| **9111S** (NUEVA) | no existía | m2: Subcontrato (909111, existía sin uso) 1 m2 + cal aérea 0,3 kg |
+| 9111T | insumo 9T9111 "…Pintura a la cal muros y cielorrasos." | insumos 9T9111 y 909111 renombrados "…Pintura a la cal **en** muros y cielorrasos" |
+| 9122 Pintura al Esmalte Sintético Satinol en muros | Oficial 1,1 + Ayudante 0,4 h (horas de carpintería); masilla al aguarrás 0,08 kg; sin lija | Oficial **0,55** + Ayudante **0,15** h (= látex interior); **sin masilla**; + **lija 0,1 hoja**. Satinol 0,22, fijador 0,15, enduido 0,20, aguarrás 0,04 sin cambio |
+| **9122S** (NUEVA) | no existía | m2: Subcontrato (909122, existía sin uso) 1 m2 + mismos materiales |
+| 9122T | insumo 9T9122 "…Esmalte Sintético en hojas." | insumos 9T9122 y 909122 renombrados "…Pintura al Esmalte Sintético **Satinol en muros**" |
+| 9123 Pintura al Esmalte Sintético en muros interiores | Oficial 0,4 + Ayudante 0,1 h; fijador 0,18, enduido 0,35, masilla al aguarrás 0,08 kg | Oficial **0,55** + Ayudante **0,15** h; fijador **0,15**, enduido **0,20**, **sin masilla**. Esmalte 0,20, aguarrás 0,04, lija 0,1 sin cambio |
+| **9123S** (NUEVA) | no existía | m2: Subcontrato (insumo nuevo 909123) 1 m2 + mismos materiales |
+| **9123T** (NUEVA) | no existía | m2: Mat. y MdeO. (insumo nuevo 9T9123) 1 m2 |
+
+- Insumos nuevos 909123 y 9T9123 (m2) — falta precio en PUnitarios.
+| 9131 Pintura al Latex en muros interiores | látex 0,18 lt, enduido 0,15 lt, sin lija | látex **0,20**, enduido **0,20** (igual que esmaltes en muros), + **lija 0,1 hoja**. Horas 0,55 + 0,15 y fijador 0,15 sin cambio |
+| **9131S** (NUEVA) | no existía | m2: Subcontrato (909131, existía sin uso) 1 m2 + mismos materiales |
+
+**Criterio muros interiores con enduido (2026-11-10):** horas 0,55 + 0,15, fijador 0,15, enduido 0,20, lija 0,1 (9122, 9123, 9131).
+| 9133 Pintura al Latex en muros exteriores | Oficial 0,4 + Ayudante 0,1 h, látex 0,20, fijador 0,10 | sin cambio |
+| **9133S** (NUEVA) | no existía | m2: Subcontrato (909133, existía sin uso) 1 m2 + látex 0,20 + fijador 0,10 |
+| **9161** Pintura ladrillo a la vista (NUEVA, propia) | solo existía la 9161T | m2: Oficial **0,3** + Ayudante **0,1** h (estimadas) + **Protector siliconado para ladrillo a la vista** (insumo nuevo 9161, lt) **0,25 lt** |
+| **9161S** (NUEVA) | no existía | m2: Subcontrato (909161, existía sin uso) 1 m2 + protector siliconado 0,25 lt |
+| 9161T | — | sin cambio (ahora variante de la 9161 propia; Id IW0A sin cambio) |
+
+- Insumo nuevo 9161 Protector siliconado para ladrillo a la vista, lt — falta precio en PUnitarios.
+
+Subrubro 26.a de Muros terminado.
+| 9132 Pintura al Latex en cielorrasos | Oficial 0,52 + Ayudante 0,13 h; látex 0,20, fijador 0,10; sin enduido | **con enduido** (usuario): + **enduido 0,20 lt** + **lija 0,1 hoja**; Oficial **0,70** + Ayudante **0,18** h (misma proporción que muro sin/con enduido). Látex 0,20 y fijador 0,10 sin cambio |
+| **9132S** (NUEVA) | no existía | m2: Subcontrato (909132, existía sin uso) 1 m2 + mismos materiales |
+
+Subrubro 26.b de Cielorrasos terminado.
+| 9121 Pintura al Esmalte Sintético carpintería metálica | antióxido 0,06 lt | antióxido **0,10 lt**. Horas 1,1 + 0,4, esmalte 0,20, aguarrás 0,04, lija 0,1, masilla 0,08, viruta 0,05 sin cambio |
+| **9121S** (NUEVA) | no existía | m2: Subcontrato (909121, existía sin uso) 1 m2 + mismos materiales |
+| 9121T | insumo 9T9121 "…Esmalte Sintético en marcos" | insumos 9T9121 y 909121 renombrados "…Pintura al Esmalte Sintético **carpintería metálica**" |
+
+Subrubro 26.c de Carpintería metálica terminado.
+| 9124 Pintura al Esmalte Sintético carpintería de madera | tarea "…s/carp. de madera."; fondo sintético 0,02 lt | tarea "**Pintura al Esmalte Sintético carpintería de madera**"; fondo sintético **0,10 lt**. Horas 1,1 + 0,4, esmalte 0,20, aguarrás 0,04, lija 0,1, masilla 0,08 sin cambio |
+| **9124S** (NUEVA) | no existía | m2: Subcontrato (insumo nuevo 909124) 1 m2 + mismos materiales |
+| **9124T** (NUEVA) | no existía | m2: Mat. y MdeO. (insumo nuevo 9T9124) 1 m2 |
+
+- Insumos nuevos 909124 y 9T9124 (m2) — falta precio en PUnitarios.
+| **9141** Pintura al Oleo Mate en carpinterías (NUEVA, propia) | solo existía la 9141T | m2: copia de la 9124 con otra pintura: Oficial 1,1 + Ayudante 0,4 h; **Pintura al óleo mate** (insumo nuevo 9141, lt) 0,20; fondo sintético 0,10, aguarrás 0,04, lija 0,1, masilla 0,08 |
+| **9141S** (NUEVA) | no existía | m2: Subcontrato (909141, existía sin uso) 1 m2 + mismos materiales |
+| 9141T | — | sin cambio (ahora variante de la 9141 propia; Id JH01 sin cambio) |
+
+- Insumo nuevo 9141 Pintura al óleo mate, lt — falta precio en PUnitarios.
+| 9142T Pintura al Oleo Mate frisos s/muros | en subrubro 26.d de Carpintería de madera, Id JH02 | movida a **26.a de Muros** (después de la 9161); **Id nuevo IW0I**. Contenido sin cambio; ahora variante de la 9142 propia |
+| **9142** (NUEVA, propia) | no existía | m2, Id IW0J: copia de la 9123 con otra pintura: Oficial 0,55 + Ayudante 0,15 h; Pintura al óleo mate (9141) 0,20; fijador 0,15, enduido 0,20, aguarrás 0,04, lija 0,1 |
+| **9142S** (NUEVA) | no existía | m2, Id IW0K: Subcontrato (909142, existía sin uso) 1 m2 + mismos materiales |
+
+- Id nuevo: 9142T **IW0I** (antes JH02).
+| 9151 Barniz en carpintería de madera | barniz 0,40 lt; aguarrás 0,36 lt (error de coma) | barniz **0,30 lt** (tres manos); aguarrás **0,04 lt**. Horas 1,0 + 0,2 y lija 0,1 sin cambio |
+| **9151S** (NUEVA) | no existía | m2: Subcontrato (909151, existía sin uso) 1 m2 + barniz 0,30 + aguarrás 0,04 + lija 0,1 |
+| 9151T | insumo 9T9151 "…Barníz…" | insumos 9T9151 y 909151 corregidos a "**Barniz**" |
+
+Subrubro 26.d de Carpintería de madera terminado. Rubro 26 terminado (2026-11-10): todas las tareas tienen propia, S y T.
+
+## Rubro 27 — Vidrios (2026-11-10)
+
+| Tarea | Antes | Después |
+|---|---|---|
+| 9211T, 9212T, 9213T, 9214T, 9221T, 9222T, 9251T | T en m2 con un único insumo "Mat. y MdeO." (9T92xx) | sin cambio (se subcontrata todo: sin propias ni S) |
+
+Rubro 27 terminado (2026-11-10).
+
+## Rubro 28 — Otras prestaciones (desde 2026-11-10)
+
+| Tarea | Antes | Después |
+|---|---|---|
+| 0331, 0332, 0333, 0334 Prestación Mano de Obra (Of. Especializado, Oficial, 1/2 Oficial, Ayudante) | 1 hs del insumo homónimo (000331-000334) | sin cambio (precio de la hora; sin S ni T) |
+| 2810 Ayuda de gremios Instalación Sanitaria y Gas | 0,10 gl de siete subcontratos viejos (707101-707106 y 707109: pozo, alimentación, agua fría, agua caliente, cloacales, pluviales, MdeO sanitaria); sin gas | **5 %** (usuario) sobre los insumos actuales de instalación completa: **0,05 gl** de 7T7103 Agua fría y caliente + **0,05 gl** de 7T7104 Desagües pluviales y cloacales + **0,05 gl** de 8330 Instalación de gas completa |
+
+- Insumos 707101 a 707106 quedan sin uso (se dejan). 707109 sigue en uso en la 7101.
+- **Criterio ayuda de gremios (usuario, 2026-11-10):** 5 % del "Mat. y MdeO." de la instalación completa.
+| 2820 Ayuda de gremios Instalación Eléctrica | 0,11 gl de nueve subcontratos viejos (807201-807209) | **0,05 gl** de 8200 Mat. y MdeO. para Instalación eléctrica completa (criterio 5 %) |
+
+- **Insumos ELIMINADOS** (usuario; solo los usaba la 2820): 807201 Estación Tranformadora (Id 6G94), 807202 Toma de Energía (6GN0), 807203 Tablero Principal (6H0W), 807204 Tablero Secundarios (6HES), 807205 Boca de Iluminación y Tomas Viviendas (6HSO), 807206 Boca de Iluminación y Tomas Industrias (6I6K), 807207 Instalación Telefónica y/o Televisión (6IKG), 807208 Instalación Ascensor y/o Bombas (6IYC), 807209 Colocación de Artefactos (6JC8). Quitarlos también de la planilla PUnitarios. Total: 840 insumos.
+- **Insumos ELIMINADOS** (usuario; habían quedado sin uso al rearmar la 2810): 707101 Perforación Pozo Semisurgente (Id 5FZK), 707102 Alimentación de Agua a Tanques (5GDG), 707103 Distribución de Agua Fría (5GRC), 707104 Distribución de Agua Caliente (5H58), 707105 Desagues Cloacales (5HJ4), 707106 Desagues Pluviales (5HX0). Quitarlos también de la planilla PUnitarios. Total: 834 insumos.
+| 2950 Andamiaje para trabajos de altura | solo horas de armado y desarme (Oficial 0,1 + Ayudante 0,2 h/m2), sin andamio | + **Alquiler de andamio tubular (m2 de fachada por mes)** (insumo nuevo 2950, m2) **1 m2** = un mes de andamio. Horas sin cambio |
+| **2950T** (NUEVA) | no existía | m2: Mat. y MdeO. (insumo nuevo 2T2950) 1 m2 |
+
+- Insumos nuevos 2950 y 2T2950 (m2) — falta precio en PUnitarios.
+
+Rubro 28 terminado (2026-11-10). **Revisión de incidencias de los 28 rubros TERMINADA.**
+
+---
+**Fin de sesión 2026-11-10.** Copia: `Costos/Data/Master_FINAL_cierre_2026-11-10.db` (719 tareas, 2753 incidencias, 836 insumos, sincronizadas). Revisión de incidencias terminada (rubros 1 a 28). Sigue el paso 2 de la migración a Id (app de Costos).
+- Base compactada (VACUUM) el 2026-11-10: 602 KB → 545 KB, mismos conteos; la copia de cierre es la compactada. Backup completo: `C:\Dropbox\Backups_Analisis_de_costos\Backup_2026-11-10_revision_incidencias_terminada.zip`.
