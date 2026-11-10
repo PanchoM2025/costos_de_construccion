@@ -395,7 +395,7 @@ class App(tk.Tk):
         self.tv_ins.delete(*self.tv_ins.get_children())
         with get_conn() as conn:
             rows = conn.execute("""
-                SELECT inc.cod_ins, COALESCE(ins.descripcion,'(sin descripción)'), inc.unidad, inc.cantidad
+                SELECT inc.cod_ins, COALESCE(ins.descripcion,'(sin descripción)'), COALESCE(ins.unidad,inc.unidad,''), inc.cantidad
                 FROM incidencias inc LEFT JOIN insumos ins ON ins.cod_ins=inc.cod_ins
                 WHERE inc.cod_tar=? ORDER BY inc.cod_ins""", (cod_tar,)).fetchall()
         for i,(cod_ins,desc_ins,unidad,cantidad) in enumerate(rows):
@@ -630,7 +630,7 @@ class InsumoContextDialog(tk.Toplevel):
         ttk.Button(btn_frm,text="Cerrar",command=self.destroy).pack(side=tk.RIGHT,padx=(4,0))
         ttk.Button(btn_frm,text="  ✏  Incorporar  ",style="Edit.TButton",command=self._incorporar).pack(side=tk.RIGHT)
         with get_conn() as conn:
-            rows=conn.execute("SELECT inc.cod_ins,COALESCE(ins.descripcion,'(sin descripción)'),inc.unidad,inc.cantidad FROM incidencias inc LEFT JOIN insumos ins ON ins.cod_ins=inc.cod_ins WHERE inc.cod_tar=? ORDER BY inc.cod_ins",(cod_tar,)).fetchall()
+            rows=conn.execute("SELECT inc.cod_ins,COALESCE(ins.descripcion,'(sin descripción)'),COALESCE(ins.unidad,inc.unidad,''),inc.cantidad FROM incidencias inc LEFT JOIN insumos ins ON ins.cod_ins=inc.cod_ins WHERE inc.cod_tar=? ORDER BY inc.cod_ins",(cod_tar,)).fetchall()
         for i,(c,d,u,q) in enumerate(rows):
             self.tv.insert("",tk.END,iid=f"i_{i}",values=(c,d,u or "",_fmt_cant(q)))
         if not rows: self.tv.insert("",tk.END,values=("","(sin insumos)","",""))

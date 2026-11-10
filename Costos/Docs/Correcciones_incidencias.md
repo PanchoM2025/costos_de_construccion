@@ -801,3 +801,10 @@ Rubro 28 terminado (2026-11-10). **Revisión de incidencias de los 28 rubros TER
 ---
 **Fin de sesión 2026-11-10.** Copia: `Costos/Data/Master_FINAL_cierre_2026-11-10.db` (719 tareas, 2753 incidencias, 836 insumos, sincronizadas). Revisión de incidencias terminada (rubros 1 a 28). Sigue el paso 2 de la migración a Id (app de Costos).
 - Base compactada (VACUUM) el 2026-11-10: 602 KB → 545 KB, mismos conteos; la copia de cierre es la compactada. Backup completo: `C:\Dropbox\Backups_Analisis_de_costos\Backup_2026-11-10_revision_incidencias_terminada.zip`.
+
+## Unidades de las incidencias (2026-11-10)
+
+- La columna `unidad` de `incidencias` estaba vacía en 1868 de 2753 filas (las anteriores a la revisión). Se completó con la unidad de cada insumo; `incidencias_id` se sincronizó por los triggers. Cantidades y conteos sin cambio.
+- Unificadas también las 3 incidencias con la unidad escrita distinto que el insumo (2460S/2469 y 3150S/2455 "Kgr" → "Kg"; 0145/0920 "Gl" → "gl"). Todas las incidencias tienen ahora la unidad de su insumo.
+- La app de Costos ahora muestra siempre la unidad del insumo.
+- Copia de cierre `Costos/Data/Master_FINAL_cierre_2026-11-10.db` actualizada después de completar las unidades (el zip de backup del 10/11 es anterior a este cambio).
