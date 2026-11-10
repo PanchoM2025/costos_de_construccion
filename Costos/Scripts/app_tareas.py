@@ -104,15 +104,18 @@ class App(tk.Tk):
         self.sv_search.trace_add("write", lambda *_: self._filter_tareas())
         ttk.Entry(sf, textvariable=self.sv_search).pack(side=tk.LEFT, padx=6, fill=tk.X, expand=True)
         frame_tar = tk.Frame(lf_tar, bg="#F0F2F5"); frame_tar.pack(fill=tk.BOTH, expand=True)
-        self.tv_tar = ttk.Treeview(frame_tar, columns=("cod","desc","unidad"), show="headings", selectmode="extended")
+        self.tv_tar = ttk.Treeview(frame_tar, columns=("cod","desc","unidad","var"), show="headings", selectmode="extended")
         self.tv_tar.heading("cod", text="Código"); self.tv_tar.heading("desc", text="Descripción"); self.tv_tar.heading("unidad", text="Unidad")
+        self.tv_tar.heading("var", text="Variantes")
         self.tv_tar.column("cod", width=80, anchor=tk.CENTER, stretch=False)
-        self.tv_tar.column("desc", width=310, minwidth=140); self.tv_tar.column("unidad", width=65, anchor=tk.CENTER, stretch=False)
+        self.tv_tar.column("desc", width=290, minwidth=140); self.tv_tar.column("unidad", width=65, anchor=tk.CENTER, stretch=False)
+        self.tv_tar.column("var", width=75, anchor=tk.CENTER, stretch=False)
         sb_t = ttk.Scrollbar(frame_tar, orient=tk.VERTICAL, command=self.tv_tar.yview)
         self.tv_tar.configure(yscrollcommand=sb_t.set)
         self.tv_tar.pack(side=tk.LEFT, fill=tk.BOTH, expand=True); sb_t.pack(side=tk.LEFT, fill=tk.Y)
         self.tv_tar.bind("<<TreeviewSelect>>", self._on_tar_select)
         self.tv_tar.bind("<Button-3>", self._on_tar_rightclick)
+        self.tv_tar.bind("<Double-1>", self._on_tar_doubleclick)
         btn_frm_tar = tk.Frame(lf_tar, bg="#F0F2F5"); btn_frm_tar.pack(fill=tk.X, pady=(8,0))
         self.btn_modificar_tar = ttk.Button(btn_frm_tar, text="✏ Modificar", style="Edit.TButton", state=tk.DISABLED, command=self._open_modificar_tar)
         self.btn_modificar_tar.pack(side=tk.LEFT, padx=(0,4))
@@ -153,47 +156,87 @@ class App(tk.Tk):
         VentanaInsumos(self)
 
     def _load_tareas(self):
+        """Carga las tareas agrupadas en familias: la lista muestra una fila por tarea
+        (la de personal propio, o la primera variante si solo hay subcontratos);
+        las demás variantes (S/E/X/T) se eligen con doble clic."""
         with get_conn() as conn:
             tiene_rubros = conn.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='rubros'").fetchone()[0]
+            cols = {r[1] for r in conn.execute("PRAGMA table_info(tareas)")}
+            tiene_var = {"variante", "id_tarea_base", "orden"} <= cols
+            c_var = "COALESCE(t.variante,''), t.id_tarea_base" if tiene_var else "'', NULL"
+            c_ord = "t.orden, " if tiene_var else ""
             if tiene_rubros:
-                rows = conn.execute("""
+                rows = conn.execute(f"""
                     SELECT t.id, t.cod_tar, t.descripcion, t.unidad,
                            COALESCE(rp.designacion, r.designacion, '') AS rubro_desc,
-                           COALESCE(r.cod_rubro, '') AS sub_cod
+                           COALESCE(r.cod_rubro, '') AS sub_cod,
+                           CASE WHEN rp.cod_rubro IS NOT NULL THEN r.designacion ELSE '' END AS sub_desc,
+                           {c_var}
                     FROM tareas t
                     LEFT JOIN rubros r ON r.id_rs_ini = t.id_rs
                         AND (r.es_padre=0 OR NOT EXISTS (SELECT 1 FROM rubros r2 WHERE r2.id_rs_ini=t.id_rs AND r2.es_padre=0))
                     LEFT JOIN rubros rp ON rp.cod_rubro = r.cod_padre
                     WHERE t.activo=1
                     ORDER BY COALESCE(rp.id_rs_ini,r.id_rs_ini,'ZZ'), COALESCE(r.cod_rubro,''),
-                             t.id_tarea NULLS LAST, t.cod_tar, t.id
+                             {c_ord}t.id_tarea NULLS LAST, t.cod_tar, t.id
                 """).fetchall()
             else:
-                rows = [(r[0],r[1],r[2],r[3],'','') for r in conn.execute(
+                rows = [(r[0],r[1],r[2],r[3],'','','','',None) for r in conn.execute(
                     "SELECT id,cod_tar,descripcion,unidad FROM tareas WHERE activo=1 ORDER BY id").fetchall()]
-        self._all_tareas = rows; self._populate_tareas(rows)
+            try: self._nombres_var = dict(conn.execute("SELECT variante, nombre FROM variantes"))
+            except sqlite3.Error: self._nombres_var = {}
+        por_base = {}; familias = []
+        for tar_id, cod, desc, unidad, rubro_desc, sub_cod, sub_desc, var, base in rows:
+            m = {"id": tar_id, "cod": cod, "desc": desc or "", "unidad": unidad or "", "var": var or ""}
+            fam = por_base.get(base) if base else None
+            if fam is None:
+                # Encabezado: subrubro con su propio nombre; rubro sin subrubros con el nombre del rubro
+                grupo = f"{sub_cod}  —  {sub_desc or rubro_desc}" if sub_cod else (rubro_desc or "")
+                fam = {"miembros": [], "grupo": grupo, "rubro": f"{rubro_desc} {sub_desc}".lower()}
+                familias.append(fam)
+                if base: por_base[base] = fam
+            fam["miembros"].append(m)
+        for fam in familias:
+            fam["rep"] = next((m for m in fam["miembros"] if not m["var"]), fam["miembros"][0])
+        self._all_tareas = familias
+        self._familias = {str(f["rep"]["id"]): f for f in familias}
+        self._var_fijada = None
+        self._populate_tareas(familias)
 
-    def _populate_tareas(self, rows):
+    def _populate_tareas(self, familias):
         self.tv_tar.delete(*self.tv_tar.get_children())
         self.tv_tar.tag_configure("generico", foreground="#E67E22")
         self.tv_tar.tag_configure("grupo_hdr", background="#1F5C99", foreground="#FFFFFF", font=("Segoe UI",9,"bold"))
-        grupo_actual = None; grupo_seq = 0; tar_count = 0
-        for row in rows:
-            tar_id, cod, desc, unidad, rubro_desc, sub_cod = row
-            grupo = f"{sub_cod}  —  {rubro_desc}" if sub_cod else (rubro_desc or "")
-            if grupo != grupo_actual:
-                grupo_actual = grupo; grupo_seq += 1
-                self.tv_tar.insert("", tk.END, iid=f"_grp_{grupo_seq}", values=("",grupo,""), tags=("grupo_hdr",))
-            tag = "generico" if cod in CODIGOS_GENERICOS else ""
-            self.tv_tar.insert("", tk.END, iid=str(tar_id), values=(cod, desc or "", unidad or ""), tags=(tag,))
-            tar_count += 1
-        self.sv_status.set(f"{tar_count} tareas")
+        grupo_actual = None; grupo_seq = 0; n_var = 0
+        for fam in familias:
+            if fam["grupo"] != grupo_actual:
+                grupo_actual = fam["grupo"]; grupo_seq += 1
+                self.tv_tar.insert("", tk.END, iid=f"_grp_{grupo_seq}", values=("",grupo_actual,"",""), tags=("grupo_hdr",))
+            rep = fam["rep"]; n_var += len(fam["miembros"])
+            letras = " ".join(m["var"] for m in fam["miembros"] if m["var"]) if len(fam["miembros"]) > 1 else ""
+            tag = "generico" if rep["cod"] in CODIGOS_GENERICOS else ""
+            self.tv_tar.insert("", tk.END, iid=str(rep["id"]), values=(rep["cod"], rep["desc"], rep["unidad"], letras), tags=(tag,))
+        self.sv_status.set(f"{len(familias)} tareas  ·  {n_var} con sus variantes  ·  doble clic para ver las variantes")
 
     def _filter_tareas(self):
         q = self.sv_search.get().lower()
         filtered = self._all_tareas if not q else [
-            r for r in self._all_tareas if q in r[1].lower() or q in (r[2] or "").lower() or q in (r[4] or "").lower()]
+            f for f in self._all_tareas if q in f["rubro"] or q in f["grupo"].lower()
+            or any(q in m["cod"].lower() or q in m["desc"].lower() for m in f["miembros"])]
         self._populate_tareas(filtered)
+
+    def _nombre_variante(self, var):
+        return self._nombres_var.get(var) or {"": "Personal propio"}.get(var, f"Variante {var}")
+
+    def _mostrar_tarea(self, m):
+        """Deja la tarea (o variante) m como tarea actual y carga sus insumos."""
+        self._current_tar_id = m["id"]; self._current_cod_tar = m["cod"]
+        sufijo = f"   ·   {self._nombre_variante(m['var'])}" if m["var"] else ""
+        self.lbl_tar.config(text=f"{m['cod']}  —  {m['desc']}{sufijo}",
+                            foreground="#E67E22" if m["cod"] in CODIGOS_GENERICOS else "#2C3E50")
+        self.btn_add.config(state=tk.NORMAL); self.btn_edit.config(state=tk.DISABLED)
+        self.btn_del.config(state=tk.DISABLED); self.btn_modificar_tar.config(state=tk.NORMAL)
+        self._load_insumos(m["cod"])
 
     def _on_tar_select(self, _=None):
         sel = self.tv_tar.selection()
@@ -203,16 +246,50 @@ class App(tk.Tk):
         if not sel: return
         self.btn_exportar.config(state=tk.NORMAL)
         if len(sel) == 1:
-            tar_id = int(sel[0]); vals = self.tv_tar.item(sel[0], "values")
-            self._current_tar_id = tar_id; self._current_cod_tar = vals[0]
-            self.lbl_tar.config(text=f"{vals[0]}  —  {vals[1]}", foreground="#E67E22" if vals[0] in CODIGOS_GENERICOS else "#2C3E50")
-            self.btn_add.config(state=tk.NORMAL); self.btn_edit.config(state=tk.DISABLED)
-            self.btn_del.config(state=tk.DISABLED); self.btn_modificar_tar.config(state=tk.NORMAL)
-            self._load_insumos(vals[0])
+            fam = self._familias[sel[0]]; m = fam["rep"]
+            # Si se eligió una variante de esta misma fila, se mantiene; al cambiar de fila se olvida
+            if self._var_fijada and self._var_fijada[0] == sel[0]:
+                m = next((x for x in fam["miembros"] if x["id"] == self._var_fijada[1]), m)
+            else:
+                self._var_fijada = None
+            self._mostrar_tarea(m)
         else:
+            self._var_fijada = None
             self.btn_modificar_tar.config(state=tk.DISABLED); self.btn_add.config(state=tk.DISABLED)
             self.lbl_tar.config(text=f"{len(sel)} tareas seleccionadas", foreground="#2C3E50")
             self.sv_status.set(f"{len(sel)} tareas seleccionadas — hacé clic en Exportar")
+
+    def _on_tar_doubleclick(self, event):
+        item = self.tv_tar.identify_row(event.y)
+        if not item or str(item).startswith("_grp_"): return
+        fam = self._familias.get(item)
+        if not fam: return
+        if len(fam["miembros"]) < 2:
+            self.sv_status.set(f"{fam['rep']['cod']} no tiene otras variantes."); return
+        if getattr(self, "_dlg_variantes", None) is not None and self._dlg_variantes.winfo_exists():
+            self._dlg_variantes.destroy()
+        actual = self._var_fijada[1] if self._var_fijada and self._var_fijada[0] == item else fam["rep"]["id"]
+        self._dlg_variantes = VariantesDialog(self, fam, actual, self._nombre_variante,
+                                              on_elegir=lambda m, iid=item: self._elegir_variante(iid, m))
+
+    def _elegir_variante(self, iid, m):
+        """Llamado desde el pop-up de variantes: muestra los insumos de la variante elegida."""
+        if not self.tv_tar.exists(iid): return
+        fam = self._familias[iid]
+        self._var_fijada = (iid, m["id"]) if m is not fam["rep"] else None
+        if self.tv_tar.selection() != (iid,): self.tv_tar.selection_set(iid)
+        self._mostrar_tarea(m)
+
+    def _seleccionar_tarea(self, cod):
+        """Selecciona en la lista la fila de la tarea cod (aunque sea una variante oculta)."""
+        for iid, fam in self._familias.items():
+            m = next((x for x in fam["miembros"] if x["cod"] == cod), None)
+            if m is None: continue
+            if not self.tv_tar.exists(iid): return False
+            self._var_fijada = (iid, m["id"]) if m is not fam["rep"] else None
+            self.tv_tar.selection_set(iid); self.tv_tar.see(iid); self._mostrar_tarea(m)
+            return True
+        return False
 
     def _on_tar_rightclick(self, event):
         item = self.tv_tar.identify_row(event.y)
@@ -235,7 +312,8 @@ class App(tk.Tk):
         filepath = filedialog.asksaveasfilename(defaultextension=".xlsx", filetypes=[("Excel","*.xlsx")],
             initialfile="tareas_exportadas.xlsx", parent=self, title="Guardar exportación de tareas")
         if not filepath: return
-        tar_ids = [int(s) for s in sel]; placeholders = ",".join("?"*len(tar_ids))
+        # Cada fila representa a la tarea con todas sus variantes: se exportan todas
+        tar_ids = [m["id"] for s in sel for m in self._familias[s]["miembros"]]; placeholders = ",".join("?"*len(tar_ids))
         try:
             with get_conn() as conn:
                 tiene_rubros = conn.execute("SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='rubros'").fetchone()[0]
@@ -355,18 +433,14 @@ class App(tk.Tk):
 
     def _on_tarea_modificada(self,cod_viejo,cod_nuevo):
         self._current_cod_tar=cod_nuevo; self._load_tareas()
-        for item in self.tv_tar.get_children():
-            vals=self.tv_tar.item(item,"values")
-            if vals and vals[0]==cod_nuevo: self.tv_tar.selection_set(item); self.tv_tar.see(item); break
-        self._load_insumos(cod_nuevo); self.sv_status.set(f"Tarea modificada: {cod_viejo} → {cod_nuevo}")
+        if not self._seleccionar_tarea(cod_nuevo): self._load_insumos(cod_nuevo)
+        self.sv_status.set(f"Tarea modificada: {cod_viejo} → {cod_nuevo}")
 
     def _open_agregar_tar(self): AgregarTareaDialog(self, on_guardado=self._on_tarea_agregada)
 
     def _on_tarea_agregada(self, cod_nuevo):
         self._load_tareas()
-        for item in self.tv_tar.get_children():
-            vals=self.tv_tar.item(item,"values")
-            if vals and vals[0]==cod_nuevo: self.tv_tar.selection_set(item); self.tv_tar.see(item); break
+        self._seleccionar_tarea(cod_nuevo)
         self.sv_status.set(f"Tarea agregada: {cod_nuevo}")
 
     def _open_nuevo_cod_tar(self): self._open_modificar_tar()
@@ -405,6 +479,48 @@ class App(tk.Tk):
         if not vals: return
         InsumoDialog(self,mode="edit",cod_tar=self._current_cod_tar,cod_ins=vals[0],cantidad_actual=vals[3],
                      on_save=lambda: self._load_insumos(self._current_cod_tar))
+
+
+# ═══════════════════════════════════════════════════════════
+class VariantesDialog(tk.Toplevel):
+    """Pop-up con las variantes de una tarea (propia, S, E, X, T).
+    Al elegir una, la ventana principal muestra sus insumos; queda abierto para comparar."""
+
+    def __init__(self, parent, fam, id_actual, nombre_variante, on_elegir):
+        super().__init__(parent)
+        rep = fam["rep"]; self._miembros = {str(m["id"]): m for m in fam["miembros"]}; self._on_elegir = on_elegir
+        self.title("Variantes de la tarea"); self.configure(bg="#F0F2F5"); self.transient(parent); self.resizable(False, False)
+        tk.Label(self, text=rep["desc"], bg="#2C3E50", fg="white", font=("Segoe UI",11,"bold"),
+                 anchor=tk.W, padx=10, pady=8, wraplength=460, justify=tk.LEFT).pack(fill=tk.X)
+        tk.Label(self, text="Elegí una variante para ver sus insumos:", bg="#F0F2F5", fg="#2C3E50",
+                 font=("Segoe UI",9,"italic"), anchor=tk.W).pack(fill=tk.X, padx=10, pady=(8,4))
+        with get_conn() as conn:
+            n_ins = dict(conn.execute(
+                f"SELECT cod_tar, COUNT(*) FROM incidencias WHERE cod_tar IN ({','.join('?'*len(fam['miembros']))}) GROUP BY cod_tar",
+                [m["cod"] for m in fam["miembros"]]))
+        self.tv = ttk.Treeview(self, columns=("cod","modalidad","unidad","n"), show="headings", selectmode="browse",
+                               height=len(fam["miembros"]))
+        for col, txt, w, anc in [("cod","Código",80,tk.CENTER), ("modalidad","Modalidad",250,tk.W),
+                                 ("unidad","Unidad",65,tk.CENTER), ("n","Insumos",70,tk.CENTER)]:
+            self.tv.heading(col, text=txt); self.tv.column(col, width=w, anchor=anc, stretch=False)
+        for m in fam["miembros"]:
+            self.tv.insert("", tk.END, iid=str(m["id"]), values=(m["cod"], nombre_variante(m["var"]), m["unidad"], n_ins.get(m["cod"], 0)))
+        self.tv.pack(padx=10)
+        if str(id_actual) in self._miembros: self.tv.selection_set(str(id_actual)); self.tv.focus(str(id_actual))
+        self.tv.bind("<<TreeviewSelect>>", self._elegir)        # después de la selección inicial, que no debe disparar nada
+        self.tv.bind("<Double-1>", lambda _: self.destroy()); self.tv.bind("<Return>", lambda _: self.destroy())
+        ttk.Button(self, text="Cerrar", command=self.destroy).pack(anchor=tk.E, padx=10, pady=10)
+        self.bind("<Escape>", lambda _: self.destroy())
+        self.update_idletasks()
+        # Sobre la lista de tareas (izquierda), para no tapar el panel de insumos
+        tv = parent.tv_tar
+        x = tv.winfo_rootx() + max(0, (tv.winfo_width() - self.winfo_width()) // 2)
+        y = tv.winfo_rooty() + max(0, (tv.winfo_height() - self.winfo_height()) // 2)
+        self.geometry(f"+{max(x,0)}+{max(y,0)}"); self.tv.focus_set()
+
+    def _elegir(self, _=None):
+        sel = self.tv.selection()
+        if sel: self._on_elegir(self._miembros[sel[0]])
 
 
 # ═══════════════════════════════════════════════════════════
@@ -822,7 +938,9 @@ class ModificarTareaDialog(tk.Toplevel):
                 rubs_raw=[]; subs_raw=[]
             cols_tareas=[r[1] for r in conn.execute("PRAGMA table_info(tareas)").fetchall()]
             qty_row=conn.execute("SELECT cantidad FROM tareas WHERE id=?",(tar_id,)).fetchone() if "cantidad" in cols_tareas else None
-            cantidad_orig=qty_row[0] if qty_row and qty_row[0] is not None else ""
+            # Cantidad guardada de la tarea; si no tiene, se muestra 1 (solo informativo: no se graba)
+            self._cantidad_guardada=qty_row[0] if qty_row and qty_row[0] is not None else None
+            cantidad_orig=_fmt_cant(self._cantidad_guardada if self._cantidad_guardada is not None else 1)
         self._rubs=[(r[0],f"{r[0]}  —  {r[1]}") for r in rubs_raw]
         self._subs_por_rub={}; self._sub_info={}
         for s in subs_raw:
@@ -855,29 +973,23 @@ class ModificarTareaDialog(tk.Toplevel):
         entries=[]
         for i,(sv,w) in enumerate([(self.sv_cod,18),(self.sv_desc,46),(self.sv_unid,10),(self.sv_cantidad,14)],start=2):
             e=ttk.Entry(frm,textvariable=sv,width=w,font=("Segoe UI",10)); e.grid(row=i,column=1,sticky=tk.W,padx=(8,0),pady=4); entries.append(e)
-        self.cb_sub.bind("<Return>",lambda _: entries[0].focus_set())
-        for i in range(len(entries)-1): entries[i].bind("<Return>",lambda _,j=i+1: entries[j].focus_set())
-        entries[-1].bind("<Return>",lambda _: self._guardar())
+        # Solo se puede modificar la descripción: el resto se muestra pero queda bloqueado
+        self.cb_rub.config(state="disabled"); self.cb_sub.config(state="disabled")
+        for e in (entries[0],entries[2],entries[3]): e.config(state="readonly")
+        entries[1].bind("<Return>",lambda _: self._guardar())
         self.lbl_error=ttk.Label(frm,text="",foreground="red",font=("Segoe UI",9)); self.lbl_error.grid(row=6,column=0,columnspan=2,sticky=tk.W,pady=(4,0))
         bf=ttk.Frame(frm); bf.grid(row=7,column=0,columnspan=2,sticky=tk.E,pady=(12,0))
         ttk.Button(bf,text="Cancelar",command=self.destroy).pack(side=tk.RIGHT,padx=(4,0))
         ttk.Button(bf,text="  Guardar  ",command=self._guardar).pack(side=tk.RIGHT)
-        if cur_rub_label: entries[0].focus_set(); entries[0].selection_range(0,tk.END)
-        else: self.cb_rub.focus_set()
+        entries[1].focus_set(); entries[1].selection_range(0,tk.END)
         self.update_idletasks(); self.geometry(f"+{master.winfo_rootx()+80}+{master.winfo_rooty()+80}")
 
     def _guardar(self):
         sub_label=self.sv_sub.get().strip(); cod=self.sv_cod.get().strip().upper()
-        desc=self.sv_desc.get().strip(); unid=self.sv_unid.get().strip(); qty_str=self.sv_cantidad.get().strip()
-        if not sub_label: self.lbl_error.config(text="Seleccioná un SubRubro."); return
+        desc=self.sv_desc.get().strip(); unid=self.sv_unid.get().strip()
         if not cod: self.lbl_error.config(text="El código no puede estar vacío."); return
         if not desc: self.lbl_error.config(text="La descripción no puede estar vacía."); return
-        cantidad=None
-        if qty_str:
-            try:
-                cantidad=float(qty_str.replace(",",".")); 
-                if cantidad<=0: raise ValueError
-            except ValueError: self.lbl_error.config(text="Cantidad inválida."); return
+        cantidad=self._cantidad_guardada      # el campo es de solo lectura: se conserva lo que había
         sub_match=self._sub_info.get(sub_label); id_rs=sub_match[1] if sub_match else self.id_rs_orig
         if id_rs and id_rs!=self.id_rs_orig:
             with get_conn() as conn:
@@ -908,6 +1020,10 @@ class ModificarTareaDialog(tk.Toplevel):
                 if "cantidad" not in cols: conn.execute("ALTER TABLE tareas ADD COLUMN cantidad REAL")
                 conn.execute("UPDATE tareas SET cod_tar=?,descripcion=?,unidad=?,id_rs=?,id_tarea=?,cantidad=? WHERE id=?",
                              (cod,desc,unid,id_rs,id_tarea,cantidad,self.tar_id))
+                # La descripción es de la tarea: se aplica también a sus variantes (S/E/X/T y la propia)
+                if "id_tarea_base" in cols:
+                    conn.execute("""UPDATE tareas SET descripcion=? WHERE id_tarea_base IS NOT NULL
+                                    AND id_tarea_base=(SELECT id_tarea_base FROM tareas WHERE id=?)""",(desc,self.tar_id))
         except Exception as e:
             self.lbl_error.config(text=f"Error al guardar: {e}"); return
         cod_viejo=self.cod_original; cb=self.on_guardado; self.grab_release(); self.destroy()
