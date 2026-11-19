@@ -36,7 +36,12 @@ class VentanaObra(tk.Toplevel):
         raw_pt = getattr(obra, "precios_tarea", {}) or {}
         self._precios_tarea = {int(k): v for k, v in raw_pt.items()}
         self._nombre_precios = getattr(obra, "archivo_precios", "") or ""
+        # Archivo de precios vinculado a la obra (se busca en <obra>/Precios)
         self._ruta_precios = None
+        if self._nombre_precios:
+            cand = obra.carpeta_precios / self._nombre_precios
+            if cand.exists():
+                self._ruta_precios = cand
         self._build_ui()
     def _build_ui(self):
         hdr = tk.Frame(self, bg=COLOR_HDR, height=50)
@@ -871,28 +876,52 @@ class VentanaObra(tk.Toplevel):
         except Exception as e:
             messagebox.showerror("Error al leer precios", str(e), parent=self)
             return
-        # Merge con precios en memoria y abrir pantalla de revisión
+        # Merge con precios en memoria y aplicarlos YA a la obra (insumos y
+        # presupuesto), aunque después se cierre la pantalla sin guardar Excel.
         precios_merged = {**self._precios, **precios_archivo}
+        self._precios        = dict(precios_merged)
+        self._nombre_precios = Path(ruta).name
+        self._ruta_precios   = Path(ruta)
+        self.var_arch_prc.set(self._nombre_precios)
+        self._cargar_ins()
+        self._cargar_presupuesto()
+        # Pantalla de revisión para completar faltantes
         self._abrir_pantalla_precios(precios_merged,
                                      nombre_origen=Path(ruta).name,
                                      ruta_origen=Path(ruta))
 
     def _generar_archivo_precios(self):
-        """Abre la pantalla de revisión/edición de precios desde cero (o con los ya cargados)."""
-        self._abrir_pantalla_precios(self._precios)
+        """Abre la pantalla de revisión/edición de precios con los ya cargados.
+        Si la obra ya tiene un archivo vinculado, se sigue volcando en ese."""
+        ruta = self._ruta_precios if (self._ruta_precios and
+                                      Path(self._ruta_precios).exists()) else None
+        self._abrir_pantalla_precios(self._precios,
+                                     nombre_origen=ruta.name if ruta else "",
+                                     ruta_origen=ruta)
 
     def _abrir_pantalla_precios(self, precios_iniciales: dict,
                                  nombre_origen: str = "", ruta_origen=None):
         """Punto de entrada único a _DlgGenerarPrecios."""
-        insumos_obra = self.obra.calcular_insumos(self.maestro["incidencias"])
-        # Si no hay cantidades calculadas, armar lista con todos los insumos del catálogo
+        # Se muestran los insumos que usa la obra + los que ya están en el
+        # archivo de precios (nunca el catálogo completo).
+        insumos_obra = dict(self.obra.calcular_insumos(self.maestro["incidencias"]))
+        cat = self.maestro["insumos"]
+        cods_archivo = self._codigos_archivo(ruta_origen) if ruta_origen else \
+                       [(c, "") for c, p in precios_iniciales.items() if p]
+        for cod, unidad in cods_archivo:
+            if cod not in insumos_obra:
+                insumos_obra[cod] = {
+                    "unidad": unidad or cat.get(cod, {}).get("unidad", ""),
+                    "cantidad_total": 0.0, "tareas_origen": []}
         if not insumos_obra:
-            insumos_obra = {
-                cod: {"unidad": datos["unidad"], "cantidad_total": 0.0, "tareas_origen": []}
-                for cod, datos in self.maestro["insumos"].items()
-            }
+            messagebox.showinfo("Sin insumos",
+                "La obra no tiene tareas vinculadas y no hay precios cargados.\n"
+                "Vinculá tareas en '2. Tareas' o seleccioná un archivo de precios.",
+                parent=self)
+            return
         dlg = _DlgGenerarPrecios(self, insumos_obra, self.maestro["insumos"],
-                                  precios_iniciales, self.obra)
+                                  precios_iniciales, self.obra,
+                                  ruta_archivo=ruta_origen)
         self.wait_window(dlg)
         if dlg.precios_guardados:
             self._precios        = dlg.precios_guardados
@@ -900,6 +929,29 @@ class VentanaObra(tk.Toplevel):
             self._ruta_precios   = dlg.ruta_archivo
             self.var_arch_prc.set(self._nombre_precios)
             self._cargar_ins()
+            self._cargar_presupuesto()
+
+    @staticmethod
+    def _codigos_archivo(ruta) -> list:
+        """[(codigo, unidad), ...] de todas las filas de la hoja 'Insumos',
+        tengan o no precio."""
+        import openpyxl
+        try:
+            wb = openpyxl.load_workbook(str(ruta), read_only=True, data_only=True)
+        except Exception:
+            return []
+        try:
+            if "Insumos" not in wb.sheetnames:
+                return []
+            res = []
+            for row in wb["Insumos"].iter_rows(min_row=2, values_only=True):
+                if not row or row[0] is None:
+                    continue
+                unidad = row[2] if len(row) > 2 and row[2] is not None else ""
+                res.append((str(row[0]).strip(), str(unidad)))
+            return res
+        finally:
+            wb.close()
 
     def _cargar_ins(self):
         for item in self.tbl_ins.get_children():
@@ -2526,9 +2578,14 @@ class _DlgGenerarPrecios(tk.Toplevel):
     """Pantalla para cargar precios unitarios y guardar PU_Fecha.xlsx en la carpeta de la obra."""
 
     def __init__(self, parent, insumos_obra: dict, insumos_cat: dict,
-                 precios_actuales: dict, obra):
+                 precios_actuales: dict, obra, ruta_archivo=None):
         super().__init__(parent)
-        self.title("Generar archivo de precios")
+        # Archivo de precios de la obra: si existe, se actualiza en el lugar
+        self._ruta_vinculada = Path(ruta_archivo) if ruta_archivo else None
+        if self._ruta_vinculada and not self._ruta_vinculada.exists():
+            self._ruta_vinculada = None
+        self.title(f"Precios — {self._ruta_vinculada.name}" if self._ruta_vinculada
+                   else "Generar archivo de precios")
         self.geometry("800x520")
         self.minsize(620, 380)
         self.grab_set()
@@ -2565,7 +2622,9 @@ class _DlgGenerarPrecios(tk.Toplevel):
         # Botones (bottom)
         frm_btn = tk.Frame(self, bg=COLOR_BG, pady=8, padx=12)
         frm_btn.pack(side="bottom", fill="x")
-        tk.Button(frm_btn, text="Guardar Excel",
+        tk.Button(frm_btn,
+                  text=(f"Guardar en {self._ruta_vinculada.name}"
+                        if self._ruta_vinculada else "Guardar Excel"),
                   bg=COLOR_VERDE, fg="white", font=FUENTE_B,
                   relief="flat", padx=14, pady=5, cursor="hand2",
                   command=self._guardar).pack(side="right", padx=(4, 0))
@@ -2672,6 +2731,10 @@ class _DlgGenerarPrecios(tk.Toplevel):
                 "Instalá openpyxl:  pip install openpyxl", parent=self)
             return
 
+        if self._ruta_vinculada:
+            self._guardar_en_archivo(openpyxl, self._ruta_vinculada)
+            return
+
         from datetime import date
         from tkinter import filedialog
         fecha   = date.today().strftime("%Y-%m-%d")
@@ -2714,6 +2777,56 @@ class _DlgGenerarPrecios(tk.Toplevel):
             f"Archivo guardado en:\n{ruta}", parent=self)
         self.destroy()
 
+    def _guardar_en_archivo(self, openpyxl, ruta: Path):
+        """Vuelca los precios en el archivo existente de la obra:
+        actualiza el precio de los códigos que ya están y agrega al final
+        los insumos de la obra que todavía no figuran. No toca el resto."""
+        try:
+            wb = openpyxl.load_workbook(str(ruta))
+        except Exception as e:
+            messagebox.showerror("Error al abrir", str(e), parent=self)
+            return
+        if "Insumos" not in wb.sheetnames:
+            messagebox.showerror("Formato inválido",
+                f"{ruta.name} no tiene la hoja 'Insumos'.", parent=self)
+            return
+        ws = wb["Insumos"]
+        presentes = set()
+        actualizados = 0
+        for row in ws.iter_rows(min_row=2):
+            if row[0].value is None:
+                continue
+            cod = str(row[0].value).strip()
+            presentes.add(cod)
+            nuevo = self._precios.get(cod)
+            if nuevo and len(row) > 3 and row[3].value != nuevo:
+                row[3].value = nuevo
+                actualizados += 1
+        agregados = 0
+        for cod in sorted(self._insumos_obra):
+            precio = self._precios.get(cod)
+            if cod in presentes or not precio:
+                continue
+            ins = self._insumos_cat.get(cod, {})
+            ws.append([cod, ins.get("nombre", ""), ins.get("unidad", ""), precio])
+            agregados += 1
+        try:
+            wb.save(str(ruta))
+        except PermissionError:
+            messagebox.showerror("Archivo en uso",
+                f"No se pudo guardar {ruta.name}.\n"
+                "Cerralo en Excel y volvé a intentar.", parent=self)
+            return
+        except Exception as e:
+            messagebox.showerror("Error al guardar", str(e), parent=self)
+            return
+        self.precios_guardados = dict(self._precios)
+        self.nombre_archivo    = ruta.name
+        self.ruta_archivo      = ruta
+        messagebox.showinfo("Guardado",
+            f"{ruta.name}\n\nPrecios actualizados: {actualizados}\n"
+            f"Insumos agregados: {agregados}", parent=self)
+        self.destroy()
 
 class _DlgGuardarPrecios(tk.Toplevel):
     def __init__(self, parent, nombre_actual, ruta_actual, carpeta_precios):
