@@ -10,8 +10,10 @@ import sys
 import openpyxl
 from openpyxl.styles import Alignment, Font, PatternFill
 
-DB = r'C:\Dropbox\Analisis_de_costos_y_Presupuestacion\Costos\Data\Master_FINAL.db'
-OUT = sys.argv[1] if len(sys.argv) > 1 else r'C:\Dropbox\Analisis_de_costos_y_Presupuestacion\Costos\Z Archivos\Master_FAM.xlsx'
+from pathlib import Path
+_COSTOS = Path(__file__).resolve().parent.parent          # .../Costos
+DB = str(_COSTOS / 'Data' / 'Master_FINAL.db')
+OUT = sys.argv[1] if len(sys.argv) > 1 else str(_COSTOS / 'Z Archivos' / 'Master_FAM.xlsx')
 
 C_HDR, C_RUBRO, C_SUB, C_TAR, C_ODD, C_EVEN = '0D3D6B', '1F5C99', '2E86C1', 'D6E8F5', 'FFFFFF', 'F5F9FF'
 FMT_CANT = '#,##0.00##'   # como el original (#,##0.00) pero sin esconder cantidades chicas (0,002)

@@ -20,8 +20,9 @@ except ImportError:
     from openpyxl.utils import get_column_letter
 
 # ─── CONFIGURACIÓN ────────────────────────────────────────────────────────────
-DB_PATH = r"C:\Dropbox\Analisis_de_costos_y_Presupuestacion\Costos\Data\Master_FINAL.db"
-OUTPUT_PATH = r"C:\Dropbox\Analisis_de_costos_y_Presupuestacion\Costos\Data\Pedido_Precios.xlsx"
+_COSTOS_DATA = Path(__file__).resolve().parent.parent.parent / "Costos" / "Data"
+DB_PATH = str(_COSTOS_DATA / "Master_FINAL.db")
+OUTPUT_PATH = str(_COSTOS_DATA / "Pedido_Precios.xlsx")
 # ──────────────────────────────────────────────────────────────────────────────
 
 def conectar(db_path):
@@ -176,6 +177,10 @@ def crear_excel(insumos, tiene_tipo, output_path):
 
 # ─── MAIN ─────────────────────────────────────────────────────────────────────
 if __name__ == "__main__":
+    try:
+        sys.stdout.reconfigure(errors="replace")  # consola Windows (cp1252)
+    except Exception:
+        pass
     print(f"Conectando a: {DB_PATH}")
     try:
         conn = conectar(DB_PATH)
