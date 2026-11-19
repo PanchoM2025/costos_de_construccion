@@ -1,0 +1,295 @@
+{
+  "numero": "007",
+  "nombre": "Cerramiento y pisos",
+  "ubicacion": "Villa la Angostura",
+  "comitente": "BISEL",
+  "fecha_creacion": "2026-11-19",
+  "version": 0,
+  "archivo_precios": "PU_2026-11-02.xlsx",
+  "items_presupuesto": [
+    {
+      "es_rubro": true,
+      "rubro": "01",
+      "descripcion": "Cordón de Contención"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "01",
+      "descripcion": "Muro Bloque H\" 0,20",
+      "unidad": "m2",
+      "cantidad": 60.0,
+      "cod_tar": "2426",
+      "subcontrato": "",
+      "rubro_std": "MAMPOSTERÍAS y TABIQUES"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "02",
+      "descripcion": "Muro cerramiento inferior"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "02",
+      "item": "01",
+      "descripcion": "Mampostería Bloques 0,20",
+      "unidad": "m2",
+      "cantidad": 30.0,
+      "cod_tar": "2426",
+      "subcontrato": "",
+      "rubro_std": "MAMPOSTERÍAS y TABIQUES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "02",
+      "item": "02",
+      "descripcion": "Revoque interior",
+      "unidad": "m2",
+      "cantidad": 30.0,
+      "cod_tar": "2651",
+      "subcontrato": "",
+      "rubro_std": "REVOQUES y TERMINACIONES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "02",
+      "item": "03",
+      "descripcion": "Revoque exterior",
+      "unidad": "m2",
+      "cantidad": 30.0,
+      "cod_tar": "2621",
+      "subcontrato": "",
+      "rubro_std": "REVOQUES y TERMINACIONES"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "03",
+      "descripcion": "Piso H°A° Nivel -2"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "03",
+      "item": "01",
+      "descripcion": "Piso H\"A\" 0,12",
+      "unidad": "m2",
+      "cantidad": 630.0,
+      "cod_tar": "1162",
+      "subcontrato": "",
+      "rubro_std": "ESTRUCTURAS RESISTENTES"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "04",
+      "descripcion": "Carpetas armadas y Alisadas"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "01",
+      "descripcion": "Carpeta armada -2",
+      "unidad": "m2",
+      "cantidad": 630.0,
+      "cod_tar": "1250",
+      "subcontrato": "",
+      "rubro_std": "ESTRUCTURAS RESISTENTES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "02",
+      "descripcion": "Alisado mecánico helicóptero",
+      "unidad": "m2",
+      "cantidad": 630.0,
+      "cod_tar": "5169",
+      "subcontrato": "",
+      "rubro_std": "PAVIMENTOS"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "03",
+      "descripcion": "Carpeta armada -1",
+      "unidad": "m2",
+      "cantidad": 693.0,
+      "cod_tar": "1250",
+      "subcontrato": "",
+      "rubro_std": "ESTRUCTURAS RESISTENTES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "04",
+      "descripcion": "Alisado mecánico helicóptero",
+      "unidad": "m2",
+      "cantidad": 693.0,
+      "cod_tar": "5169",
+      "subcontrato": "",
+      "rubro_std": "PAVIMENTOS"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "05",
+      "descripcion": "Carpeta armada Galpón",
+      "unidad": "m2",
+      "cantidad": 693.0,
+      "cod_tar": "1250",
+      "subcontrato": "",
+      "rubro_std": "ESTRUCTURAS RESISTENTES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "06",
+      "descripcion": "Alisado mecánico helicóptero",
+      "unidad": "m2",
+      "cantidad": 693.0,
+      "cod_tar": "5169",
+      "subcontrato": "",
+      "rubro_std": "PAVIMENTOS"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "05",
+      "descripcion": "Tabiques H\"A\" accesos"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "05",
+      "item": "01",
+      "descripcion": "Tabiques de contencion",
+      "unidad": "m3",
+      "cantidad": 3.0,
+      "cod_tar": "1351",
+      "subcontrato": "",
+      "rubro_std": "ESTRUCTURAS RESISTENTES"
+    },
+    {
+      "es_rubro": true,
+      "rubro": "06",
+      "descripcion": "Pared divisoria Galpon oficina"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "06",
+      "item": "01",
+      "descripcion": "Muro de ladrillos ceramicos 0,18",
+      "unidad": "m2",
+      "cantidad": 60.0,
+      "cod_tar": "2423",
+      "subcontrato": "",
+      "rubro_std": "MAMPOSTERÍAS y TABIQUES"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "06",
+      "item": "02",
+      "descripcion": "Revoque pared",
+      "unidad": "m2",
+      "cantidad": 120.0,
+      "cod_tar": "2651",
+      "subcontrato": "",
+      "rubro_std": "REVOQUES y TERMINACIONES"
+    }
+  ],
+  "tareas": {
+    "2426": {
+      "cod": "2426",
+      "base": "2426",
+      "variante": " ",
+      "nombre": "Bloques huecos de hormigón 20/20/40",
+      "nombre_editado": "Mampostería Bloques 0,20",
+      "unidad": "m2",
+      "rubro": "MAMPOSTERÍAS y TABIQUES",
+      "cantidad": 30.0,
+      "subcontrato": ""
+    },
+    "2651": {
+      "cod": "2651",
+      "base": "2651",
+      "variante": " ",
+      "nombre": "Revoque completo interior a la cal en muros PB.",
+      "nombre_editado": "Revoque pared",
+      "unidad": "m2",
+      "rubro": "REVOQUES y TERMINACIONES",
+      "cantidad": 120.0,
+      "subcontrato": ""
+    },
+    "2621": {
+      "cod": "2621",
+      "base": "2621",
+      "variante": " ",
+      "nombre": "Revoque impermeable vertical alisado.",
+      "nombre_editado": "Revoque exterior",
+      "unidad": "m2",
+      "rubro": "REVOQUES y TERMINACIONES",
+      "cantidad": 30.0,
+      "subcontrato": ""
+    },
+    "1162": {
+      "cod": "1162",
+      "base": "1162",
+      "variante": " ",
+      "nombre": "Platea de 0,15m de espesor.",
+      "nombre_editado": "Piso H\"A\" 0,12",
+      "unidad": "m2",
+      "rubro": "ESTRUCTURAS RESISTENTES",
+      "cantidad": 630.0,
+      "subcontrato": ""
+    },
+    "1250": {
+      "cod": "1250",
+      "base": "1250",
+      "variante": " ",
+      "nombre": "Carpeta armada s/piso esp. 0,05",
+      "nombre_editado": "Carpeta armada Galpón",
+      "unidad": "m2",
+      "rubro": "ESTRUCTURAS RESISTENTES",
+      "cantidad": 693.0,
+      "subcontrato": ""
+    },
+    "5169": {
+      "cod": "5169",
+      "base": "5169",
+      "variante": " ",
+      "nombre": "Alisado mecánico pisos industriales.",
+      "nombre_editado": "Alisado mecánico helicóptero",
+      "unidad": "m2",
+      "rubro": "PAVIMENTOS",
+      "cantidad": 693.0,
+      "subcontrato": ""
+    },
+    "1351": {
+      "cod": "1351",
+      "base": "1351",
+      "variante": " ",
+      "nombre": "Tabique de Hormigón Armado 0.15m.",
+      "nombre_editado": "Tabiques de contencion",
+      "unidad": "m3",
+      "rubro": "ESTRUCTURAS RESISTENTES",
+      "cantidad": 3.0,
+      "subcontrato": ""
+    },
+    "2423": {
+      "cod": "2423",
+      "base": "2423",
+      "variante": " ",
+      "nombre": "Ladrillos huecos cerámicos 18/18/33",
+      "nombre_editado": "Muro de ladrillos ceramicos 0,18",
+      "unidad": "m2",
+      "rubro": "MAMPOSTERÍAS y TABIQUES",
+      "cantidad": 60.0,
+      "subcontrato": ""
+    }
+  },
+  "precios": {
+    "000114": 15000.0,
+    "000116": 12000.0,
+    "1131": 3400.0,
+    "1411": 300.0,
+    "1511": 180000.0,
+    "1630": 200000.0,
+    "5170": 1070.0
+  },
+  "precios_tarea": {}
+}

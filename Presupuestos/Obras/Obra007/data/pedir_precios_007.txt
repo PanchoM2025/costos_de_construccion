@@ -1,0 +1,13 @@
+Codigo	Insumo	Unidad
+1129	H. Torsionado Tek=4200Kgr/cm2 - Diam. promedio	Kg
+1212	Alambre negro recocido Nro. 16.	Kg
+1223	Clavos Punta París 2-3" promedio.	Kg
+1322	Tablas de madera p/encofrado cepilladas 1".	m2
+1341	Tirante de pino 3x3	ml
+2123	Ladrillo cerámico hueco 18/18/33	un
+2132	Bloque de hormigón 20/20/40	un
+2211	Cal Hidraúlica	Kg
+2212	Cal Aerea	Kg
+2221	Arena Mediana	m3
+2222	Arena Fina	m3
+2251	Hidrófugo Inorgánico tipo SIKA	Kg

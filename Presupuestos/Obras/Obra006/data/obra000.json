@@ -36,9 +36,9 @@
       "descripcion": "Piso de Hormigón Armado - Elaborado",
       "unidad": "m2",
       "cantidad": 700.0,
-      "cod_tar": "",
+      "cod_tar": "1161",
       "subcontrato": "",
-      "rubro_std": ""
+      "rubro_std": "PAVIMENTOS"
     }
   ],
   "tareas": {
@@ -63,6 +63,17 @@
       "rubro": "PAVIMENTOS",
       "cantidad": 700.0,
       "subcontrato": ""
+    },
+    "1161": {
+      "cod": "1161",
+      "base": "1161",
+      "variante": " ",
+      "nombre": "Platea de 0,12m de espesor.",
+      "nombre_editado": "Piso de Hormigón Armado - Elaborado",
+      "unidad": "m2",
+      "rubro": "PAVIMENTOS",
+      "cantidad": 700.0,
+      "subcontrato": ""
     }
   },
   "precios": {
@@ -72,7 +83,9 @@
     "5170": 1070.0,
     "1131": 3400.0,
     "000114": 15000.0,
-    "000116": 12000.0
+    "000116": 12000.0,
+    "1821": 485300.0,
+    "1212": 4000.0
   },
   "precios_tarea": {}
 }

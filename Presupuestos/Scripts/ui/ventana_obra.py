@@ -9,6 +9,34 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.obra import Obra, CARPETA_DATA, CARPETA_PRECIOS, cargar_maestro_desde_db
 from core.maestro import cargar_precios
 
+
+class _PreciosFila:
+    """Precio unitario manual guardado dentro de cada ítem ("precio_manual"),
+    para que viaje con la tarea al insertar, borrar o reordenar filas.
+    Se accede por índice de fila, igual que el viejo dict por posición."""
+    def __init__(self, get_items):
+        self._get_items = get_items
+    def _it(self, idx):
+        items = self._get_items()
+        if 0 <= idx < len(items) and not items[idx].get("es_rubro"):
+            return items[idx]
+        return None
+    def get(self, idx, default=None):
+        it = self._it(idx)
+        v = it.get("precio_manual") if it else None
+        return v if v else default
+    def __contains__(self, idx):
+        return self.get(idx) is not None
+    def __setitem__(self, idx, valor):
+        it = self._it(idx)
+        if it is not None:
+            it["precio_manual"] = valor
+    def pop(self, idx, default=None):
+        it = self._it(idx)
+        if it is None or not it.get("precio_manual"):
+            return default
+        return it.pop("precio_manual")
+
 COLOR_HDR   = "#1a3a5c"
 COLOR_SEC   = "#2a6099"
 COLOR_VERDE = "#1d7a4a"
@@ -33,8 +61,19 @@ class VentanaObra(tk.Toplevel):
             self.destroy()
             return
         self._precios = dict(getattr(obra, "precios", {}) or {})
+        # Migración: precios manuales viejos guardados por posición de fila
         raw_pt = getattr(obra, "precios_tarea", {}) or {}
-        self._precios_tarea = {int(k): v for k, v in raw_pt.items()}
+        items_mig = getattr(obra, "items_presupuesto", []) or []
+        for k, v in raw_pt.items():
+            try:
+                i = int(k)
+            except (TypeError, ValueError):
+                continue
+            if v and 0 <= i < len(items_mig) and not items_mig[i].get("es_rubro"):
+                items_mig[i].setdefault("precio_manual", v)
+        obra.precios_tarea = {}
+        self._precios_tarea = _PreciosFila(
+            lambda: getattr(self.obra, "items_presupuesto", []))
         self._nombre_precios = getattr(obra, "archivo_precios", "") or ""
         # Archivo de precios vinculado a la obra (se busca en <obra>/Precios)
         self._ruta_precios = None
@@ -208,6 +247,10 @@ class VentanaObra(tk.Toplevel):
                   font=FUENTE_S, relief="flat", padx=6, pady=1, cursor="hand2",
                   command=self._agregar_fila
                   ).pack(side="right", padx=6, pady=3)
+        tk.Button(frm_iz_top, text="+ Rubro", bg="#2a6099", fg="white",
+                  font=FUENTE_S, relief="flat", padx=6, pady=1, cursor="hand2",
+                  command=self._agregar_rubro
+                  ).pack(side="right", padx=2, pady=3)
         tk.Button(frm_iz_top, text="Importar", bg="#2a6099", fg="white",
                   font=FUENTE_S, relief="flat", padx=6, pady=1, cursor="hand2",
                   command=self._importar_presupuesto
@@ -475,8 +518,7 @@ class VentanaObra(tk.Toplevel):
                             it.get("descripcion", ""), "", ""))
                 continue
             else:
-                rubro_counts[cur_rubro_idx] = rubro_counts.get(cur_rubro_idx, 0) + 1
-                display_item = f"{rubro_counts[cur_rubro_idx]:02d}"
+                display_item = it.get("item", "")
                 rub = it.get("rubro", "")
                 vinculado = bool(it.get("cod_tar"))
                 tiene_precio = idx in self._precios_tarea
@@ -583,21 +625,7 @@ class VentanaObra(tk.Toplevel):
             self.tbl_der.item(iid, tags=tags)
     def _agregar_fila(self):
         items = getattr(self.obra, "items_presupuesto", [])
-        ultimos = [it for it in items if not it.get("es_rubro")]
-        if ultimos:
-            ul = ultimos[-1]
-            rubro = ul.get("rubro", "01")
-            items_del_rubro = [
-                it for it in ultimos
-                if it.get("rubro") == rubro and it.get("item", "").isdigit()
-            ]
-            if items_del_rubro:
-                max_item = max(int(it["item"]) for it in items_del_rubro)
-                next_item = f"{max_item + 1:02d}"
-            else:
-                next_item = "01"
-        else:
-            rubro, next_item = "01", "01"
+        rubro, next_item = self._rubro_vigente(items, len(items)), "00"
         items.append({
             "es_rubro":    False,
             "rubro":       rubro,
@@ -685,6 +713,7 @@ class VentanaObra(tk.Toplevel):
         self.wait_window(dlg)
         if dlg.resultado:
             it.update(dlg.resultado)
+            self._renumerar_items(self.obra.items_presupuesto)
             self._poblar_iz()
     def _menu_der_iz(self, event):
         iid = self.tbl_iz.identify_row(event.y)
@@ -708,14 +737,18 @@ class VentanaObra(tk.Toplevel):
                          command=lambda: self._insertar_fila(idx, arriba=True))
         menu.add_command(label="⬇  Insertar fila abajo",
                          command=lambda: self._insertar_fila(idx, arriba=False))
+        menu.add_command(label="⬆  Insertar rubro arriba",
+                         command=lambda: self._crear_rubro(idx))
+        menu.add_command(label="⬇  Insertar rubro abajo",
+                         command=lambda: self._crear_rubro(idx + 1))
         menu.add_separator()
         menu.add_command(label=lbl_elim,
                          command=lambda: self._eliminar_fila_iz())
         menu.tk_popup(event.x_root, event.y_root)
     def _insertar_fila(self, idx: int, arriba: bool):
         items = getattr(self.obra, "items_presupuesto", [])
-        it_ref = items[idx]
-        rubro = it_ref.get("rubro", "01")
+        pos = idx if arriba else idx + 1
+        rubro = self._rubro_vigente(items, pos)
         nueva_fila = {
             "es_rubro":    False,
             "rubro":       rubro,
@@ -727,7 +760,6 @@ class VentanaObra(tk.Toplevel):
             "subcontrato": "",
             "rubro_std":   "",
         }
-        pos = idx if arriba else idx + 1
         items.insert(pos, nueva_fila)
         self._renumerar_items(items)
         self.obra.items_presupuesto = items
@@ -738,13 +770,49 @@ class VentanaObra(tk.Toplevel):
         self._editar_fila_item(pos, items[pos])
         self._actualizar_st()
     def _renumerar_items(self, items: list):
+        """Los ítems toman el rubro del encabezado que los precede
+        y se numeran desde 01 dentro de cada rubro."""
         contadores = {}
+        rubro_actual = None
         for it in items:
             if it.get("es_rubro"):
+                rubro_actual = it.get("rubro", "")
+                contadores[rubro_actual] = 0
                 continue
+            if rubro_actual is not None:
+                it["rubro"] = rubro_actual
             rubro = it.get("rubro", "")
             contadores[rubro] = contadores.get(rubro, 0) + 1
             it["item"] = f"{contadores[rubro]:02d}"
+    def _rubro_vigente(self, items: list, pos: int) -> str:
+        for it in reversed(items[:pos]):
+            if it.get("rubro"):
+                return it["rubro"]
+        return "01"
+    def _siguiente_rubro(self, items: list) -> str:
+        nums = [int(it["rubro"]) for it in items
+                if str(it.get("rubro", "")).isdigit()]
+        return f"{(max(nums) + 1) if nums else 1:02d}"
+    def _agregar_rubro(self):
+        items = getattr(self.obra, "items_presupuesto", [])
+        self._crear_rubro(len(items))
+    def _crear_rubro(self, pos: int):
+        items = getattr(self.obra, "items_presupuesto", [])
+        nuevo = {"es_rubro": True, "rubro": self._siguiente_rubro(items),
+                 "descripcion": ""}
+        dlg = _DlgEditarFila(self, nuevo, es_rubro=True)
+        self.wait_window(dlg)
+        if not dlg.resultado:
+            return
+        nuevo.update(dlg.resultado)
+        items.insert(pos, nuevo)
+        self.obra.items_presupuesto = items
+        self._renumerar_items(items)
+        self._item_sel_idx = None
+        self._poblar_iz()
+        self.tbl_iz.selection_set(str(pos))
+        self.tbl_iz.see(str(pos))
+        self._actualizar_st()
     def _eliminar_fila_iz(self, idx=None):
         items = getattr(self.obra, "items_presupuesto", [])
         sel = self.tbl_iz.selection()
@@ -1437,7 +1505,7 @@ class VentanaObra(tk.Toplevel):
     def _guardar(self, silencioso=False):
         try:
             self.obra.precios          = dict(self._precios)
-            self.obra.precios_tarea    = {str(k): v for k, v in self._precios_tarea.items()}
+            self.obra.precios_tarea    = {}   # ahora vive en cada ítem ("precio_manual")
             self.obra.archivo_precios  = self._nombre_precios
             self.obra.tareas = {}
             for it in self.obra.items_presupuesto:
@@ -2185,8 +2253,7 @@ class VentanaObra(tk.Toplevel):
             desc    = it.get("descripcion", "")
             unidad  = it.get("unidad", "")
             rub     = it.get("rubro", "")
-            rubro_counts[cur_rubro_idx] = rubro_counts.get(cur_rubro_idx, 0) + 1
-            item_num = f"{rubro_counts[cur_rubro_idx]:02d}"
+            item_num = it.get("item", "")
             if not cod_tar:
                 sin_vnc += 1
                 self.tbl_rpt_det.insert("", "end", tags=("sin_vnc",),
@@ -2827,6 +2894,7 @@ class _DlgGenerarPrecios(tk.Toplevel):
             f"{ruta.name}\n\nPrecios actualizados: {actualizados}\n"
             f"Insumos agregados: {agregados}", parent=self)
         self.destroy()
+
 
 class _DlgGuardarPrecios(tk.Toplevel):
     def __init__(self, parent, nombre_actual, ruta_actual, carpeta_precios):

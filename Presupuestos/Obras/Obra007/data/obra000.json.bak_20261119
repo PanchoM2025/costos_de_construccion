@@ -1,0 +1,201 @@
+{
+  "numero": "007",
+  "nombre": "Cerramiento y pisos",
+  "ubicacion": "Villa la Angostura",
+  "comitente": "BISEL",
+  "fecha_creacion": "2026-11-19",
+  "version": 0,
+  "archivo_precios": "",
+  "items_presupuesto": [
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "01",
+      "descripcion": "Cordon Contencion",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "02",
+      "descripcion": "Muro Bloque H\" 0,20",
+      "unidad": "m2",
+      "cantidad": 60.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "02",
+      "item": "01",
+      "descripcion": "Muro cerramiento inferior",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "02",
+      "item": "02",
+      "descripcion": "Mampostería Bloques 0,20",
+      "unidad": "m2",
+      "cantidad": 30.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "02",
+      "item": "03",
+      "descripcion": "Revoque interior",
+      "unidad": "m2",
+      "cantidad": 30.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "02",
+      "item": "04",
+      "descripcion": "Revoque exterior",
+      "unidad": "m2",
+      "cantidad": 30.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "03",
+      "item": "01",
+      "descripcion": "Piso H°A° Nivel -2",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "03",
+      "item": "02",
+      "descripcion": "Piso H\"A\" 0,12",
+      "unidad": "m2",
+      "cantidad": 630.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "01",
+      "descripcion": "Carpetas armadas",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "02",
+      "descripcion": "Carpeta armada -2",
+      "unidad": "m2",
+      "cantidad": 630.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "03",
+      "descripcion": "Carpeta armada -1",
+      "unidad": "m2",
+      "cantidad": 693.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "04",
+      "item": "04",
+      "descripcion": "Carpeta armada Galpón",
+      "unidad": "m2",
+      "cantidad": 693.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "05",
+      "item": "01",
+      "descripcion": "Tabiques H\"A\" accesos",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "05",
+      "item": "02",
+      "descripcion": "Tabiques de contencion",
+      "unidad": "m3",
+      "cantidad": 3.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "06",
+      "item": "01",
+      "descripcion": "Pared divisoria Galpon oficina",
+      "unidad": "",
+      "cantidad": 0.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "06",
+      "item": "02",
+      "descripcion": "Muro de ladrillos ceramicos 0,18",
+      "unidad": "m2",
+      "cantidad": 60.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    },
+    {
+      "es_rubro": false,
+      "rubro": "06",
+      "item": "02",
+      "descripcion": "Revoque pared",
+      "unidad": "m2",
+      "cantidad": 120.0,
+      "cod_tar": "",
+      "subcontrato": "",
+      "rubro_std": ""
+    }
+  ],
+  "tareas": {},
+  "precios": {},
+  "precios_tarea": {}
+}
