@@ -892,6 +892,10 @@ class VentanaObra(tk.Toplevel):
                   bg=COLOR_VERDE, fg="white", font=FUENTE_S,
                   relief="flat", padx=8, pady=3, cursor="hand2",
                   command=self._generar_archivo_precios).pack(side="left", padx=(6, 0))
+        tk.Button(frm_prc, text="Recalcular subcontratos S/E",
+                  bg="#6a4c93", fg="white", font=FUENTE_S,
+                  relief="flat", padx=8, pady=3, cursor="hand2",
+                  command=self._recalcular_subcontratos).pack(side="left", padx=(6, 0))
         frm_btn = tk.Frame(f, bg=COLOR_BG)
         frm_btn.pack(side="bottom", fill="x", padx=16, pady=6)
         tk.Button(frm_btn, text="Exportar faltantes (.txt)",
@@ -998,6 +1002,62 @@ class VentanaObra(tk.Toplevel):
             self.var_arch_prc.set(self._nombre_precios)
             self._cargar_ins()
             self._cargar_presupuesto()
+
+    def _recalcular_subcontratos(self):
+        """Recalcula los subcontratos S (MdeO de la tarea base) y E (80% de la S)
+        con los precios básicos actuales y los guarda en el archivo vinculado."""
+        from core.subcontratos import calcular_subcontratos, volcar_en_archivo, FACTOR_E
+        ruta = self._ruta_precios
+        if not ruta or not Path(ruta).exists():
+            messagebox.showwarning("Sin archivo de precios",
+                "Primero seleccioná el archivo de precios de la obra.", parent=self)
+            return
+        valores, detalle, avisos = calcular_subcontratos(
+            self.maestro, getattr(self.obra, "items_presupuesto", []), self._precios)
+        if not valores:
+            messagebox.showinfo("Subcontratos",
+                "No hay subcontratos S/E para recalcular."
+                + ("\n\n" + "\n".join(avisos) if avisos else ""), parent=self)
+            return
+        lineas = []
+        for tar, cod, _calc, v in detalle:
+            ant = self._precios.get(cod)
+            cambio = "" if ant == v else (f"   (antes $ {self._fmt_pu(ant)})" if ant else "   (nuevo)")
+            lineas.append(f"{tar:7}{cod:8}$ {self._fmt_pu(v)}{cambio}")
+        msg = (f"E = {FACTOR_E:.0%} de la S.  Se guardará en {Path(ruta).name}:\n\n"
+               + "\n".join(lineas)
+               + ("\n\nAvisos:\n" + "\n".join(avisos) if avisos else "")
+               + "\n\n¿Continuar?")
+        if not messagebox.askyesno("Recalcular subcontratos", msg, parent=self):
+            return
+        # También se guardan los precios básicos usados (oficial, ayudante,
+        # equipos), por si se cambiaron en la app y todavía no están en el archivo.
+        inc = self.maestro["incidencias"]
+        basicos = {}
+        for tar, _cod, _calc, _v in detalle:
+            if tar.endswith("S"):
+                cods_s = {x["cod_ins"] for x in inc.get(tar, [])}
+                for x in inc.get(tar[:-1], []):
+                    if x["cod_ins"] not in cods_s:
+                        basicos[x["cod_ins"]] = self._precios[x["cod_ins"]]
+        try:
+            act, agr = volcar_en_archivo(ruta, {**basicos, **valores},
+                                         self.maestro["insumos"])
+        except PermissionError:
+            messagebox.showerror("Archivo en uso",
+                f"No se pudo guardar {Path(ruta).name}.\n"
+                "Cerralo en Excel y volvé a intentar.", parent=self)
+            return
+        except Exception as e:
+            messagebox.showerror("Error al guardar", str(e), parent=self)
+            return
+        self._precios.update(valores)
+        self._cargar_ins()
+        self._cargar_presupuesto()
+        messagebox.showinfo("Subcontratos",
+            f"{Path(ruta).name}\n\nCambiados: {act}   Agregados: {agr}   "
+            f"Sin cambios: {len(basicos) + len(valores) - act - agr}\n\n"
+            "Recordá apretar 'Guardar obra'.", parent=self)
 
     @staticmethod
     def _codigos_archivo(ruta) -> list:
