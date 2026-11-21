@@ -15,7 +15,13 @@ Sirve para seguir la obra por **etapas** (Etapa 01, 02…, por ejemplo una por q
 
 1. **Definir el Original**: primero «Guardar obra»; después **«Definir Original…»** y elegís la versión contratada. Redefinirlo reinicia los estados.
 2. **Marcar tareas**: seleccionás tareas y usás **«Marcar selección como»** (o clic derecho). La tabla muestra, para cada tarea, el Original, lo **Ejecutado** (cantidad), el **$ Ejecutado** (lo gastado, sumado entre etapas), el **Saldo** y el **Estado**.
-3. **«+ Nueva Etapa»**: trae las tareas **En curso** con la cantidad propuesta igual al saldo. En la etapa podés:
+   - Cada tarea **se despliega** (clic en la descripción o en ▸) y muestra **por insumo** lo previsto en el Original, lo ejecutado en las etapas y el **saldo**. En amarillo, lo que falta; en rojo, lo que se usó de más o no estaba previsto. Si a una tarea con avance le faltan insumos, muestra «[faltan N insumo(s)]».
+   - El filtro **«Pendientes (lo que falta)»** muestra solo las tareas no Realizadas con algo por hacer, ya desplegadas y con los insumos que faltan. Al pie aparece **«Falta»**: el valor de esos insumos a precio del Original.
+   - El Original guarda su lista de insumos al definirse. En los Originales definidos antes, se toma de la base de la obra.
+3. **«+ Nueva Etapa»**: trae las tareas **En curso** con la cantidad propuesta igual al saldo.
+   - Si la cantidad de una tarea ya está completa pero **le faltan insumos** (por ejemplo, se proveyó la madera y falta la mano de obra), la tarea viene como fila **«solo insumos pendientes»**: trae solo los insumos que faltan y **no suma m²** a la tarea. Sí suma pesos y consumo de insumos. Su cantidad aparece como «ref.». Con clic derecho sobre la tarea se puede hacer que sume cantidad, o que no sume.
+
+   En la etapa podés:
    - poner **nombre y fecha**;
    - **cargar otro archivo de precios**, que respeta los precios cambiados a mano;
    - editar **Cantidad** o **P. Unit.** con doble clic (el PU vacío se calcula con los insumos);

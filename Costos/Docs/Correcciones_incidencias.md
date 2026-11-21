@@ -808,3 +808,47 @@ Rubro 28 terminado (2026-11-10). **Revisión de incidencias de los 28 rubros TER
 - Unificadas también las 3 incidencias con la unidad escrita distinto que el insumo (2460S/2469 y 3150S/2455 "Kgr" → "Kg"; 0145/0920 "Gl" → "gl"). Todas las incidencias tienen ahora la unidad de su insumo.
 - La app de Costos ahora muestra siempre la unidad del insumo.
 - Copia de cierre `Costos/Data/Master_FINAL_cierre_2026-11-10.db` actualizada después de completar las unidades (el zip de backup del 10/11 es anterior a este cambio).
+
+## Durlock — tareas nuevas 2440 y 2445 (2026-11-20)
+
+Fuente: `Instagram/Tabiques durlock.pdf` (placas 1,20 × 2,40, montantes cada 40 cm). Placas con 10 % de desperdicio (fórmula del PDF: × 1,10).
+
+| Tarea | Incidencias por m2 |
+|---|---|
+| 2440 Panel Durlock sobre mampostería (Id 6403) | Placa SC Durlock (2451) **1,10 m2** + Montantes 34mm (2453) **2,5 ml** + Tornillos T1 y T2 (2454) **15 un** + Masilla (2455) **0,9 kg** + Fijaciones (2456) **2,5 un** + Cinta de papel (2459) **1,5 ml** |
+| 2445 Tabique Durlock interior c/Steel Frame (Id 6404) | Placa SC Durlock (2451) **2,20 m2** + Montantes 69/70mm (2457) **2,5 ml** + Soleras 70mm (2458) **0,8 ml** + Tornillos T1 y T2 (2454) **34 un** (30 T2 + 4 T1) + Masilla (2455) **1,8 kg** + Fijaciones (2456) **1,3 un** + Cinta de papel (2459) **3 ml** + Lana de vidrio 50mm (2436) **1 m2** (opcional según PDF) + Banda de espuma bajo soleras (2450) **0,8 ml** |
+
+- Sin mano de obra (el PDF no la trae).
+- Insumos nuevos: 2436 Lana de vidrio 50mm (sin barrera de vapor) m2 (Id 3229), 2450 Banda de espuma/goma p/soleras Durlock ml (322W), 2457 Montantes de 69/70mm ml (32HV), 2458 Soleras de 70mm ml (32II), 2459 Cinta de papel p/juntas Durlock ml (32IU). Falta precio en PUnitarios.
+- Copia previa: `Costos/Data/Master_FINAL_antes_durlock_2440_2445_2026-11-20.db`. Totales: 789 insumos, 2847 incidencias (sincronizadas con incidencias_id).
+
+### Durlock 2440 / 2445 — mano de obra y variantes S y T (2026-11-20)
+
+| Tarea | Cambio |
+|---|---|
+| 2440 Panel Durlock sobre mampostería | + Oficial **0,70 h** + Ayudante **0,575 h** (criterio usuario: 50 % de la MdeO de Revoque completo interior a la cal, tomada de la 2652 PA: 1,4 + 1,15) |
+| 2445 Tabique Durlock interior c/Steel Frame | + Oficial **0,495 h** + Ayudante **0,375 h** (criterio usuario: 50 % de la MdeO de la 2421: 0,99 + 0,75) |
+| **2440S** (NUEVA, Id 6405) | mismos materiales de la 2440 + M. de Obra (nuevo 202440) 1 m2 |
+| **2440T** (NUEVA, Id 6406) | Mat. y MdeO. (nuevo 2T2440) 1 m2 |
+| **2445S** (NUEVA, Id 6407) | mismos materiales de la 2445 + M. de Obra (nuevo 202445) 1 m2 |
+| **2445T** (NUEVA, Id 6408) | Mat. y MdeO. (nuevo 2T2445) 1 m2 |
+
+- Insumos nuevos (m2): 202440 (Id 2JJ5), 2T2440 (3AUX), 202445 (2MNZ), 2T2445 (3AVI). Falta precio en PUnitarios.
+- Copia previa: `Costos/Data/Master_FINAL_antes_durlock_ST_2026-11-20.db`. Totales: 751 tareas, 793 insumos, 2870 incidencias (sincronizadas con incidencias_id).
+
+### 3150 / 3150S Cielorraso de placas de yeso (Durlock) — ajuste según PDF (2026-11-20)
+
+Fuente: `Instagram/Tabiques durlock.pdf`, "Cielorraso suspendido de junta tomada" (mismo sistema que la 3150).
+
+| Insumo | Antes | Después |
+|---|---|---|
+| 2454 Tornillos T1 y T2 | 34 un | **18 un** (15 T2 + 3 T1) |
+| 2455 Masilla SC Durlock | 1,4 kg | **0,9 kg** |
+| 2456 Fijaciones | 6 un | **3 un** (estimado: 1 por vela + solera perimetral cada 60 cm; el PDF no las lista) |
+| 2467 Cinta tramada Durlock 1,7 ml | sí | **reemplazada** por 2459 Cinta de papel p/juntas Durlock **1,5 ml** |
+| 2451 Placa SC Durlock | 1,05 m2 | **1,10 m2** (10 % desperdicio, igual que 2440 / 2445) |
+
+- Soleras 35mm (1,1 ml), montantes 34mm (3,2 ml, incluye vigas maestras y velas) y horas sin cambio.
+- 3150T (Id 9C07, 3T3150 1 m2) ya existía: sin cambio.
+- La 2467 Cinta tramada sigue en uso en la 2460 / 2460S.
+- Copia previa: `Costos/Data/Master_FINAL_antes_3150_pdf_2026-11-20.db`. Totales: 2870 incidencias (sincronizadas).

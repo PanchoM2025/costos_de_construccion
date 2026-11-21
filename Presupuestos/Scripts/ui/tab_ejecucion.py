@@ -65,6 +65,7 @@ class TabEjecucion:
         self.data = self.obra.carpeta_data
         self.ejec = None
         self.var_filtro = tk.StringVar(value="todas")
+        self._abiertos = set()                       # tareas desplegadas
         self._build()
 
     # ── Armado ───────────────────────────────────────────────────
@@ -90,7 +91,8 @@ class TabEjecucion:
         fil.pack(fill="x", padx=8, pady=(4, 2))
         tk.Label(fil, text="Ver:", bg=COLOR_BG, font=FUENTE_S).pack(side="left")
         for val, txt in (("todas", "Todas"), ("a_realizar", "A realizar"),
-                         ("en_curso", "En curso"), ("realizada", "Realizadas")):
+                         ("en_curso", "En curso"), ("realizada", "Realizadas"),
+                         ("pendientes", "Pendientes (lo que falta)")):
             tk.Radiobutton(fil, text=txt, value=val, variable=self.var_filtro,
                            bg=COLOR_BG, font=FUENTE_S, command=self.refrescar
                            ).pack(side="left", padx=2)
@@ -115,7 +117,9 @@ class TabEjecucion:
         anch = {"rubro": 42, "item": 40, "desc": 290, "unidad": 50, "cant": 80,
                 "pu": 95, "total": 105, "ejec": 80, "ejec_p": 105, "saldo": 80,
                 "estado": 80}
-        self.tbl = ttk.Treeview(fr_t, columns=cols, show="headings", selectmode="extended")
+        self.tbl = ttk.Treeview(fr_t, columns=cols, show="tree headings",
+                                selectmode="extended")
+        self.tbl.column("#0", width=22, minwidth=22, stretch=False)
         for c in cols:
             self.tbl.heading(c, text=txt[c])
             self.tbl.column(c, width=anch[c], minwidth=24,
@@ -132,7 +136,17 @@ class TabEjecucion:
         self.tbl.tag_configure("adic", foreground=COLOR_ADIC)
         self.tbl.tag_configure("sec_adic", background=COLOR_SEC_AD, foreground="white",
                                font=FUENTE_B)
+        self.tbl.tag_configure("ins", background="#f7f7f7", foreground="#444",
+                               font=FUENTE_S)
+        self.tbl.tag_configure("ins_falta", background="#fff8e1", foreground="#8a5a00",
+                               font=FUENTE_S)
+        self.tbl.tag_configure("ins_exceso", background="#f7f7f7", foreground=COLOR_ROJO,
+                               font=FUENTE_S)
         self.tbl.bind("<Button-3>", self._menu_tarea)
+        self.tbl.bind("<ButtonRelease-1>", self._clic_tarea)
+        self.tbl.bind("<<TreeviewOpen>>", lambda _: self._abiertos.add(self.tbl.focus()))
+        self.tbl.bind("<<TreeviewClose>>",
+                      lambda _: self._abiertos.discard(self.tbl.focus()))
         pan.add(fr_t, minsize=150, stretch="always")
 
         fr_v = tk.Frame(pan, bg=COLOR_BG)
@@ -185,11 +199,24 @@ class TabEjecucion:
         for it in o["items"]:
             rub_ej[it["rubro"]] = (rub_ej.get(it["rubro"], 0.0)
                                    + acc.get(it["clave"], {}).get("total", 0.0))
+        inc = self.v.maestro["incidencias"]
+        cat = self.v.maestro.get("insumos")
+        consumo = E.consumo_insumos(self.data, inc)
+        t_pend = 0.0                                  # insumos que faltan, a precio original
         for it in o["items"]:
             est = E.estado(self.ejec, it["clave"])
             n_est[est] += 1
             t_orig += it["cantidad"] * it["pu"]
-            if filtro != "todas" and est != filtro:
+            filas = E.saldo_insumos(self.ejec, it, inc, consumo, cat)
+            q_ej = acc.get(it["clave"], {}).get("cantidad", 0.0)
+            falta = est != "realizada" and (it["cantidad"] - q_ej > 1e-6 or
+                                            any(f["saldo"] > 1e-6 for f in filas))
+            if est != "realizada":
+                t_pend += sum(f["saldo"] * f["precio"] for f in filas if f["saldo"] > 0)
+            if filtro == "pendientes":
+                if not falta:
+                    continue
+            elif filtro != "todas" and est != filtro:
                 continue
             if it["rubro"] != rub_act:
                 rub_act = it["rubro"]
@@ -197,17 +224,22 @@ class TabEjecucion:
                                 values=(rub_act, "", rubros.get(rub_act, ""), "", "", "",
                                         "", "", f"$ {_fmt_pt(rub_ej[rub_act])}"
                                         if rub_ej.get(rub_act) else "", "", ""))
-            q_ej = acc.get(it["clave"], {}).get("cantidad", 0.0)
             p_ej = acc.get(it["clave"], {}).get("total", 0.0)
-            self.tbl.insert("", "end", iid=it["clave"], tags=(est,), values=(
-                it["rubro"], it["item"], it["descripcion"], it["unidad"],
+            n_falta = sum(1 for f in filas if f["saldo"] > 1e-6)
+            desc = it["descripcion"] + (f"   [faltan {n_falta} insumo(s)]"
+                                        if est != "realizada" and n_falta and q_ej else "")
+            self.tbl.insert("", "end", iid=it["clave"], tags=(est,),
+                            open=(filtro == "pendientes" or it["clave"] in self._abiertos),
+                            values=(
+                it["rubro"], it["item"], desc, it["unidad"],
                 _fmt(it["cantidad"]), f"$ {_fmt(it['pu'])}" if it["pu"] else "-",
                 f"$ {_fmt_pt(it['cantidad'] * it['pu'])}" if it["pu"] else "-",
                 _fmt(q_ej) if q_ej else "", f"$ {_fmt_pt(p_ej)}" if p_ej else "",
                 _fmt(it["cantidad"] - q_ej), E.ESTADO_TXT[est]))
+            self._insertar_insumos(it["clave"], filas, solo_faltantes=filtro == "pendientes")
         adic = sorted(E.adicionales(self.ejec), key=lambda a: (a["rubro"], a["clave"]))
-        visibles = [a for a in adic
-                    if filtro == "todas" or E.estado(self.ejec, a["clave"]) == filtro]
+        visibles = [a for a in adic if filtro != "pendientes" and
+                    (filtro == "todas" or E.estado(self.ejec, a["clave"]) == filtro)]
         for a in adic:
             n_est[E.estado(self.ejec, a["clave"])] += 1
         if visibles:
@@ -223,6 +255,7 @@ class TabEjecucion:
                 a["rubro"], a["item"], a["descripcion"], a["unidad"], "—", "—", "—",
                 _fmt(q_ej) if q_ej else "", f"$ {_fmt_pt(p_ej)}" if p_ej else "", "",
                 E.ESTADO_TXT[est]))
+            self._insertar_insumos(a["clave"], E.saldo_insumos(self.ejec, a, inc, consumo, cat))
         t_ejec = 0.0
         for e in E.listar_etapas(self.data):
             tot = sum(i["cantidad"] * i["pu"] for i in e.get("items", []))
@@ -235,7 +268,41 @@ class TabEjecucion:
             text=f"A realizar: {n_est['a_realizar']}   En curso: {n_est['en_curso']}   "
                  f"Realizadas: {n_est['realizada']}      |      "
                  f"Original: $ {_fmt_pt(t_orig)}     Ejecutado: $ {_fmt_pt(t_ejec)}"
-                 + (f"  (adicionales: {len(adic)})" if adic else ""))
+                 + (f"  (adicionales: {len(adic)})" if adic else "")
+                 + f"     Falta (insumos a precio orig.): $ {_fmt_pt(t_pend)}")
+
+    def _insertar_insumos(self, clave, filas, solo_faltantes=False):
+        """Filas hijas de una tarea: por insumo, previsto / ejecutado / saldo."""
+        for n, f in enumerate(filas):
+            if solo_faltantes and f["saldo"] <= 1e-6:
+                continue
+            tag = ("ins_falta" if f["saldo"] > 1e-6 else
+                   "ins_exceso" if f["saldo"] < -1e-6 else "ins")
+            extra = "" if f["previsto"] else "   (no previsto)"
+            self.tbl.insert(clave, "end", iid=f"{clave}|{n}", tags=(tag,), values=(
+                "", f["cod_ins"], f"    {f['nombre'] or f['cod_ins']}{extra}", f["unidad"],
+                _fmt(f["q_orig"]) if f["q_orig"] else "—",
+                f"$ {_fmt(f['precio'])}" if f["precio"] else "",
+                f"$ {_fmt_pt(f['q_orig'] * f['precio'])}" if f["q_orig"] * f["precio"] else "",
+                _fmt(f["q_ejec"]) if f["q_ejec"] else "",
+                f"$ {_fmt_pt(f['pesos_ejec'])}" if f["pesos_ejec"] else "",
+                _fmt(f["saldo"]) if abs(f["saldo"]) > 1e-6 else "0", ""))
+
+    def _clic_tarea(self, event):
+        """Clic en rubro / ítem / descripción de una tarea: despliega sus insumos."""
+        if self.tbl.identify_region(event.x, event.y) != "cell":
+            return
+        iid = self.tbl.identify_row(event.y)
+        if (not iid or "|" in iid
+                or self.tbl.identify_column(event.x) not in ("#1", "#2", "#3")
+                or not self.tbl.get_children(iid)):
+            return
+        abrir = not self.tbl.item(iid, "open")
+        self.tbl.item(iid, open=abrir)
+        if abrir:
+            self._abiertos.add(iid)
+        else:
+            self._abiertos.discard(iid)
 
     # ── Acciones ─────────────────────────────────────────────────
     def _requiere_original(self) -> bool:
@@ -264,7 +331,8 @@ class TabEjecucion:
         self.v.wait_window(dlg)
         if not dlg.ruta:
             return
-        self.ejec = E.definir_original(self.data, dlg.ruta, self.v.maestro["incidencias"])
+        self.ejec = E.definir_original(self.data, dlg.ruta, self.v.maestro["incidencias"],
+                                       self.v.maestro.get("insumos"))
         falt = sum(1 for i in self.ejec["original"]["items"] if i["sin_precio"])
         self.refrescar()
         messagebox.showinfo("Original definido",
@@ -274,7 +342,7 @@ class TabEjecucion:
             parent=self.v)
 
     def _seleccion_claves(self):
-        return [i for i in self.tbl.selection() if not i.startswith("rub|")]
+        return [i for i in self.tbl.selection() if not i.startswith("rub|") and "|" not in i]
 
     def _marcar(self, est):
         if not self._requiere_original():
@@ -292,7 +360,7 @@ class TabEjecucion:
 
     def _menu_tarea(self, event):
         iid = self.tbl.identify_row(event.y)
-        if not iid or iid.startswith("rub|"):
+        if not iid or iid.startswith("rub|") or "|" in iid:
             return
         if iid not in self.tbl.selection():
             self.tbl.selection_set(iid)
@@ -566,12 +634,16 @@ class _DlgVersion(tk.Toplevel):
             n_mod = sum(1 for x in i.get("insumos") or []
                         if x.get("mod_incid") or x.get("mod_precio") or x.get("agregado"))
             desc = i["descripcion"] + (f"   [{n_mod} insumo(s) modificado(s)]" if n_mod else "")
+            if i.get("solo_insumos"):
+                desc = (i["descripcion"] + f"   [solo insumos pendientes · no suma "
+                        f"{i['unidad']}]")
             self.tbl.insert("", "end", iid=i["clave"], tags=tags,
                             open=i["clave"] in self._abiertos, values=(
                 i["rubro"], i["item"], desc, i["unidad"],
                 "—" if E.es_adicional(i["clave"]) else _fmt(o.get("cantidad", 0.0)),
                 _fmt(prev) if prev else "",
-                _fmt(i["cantidad"]), f"$ {_fmt(i['pu'])}" if i["pu"] else "sin precio",
+                _fmt(i["cantidad"]) + (" ref." if i.get("solo_insumos") else ""),
+                f"$ {_fmt(i['pu'])}" if i["pu"] else "sin precio",
                 f"$ {_fmt_pt(t)}", "✔" if i.get("finaliza") else ""))
             for n, x in enumerate(i.get("insumos") or []):
                 q = x["incid"] * i["cantidad"]
@@ -658,6 +730,13 @@ class _DlgVersion(tk.Toplevel):
             return
         i = self._item(iid)
         if not i:
+            return
+        if col == "#7" and i.get("solo_insumos"):
+            messagebox.showinfo(
+                "Solo insumos", "Esta fila completa los insumos que faltaban y no suma "
+                f"{i['unidad']} a la tarea ({_fmt(i['cantidad'])} es solo la referencia).\n\n"
+                "Desplegala y cambiá la cantidad de cada insumo. Con clic derecho sobre la "
+                "tarea podés hacer que sume cantidad.", parent=self)
             return
         if col == "#7":
             q = self._pedir_num("Cantidad", f"{i['descripcion']}\n\nCantidad en esta "
@@ -762,6 +841,13 @@ class _DlgVersion(tk.Toplevel):
                 return
             m.add_command(label="Agregar insumo a esta tarea…",
                           command=lambda: self._agregar_insumo(i))
+
+            def alternar_solo():
+                i["solo_insumos"] = not i.get("solo_insumos")
+                self._refrescar(iid)
+            m.add_command(label=("Que sume cantidad a la tarea" if i.get("solo_insumos")
+                                 else "Solo insumos (que no sume cantidad a la tarea)"),
+                          command=alternar_solo)
             if i.get("insumos"):
                 def rest_todo():
                     i["insumos"] = [y for y in i["insumos"] if not y.get("agregado")]

@@ -75,9 +75,11 @@ def guardar_ejecucion(carpeta_data: Path, ejec: dict):
         json.dump(ejec, f, ensure_ascii=False, indent=2)
 
 
-def definir_original(carpeta_data: Path, ruta_version: Path, incidencias: dict) -> dict:
+def definir_original(carpeta_data: Path, ruta_version: Path, incidencias: dict,
+                     catalogo: dict | None = None) -> dict:
     """Congela la versión obraNNN.json elegida como Original de la ejecución.
-    Calcula y guarda el precio unitario de cada tarea con los precios de esa versión."""
+    Calcula y guarda el precio unitario de cada tarea con los precios de esa versión,
+    y la lista de insumos (incidencia y precio) para poder calcular saldos."""
     ruta_version = Path(ruta_version)
     with open(ruta_version, encoding="utf-8") as f:
         d = json.load(f)
@@ -108,6 +110,7 @@ def definir_original(carpeta_data: Path, ruta_version: Path, incidencias: dict) 
             "pu": pu, "precio_manual": bool(it.get("precio_manual")),
             "sin_precio": falt,
         })
+        items[-1]["insumos"] = insumos_original(items[-1], incidencias, precios, catalogo)
     ejec = {
         "original": {
             "archivo": ruta_version.name,
@@ -122,6 +125,80 @@ def definir_original(carpeta_data: Path, ruta_version: Path, incidencias: dict) 
     }
     guardar_ejecucion(carpeta_data, ejec)
     return ejec
+
+
+def insumos_original(it: dict, incidencias: dict, precios: dict,
+                     catalogo: dict | None = None) -> list:
+    """Insumos previstos de una tarea del Original: [{cod_ins, nombre, unidad, incid,
+    precio}]. Si el Original los congeló se usan esos; si no (Originales definidos
+    antes), se toman de las incidencias actuales de la obra."""
+    if "insumos" in it:
+        return it["insumos"]
+    if it.get("precio_manual") or not it.get("cod_tar"):
+        return []
+    cat = catalogo or {}
+    return [{"cod_ins": x["cod_ins"], "nombre": cat.get(x["cod_ins"], {}).get("nombre", ""),
+             "unidad": x.get("unidad") or cat.get(x["cod_ins"], {}).get("unidad", ""),
+             "incid": float(x["cantidad"] or 0.0),
+             "precio": float(precios.get(x["cod_ins"]) or 0.0)}
+            for x in incidencias.get(cod_incidencias(it["cod_tar"], it.get("subcontrato", "")), [])]
+
+
+def consumo_insumos(carpeta_data: Path, incidencias: dict) -> dict:
+    """{clave: {cod_ins: {"q", "pesos", "unidad", "nombre"}}}: lo usado de cada insumo
+    en todas las etapas (incidencia de la etapa × cantidad de la tarea)."""
+    res = {}
+    for e in listar_etapas(carpeta_data):
+        prec = e.get("precios") or {}
+        for i in e.get("items", []):
+            if "insumos" in i:
+                lista = [(x["cod_ins"], x["incid"], x["precio"], x.get("unidad", ""),
+                          x.get("nombre", "")) for x in i["insumos"]]
+            elif i.get("cod_tar"):   # etapa guardada sin lista: según el análisis
+                lista = [(x["cod_ins"], x["cantidad"], float(prec.get(x["cod_ins"]) or 0.0),
+                          x.get("unidad", ""), "")
+                         for x in incidencias.get(cod_incidencias(i["cod_tar"],
+                                                                  i.get("subcontrato", "")), [])]
+            else:
+                lista = []
+            d = res.setdefault(i["clave"], {})
+            for c, inc, p, uni, nom in lista:
+                q = inc * i["cantidad"]
+                a = d.setdefault(c, {"q": 0.0, "pesos": 0.0, "unidad": uni, "nombre": nom})
+                a["q"] += q
+                a["pesos"] += q * p
+                if nom and not a["nombre"]:
+                    a["nombre"] = nom
+    return res
+
+
+def saldo_insumos(ejec: dict, it: dict, incidencias: dict, consumo: dict,
+                  catalogo: dict | None = None) -> list:
+    """Por insumo de la tarea: previsto en el Original, ejecutado en las etapas y saldo
+    (previsto − ejecutado; negativo = se usó de más o no estaba previsto)."""
+    cat = catalogo or {}
+    orig = insumos_original(it, incidencias, ejec["original"].get("precios") or {}, cat)
+    usado = consumo.get(it["clave"], {})
+    filas = []
+    for x in orig:
+        q_o = x["incid"] * it["cantidad"]
+        u = usado.get(x["cod_ins"], {})
+        filas.append({"cod_ins": x["cod_ins"],
+                      "nombre": x.get("nombre") or u.get("nombre")
+                                or cat.get(x["cod_ins"], {}).get("nombre", ""),
+                      "unidad": x.get("unidad") or u.get("unidad", ""),
+                      "q_orig": q_o, "precio": x["precio"],
+                      "q_ejec": u.get("q", 0.0), "pesos_ejec": u.get("pesos", 0.0),
+                      "saldo": q_o - u.get("q", 0.0), "previsto": True})
+    previstos = {x["cod_ins"] for x in orig}
+    for c, u in usado.items():
+        if c in previstos or not u["q"]:
+            continue
+        filas.append({"cod_ins": c, "nombre": u.get("nombre") or cat.get(c, {}).get("nombre", ""),
+                      "unidad": u.get("unidad", ""), "q_orig": 0.0, "precio": 0.0,
+                      "q_ejec": u["q"], "pesos_ejec": u["pesos"], "saldo": -u["q"],
+                      "previsto": False})
+    return filas
 
 
 def estado(ejec: dict, clave: str) -> str:
@@ -285,22 +362,34 @@ def acumulado(carpeta_data: Path, excluir: int | None = None) -> dict:
             continue
         for i in e.get("items", []):
             a = acc.setdefault(i["clave"], {"cantidad": 0.0, "total": 0.0})
-            a["cantidad"] += i["cantidad"]
+            if not i.get("solo_insumos"):     # las filas "solo insumos" no suman cantidad
+                a["cantidad"] += i["cantidad"]
             a["total"] += i["cantidad"] * i["pu"]
     return acc
 
 
 def nueva_etapa(carpeta_data: Path, ejec: dict, incidencias: dict, precios: dict,
                 archivo_precios: str = "", catalogo: dict | None = None) -> dict:
-    """Arma (sin guardar) una etapa nueva con las tareas 'en_curso'. Cantidad
-    propuesta = saldo (original − ya ejecutado, mínimo 0)."""
+    """Arma (sin guardar) una etapa nueva con las tareas 'en_curso'.
+    - Si a la tarea le queda cantidad: cantidad propuesta = saldo, con todos sus insumos.
+    - Si la cantidad ya está completa pero faltan insumos del Original: fila "solo
+      insumos" con los que faltan (no suma cantidad a la tarea)."""
     acc = acumulado(carpeta_data)
+    cons = None
     items = []
     for it in ejec["original"]["items"]:
         if estado(ejec, it["clave"]) != "en_curso":
             continue
         saldo = max(it["cantidad"] - acc.get(it["clave"], {}).get("cantidad", 0.0), 0.0)
-        items.append(item_etapa(it, saldo, incidencias, precios, catalogo=catalogo))
+        if saldo > 1e-9 or not it["cantidad"]:
+            items.append(item_etapa(it, saldo, incidencias, precios, catalogo=catalogo))
+            continue
+        if cons is None:
+            cons = consumo_insumos(carpeta_data, incidencias)
+        pend = [f for f in saldo_insumos(ejec, it, incidencias, cons, catalogo)
+                if f["previsto"] and f["saldo"] > 1e-9]
+        if pend:
+            items.append(item_pendientes(it, pend, incidencias, precios, catalogo))
     for a in adicionales(ejec):   # adicionales en curso: sin cantidad prevista
         if estado(ejec, a["clave"]) == "en_curso":
             items.append(item_etapa(a, 0.0, incidencias, precios, catalogo=catalogo))
@@ -412,6 +501,30 @@ def restaurar_insumo(x: dict):
              mod_incid=False, mod_precio=False)
 
 
+def item_pendientes(it_orig: dict, pend: list, incidencias: dict, precios: dict,
+                    catalogo: dict | None = None) -> dict:
+    """Fila "solo insumos": completa los insumos que faltan de una tarea cuya cantidad
+    ya se ejecutó. Usa la cantidad del Original como referencia (incidencia = saldo del
+    insumo / cantidad) y NO suma cantidad a la tarea."""
+    q = it_orig["cantidad"]
+    i = item_etapa(it_orig, q, incidencias, precios, catalogo=catalogo)
+    por_cod = {f["cod_ins"]: f for f in pend}
+    nuevos = []
+    for x in i["insumos"]:
+        f = por_cod.pop(x["cod_ins"], None)
+        if f:
+            x["incid"] = x["incid_base"] = f["saldo"] / q
+            nuevos.append(x)
+    for f in por_cod.values():        # previsto en el Original pero ya no en el análisis
+        x = nuevo_insumo(f["cod_ins"], catalogo, precios, f["saldo"] / q)
+        x.update(incid_base=x["incid"], mod_incid=False, agregado=False)
+        nuevos.append(x)
+    i["insumos"] = nuevos
+    i["solo_insumos"] = True
+    recalcular_item(i, it_orig)
+    return i
+
+
 def precios_usados(items: list, incidencias: dict, precios: dict) -> dict:
     """Solo los precios (del archivo, no los cambiados a mano) de los insumos que
     usan las tareas de la etapa."""
@@ -440,7 +553,8 @@ def comparar(carpeta_data: Path, ejec: dict, solo_con_avance: bool = False) -> d
     for e in etapas:
         for i in e.get("items", []):
             d = por_etapa.setdefault(i["clave"], {})
-            d[e["numero"]] = d.get(e["numero"], 0.0) + i["cantidad"]
+            if not i.get("solo_insumos"):
+                d[e["numero"]] = d.get(e["numero"], 0.0) + i["cantidad"]
     acc = acumulado(carpeta_data)
     filas, rubros = [], {}
     tot = dict(orig=0.0, ejec=0.0, dif=0.0, ef_cant=0.0, ef_prec=0.0)
@@ -528,7 +642,8 @@ def incidencias_reales(carpeta_data: Path, ejec: dict, incidencias: dict,
             cod = cod_incidencias(i["cod_tar"], i.get("subcontrato", ""))
             g = grupos.setdefault(cod, {"q": 0.0, "tareas": {}, "cons": {}, "uni": {},
                                         "nom": {}})
-            g["q"] += i["cantidad"]
+            if not i.get("solo_insumos"):
+                g["q"] += i["cantidad"]
             g["tareas"][i["clave"]] = f"{i['item']} {i['descripcion']}"
             if "insumos" in i:
                 lista = [(x["cod_ins"], x["incid"], x.get("unidad", ""), x.get("nombre", ""))
@@ -544,6 +659,8 @@ def incidencias_reales(carpeta_data: Path, ejec: dict, incidencias: dict,
     res = []
     for cod in sorted(grupos):
         g = grupos[cod]
+        if g["q"] <= 1e-9:
+            continue
         base = {x["cod_ins"]: x for x in incidencias.get(cod, [])}
         filas = []
         for c in list(base) + [c for c in g["cons"] if c not in base]:
@@ -795,7 +912,9 @@ def exportar_etapa(ruta: Path, obra_titulo: str, etapa: dict, ejec: dict):
                     c.font, c.fill = F_B, P_R
             t = i["cantidad"] * i["pu"]
             sub_sec += t
-            ws.append([i["rubro"], i["item"], i["descripcion"], i["unidad"], i["cantidad"],
+            ws.append([i["rubro"], i["item"], i["descripcion"]
+                       + ("  (solo insumos pendientes, no suma cantidad)"
+                          if i.get("solo_insumos") else ""), i["unidad"], i["cantidad"],
                        i["pu"], t, "Sí" if i.get("finaliza") else ""])
             if fill:
                 for c in ws[ws.max_row]:
