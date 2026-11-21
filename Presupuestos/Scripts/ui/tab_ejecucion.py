@@ -1,4 +1,4 @@
-"""tab_ejecucion.py — Pestaña '5. Ejecución': estados de tareas, Versiones XX por etapa
+"""tab_ejecucion.py — Pestaña '5. Ejecución': estados de tareas, Etapas XX
 y cierre comparativo contra el Original. La lógica está en core/etapas.py."""
 import json
 import tkinter as tk
@@ -77,7 +77,7 @@ class TabEjecucion:
                  font=FUENTE_B).pack(side="left", padx=8)
         _btn(hdr, "Cierre / Comparación", COLOR_VERDE, self._cierre, True
              ).pack(side="right", padx=(4, 8), pady=4)
-        _btn(hdr, "+ Nueva Versión", COLOR_SEC, self._nueva_version, True
+        _btn(hdr, "+ Nueva Etapa", COLOR_SEC, self._nueva_version, True
              ).pack(side="right", padx=4, pady=4)
         _btn(hdr, "Definir Original…", "#555", self._definir_original
              ).pack(side="right", padx=4, pady=4)
@@ -101,7 +101,7 @@ class TabEjecucion:
             _btn(fil, E.ESTADO_TXT[est], col,
                  lambda e=est: self._marcar(e)).pack(side="left", padx=2)
 
-        # Panel dividido: tareas arriba, versiones abajo
+        # Panel dividido: tareas arriba, etapas abajo
         pan = tk.PanedWindow(f, orient="vertical", bg=COLOR_BG, sashwidth=6)
         pan.pack(fill="both", expand=True, padx=8, pady=(2, 4))
 
@@ -136,13 +136,13 @@ class TabEjecucion:
         fr_v = tk.Frame(pan, bg=COLOR_BG)
         top_v = tk.Frame(fr_v, bg=COLOR_BG)
         top_v.pack(fill="x")
-        tk.Label(top_v, text="Versiones (etapas)", bg=COLOR_BG, fg=COLOR_HDR,
+        tk.Label(top_v, text="Etapas", bg=COLOR_BG, fg=COLOR_HDR,
                  font=FUENTE_B).pack(side="left")
         _btn(top_v, "Eliminar", COLOR_ROJO, self._eliminar_version).pack(side="right", padx=2)
         _btn(top_v, "Exportar Excel", COLOR_VERDE, self._exportar_version).pack(side="right", padx=2)
         _btn(top_v, "Abrir / Editar", COLOR_SEC, self._abrir_version).pack(side="right", padx=2)
         vcols = ("ver", "nombre", "fecha", "precios", "n", "total")
-        vtxt = {"ver": "Versión", "nombre": "Nombre", "fecha": "Fecha",
+        vtxt = {"ver": "Etapa", "nombre": "Nombre", "fecha": "Fecha",
                 "precios": "Archivo de precios", "n": "Tareas", "total": "Total"}
         vanch = {"ver": 80, "nombre": 220, "fecha": 90, "precios": 200, "n": 60, "total": 120}
         self.tbl_v = ttk.Treeview(fr_v, columns=vcols, show="headings",
@@ -217,7 +217,7 @@ class TabEjecucion:
             tot = sum(i["cantidad"] * i["pu"] for i in e.get("items", []))
             t_ejec += tot
             self.tbl_v.insert("", "end", iid=str(e["numero"]), values=(
-                f"Versión {e['numero']:02d}", e.get("nombre", ""), e.get("fecha", ""),
+                f"Etapa {e['numero']:02d}", e.get("nombre", ""), e.get("fecha", ""),
                 e.get("archivo_precios", ""), len(e.get("items", [])),
                 f"$ {_fmt_pt(tot)}"))
         self.lbl_tot.config(
@@ -243,9 +243,9 @@ class TabEjecucion:
         if self.ejec:
             n = len(E.listar_etapas(self.data))
             msg = (f"Ya hay un Original definido ({self.ejec['original']['archivo']})"
-                   + (f" y {n} versión(es) de etapa cargadas" if n else "") + ".\n\n"
+                   + (f" y {n} etapa(s) cargadas" if n else "") + ".\n\n"
                    "Si lo redefinís se reinician los estados de todas las tareas"
-                   + (" y las versiones existentes pueden dejar de coincidir con las tareas"
+                   + (" y las etapas existentes pueden dejar de coincidir con las tareas"
                       if n else "") + ".\n\n¿Continuar?")
             if not messagebox.askyesno("Redefinir Original", msg, icon="warning", parent=self.v):
                 return
@@ -300,10 +300,11 @@ class TabEjecucion:
             return
         precios = self._precios_iniciales()
         etapa = E.nueva_etapa(self.data, self.ejec, self.v.maestro["incidencias"],
-                              precios, self.v._nombre_precios or "")
+                              precios, self.v._nombre_precios or "",
+                              catalogo=self.v.maestro.get("insumos"))
         if not etapa["items"]:
             if not messagebox.askyesno("Sin tareas en curso",
-                    "No hay tareas «En curso». ¿Abrir la versión vacía igual y agregar "
+                    "No hay tareas «En curso». ¿Abrir la etapa vacía igual y agregar "
                     "tareas a mano?", parent=self.v):
                 return
         _DlgVersion(self, etapa, precios, nueva=True)
@@ -311,7 +312,7 @@ class TabEjecucion:
     def _version_sel(self):
         sel = self.tbl_v.selection()
         if not sel:
-            messagebox.showinfo("Sin selección", "Seleccioná una versión de la lista.",
+            messagebox.showinfo("Sin selección", "Seleccioná una etapa de la lista.",
                                 parent=self.v)
             return None
         ruta = E.ruta_etapa(self.data, int(sel[0]))
@@ -323,7 +324,7 @@ class TabEjecucion:
             return
         et = self._version_sel()
         if et:
-            # Los precios guardados en la versión mandan; el resto (insumos de tareas
+            # Los precios guardados en la etapa mandan; el resto (insumos de tareas
             # que se agreguen ahora) sale del Original y de la obra.
             precios = {**self._precios_iniciales(), **(et.get("precios") or {})}
             _DlgVersion(self, et, precios, nueva=False)
@@ -333,9 +334,9 @@ class TabEjecucion:
         if not et:
             return
         ruta = filedialog.asksaveasfilename(
-            parent=self.v, title="Exportar versión",
+            parent=self.v, title="Exportar etapa",
             initialdir=str(self.obra.carpeta),
-            initialfile=f"Obra{self.obra.numero}_Version_{et['numero']:02d}.xlsx",
+            initialfile=f"Obra{self.obra.numero}_Etapa_{et['numero']:02d}.xlsx",
             defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
         if ruta:
             try:
@@ -350,8 +351,8 @@ class TabEjecucion:
         et = self._version_sel()
         if not et:
             return
-        if not messagebox.askyesno("Eliminar versión",
-                f"¿Eliminar la Versión {et['numero']:02d}?\n\nLas tareas que esa versión "
+        if not messagebox.askyesno("Eliminar etapa",
+                f"¿Eliminar la Etapa {et['numero']:02d}?\n\nLas tareas que esa etapa "
                 "daba por finalizadas vuelven a «En curso». No se puede deshacer.",
                 icon="warning", parent=self.v):
             return
@@ -415,7 +416,7 @@ class _DlgElegirVersion(tk.Toplevel):
 
 # ═════════════════════════════════════════════════════════════════
 class _DlgVersion(tk.Toplevel):
-    """Crear o editar una Versión XX (etapa)."""
+    """Crear o editar una Etapa XX."""
 
     def __init__(self, tab: TabEjecucion, etapa: dict, precios: dict, nueva: bool):
         super().__init__(tab.v)
@@ -423,13 +424,18 @@ class _DlgVersion(tk.Toplevel):
         self.etapa, self.precios, self.nueva = etapa, precios, nueva
         self.inc = self.v.maestro["incidencias"]
         self.orig = E.registro(tab.ejec)   # Original + adicionales ya registradas
-        for i in etapa["items"]:            # adicionales nuevas de esta versión
+        for i in etapa["items"]:            # adicionales nuevas de esta etapa
             if i.get("adicional") and i["clave"] not in self.orig:
                 self.orig[i["clave"]] = E.nuevo_adicional(
                     i["clave"], i["descripcion"], i["unidad"], i["rubro"], i["cod_tar"],
                     i.get("pu_manual"))
+        self.cat = self.v.maestro.get("insumos") or {}
+        for i in etapa["items"]:            # etapas guardadas sin lista de insumos
+            E.asegurar_insumos(i, self.orig.get(i["clave"], i), self.inc, self.precios,
+                               self.cat)
+        self._abiertos = set()              # tareas desplegadas
         self.acc_prev = E.acumulado(tab.data, excluir=etapa["numero"])
-        self.title(f"Versión {etapa['numero']:02d}")
+        self.title(f"Etapa {etapa['numero']:02d}")
         self.geometry("1150x620")
         self.minsize(900, 420)
         self.grab_set()
@@ -440,7 +446,7 @@ class _DlgVersion(tk.Toplevel):
     def _build(self):
         hdr = tk.Frame(self, bg=COLOR_HDR)
         hdr.pack(fill="x")
-        tk.Label(hdr, text=f"  Versión {self.etapa['numero']:02d}"
+        tk.Label(hdr, text=f"  Etapa {self.etapa['numero']:02d}"
                            + ("  (nueva)" if self.nueva else ""),
                  bg=COLOR_HDR, fg="white", font=("Segoe UI", 12, "bold"), pady=6
                  ).pack(side="left", padx=6)
@@ -459,33 +465,42 @@ class _DlgVersion(tk.Toplevel):
                  font=FUENTE_B).pack(side="left", padx=2)
         _btn(top, "Cargar archivo de precios…", COLOR_SEC, self._elegir_precios
              ).pack(side="left", padx=6)
+        _btn(top, "Exportar Excel", COLOR_VERDE, self._exportar, True
+             ).pack(side="right", padx=4)
 
-        ayuda = ("Doble clic en «Cantidad» o «P. Unit.» para editar  ·  clic en «Finaliza» "
-                 "para marcar la tarea como terminada  ·  P. Unit. vacío = se calcula con los precios")
-        tk.Label(self, text=ayuda, bg=COLOR_BG, fg="#555", font=FUENTE_S, anchor="w"
-                 ).pack(fill="x", padx=10)
+        ayuda = ("Tareas: doble clic en «Cantidad» o «P. Unit.» para editar  ·  clic en «Finaliza» "
+                 "para darla por terminada  ·  P. Unit. vacío = se calcula con los insumos\n"
+                 "Insumos: clic en la descripción (o en ▸) para desplegarlos  ·  doble clic en "
+                 "«Incid.» (por unidad de tarea), «Cantidad» (total de la etapa) o «P. Unit.» "
+                 "para cambiarlos  ·  clic derecho = agregar / quitar / restaurar  ·  "
+                 "en azul = modificado")
+        tk.Label(self, text=ayuda, bg=COLOR_BG, fg="#555", font=FUENTE_S, anchor="w",
+                 justify="left").pack(fill="x", padx=10)
 
         bot = tk.Frame(self, bg="#e0e0e0", pady=6)
         bot.pack(side="bottom", fill="x")
         _btn(bot, "Cancelar", "#888", self.destroy).pack(side="right", padx=(4, 10))
-        _btn(bot, f"Guardar Versión {self.etapa['numero']:02d}", COLOR_VERDE, self._guardar,
+        _btn(bot, f"Guardar Etapa {self.etapa['numero']:02d}", COLOR_VERDE, self._guardar,
              True).pack(side="right", padx=4)
         _btn(bot, "+ Agregar tarea", COLOR_SEC, self._agregar).pack(side="left", padx=(10, 4))
         _btn(bot, "+ Adicional (no prevista)", COLOR_SEC_AD, self._adicional
              ).pack(side="left", padx=4)
         _btn(bot, "Quitar tarea", COLOR_ROJO, self._quitar).pack(side="left", padx=4)
+        _btn(bot, "+ Insumo a la tarea", "#1f5fbf", self._agregar_insumo
+             ).pack(side="left", padx=(16, 4))
         self.lbl_tot = tk.Label(bot, text="", bg="#e0e0e0", fg=COLOR_HDR, font=FUENTE_B)
         self.lbl_tot.pack(side="right", padx=16)
 
         cols = ("rubro", "item", "desc", "unidad", "orig", "previo", "cant", "pu", "total", "fin")
         txt = {"rubro": "Rubro", "item": "Ítem", "desc": "Descripción", "unidad": "Unidad",
-               "orig": "Cant. Orig.", "previo": "Ejec. otras V.", "cant": "Cantidad",
-               "pu": "P. Unit.", "total": "Total", "fin": "Finaliza"}
-        anch = {"rubro": 42, "item": 40, "desc": 300, "unidad": 50, "orig": 80,
+               "orig": "Cant. Orig. / Incid.", "previo": "Ejec. otras etapas",
+               "cant": "Cantidad", "pu": "P. Unit.", "total": "Total", "fin": "Finaliza"}
+        anch = {"rubro": 42, "item": 40, "desc": 300, "unidad": 50, "orig": 110,
                 "previo": 90, "cant": 85, "pu": 110, "total": 115, "fin": 60}
         fr = tk.Frame(self, bg=COLOR_BG)
         fr.pack(fill="both", expand=True, padx=8, pady=4)
-        self.tbl = ttk.Treeview(fr, columns=cols, show="headings", selectmode="extended")
+        self.tbl = ttk.Treeview(fr, columns=cols, show="tree headings", selectmode="extended")
+        self.tbl.column("#0", width=22, minwidth=22, stretch=False)
         for c in cols:
             self.tbl.heading(c, text=txt[c])
             self.tbl.column(c, width=anch[c], minwidth=24,
@@ -501,8 +516,19 @@ class _DlgVersion(tk.Toplevel):
         self.tbl.tag_configure("adic", foreground=COLOR_ADIC)
         self.tbl.tag_configure("sec_adic", background=COLOR_SEC_AD, foreground="white",
                                font=FUENTE_B)
+        self.tbl.tag_configure("ins", background="#f7f7f7", foreground="#444",
+                               font=FUENTE_S)
+        self.tbl.tag_configure("ins_sinp", background="#fff3cd", foreground="#444",
+                               font=FUENTE_S)
+        self.tbl.tag_configure("ins_mod", foreground="#1f5fbf",
+                               font=("Segoe UI", 9, "bold"))
+        self.tbl.tag_configure("ins_off", foreground="#aaaaaa")
         self.tbl.bind("<Double-1>", self._doble_clic)
         self.tbl.bind("<ButtonRelease-1>", self._clic)
+        self.tbl.bind("<Button-3>", self._menu)
+        self.tbl.bind("<<TreeviewOpen>>", lambda _: self._abiertos.add(self.tbl.focus()))
+        self.tbl.bind("<<TreeviewClose>>",
+                      lambda _: self._abiertos.discard(self.tbl.focus()))
 
     def _poblar(self):
         self.tbl.delete(*self.tbl.get_children())
@@ -526,62 +552,112 @@ class _DlgVersion(tk.Toplevel):
             tag = "manual" if i.get("pu_manual") else ("sinprecio" if i.get("sin_precio") or
                                                         not i["pu"] else "ok")
             tags = (tag, "adic") if E.es_adicional(i["clave"]) else (tag,)
-            self.tbl.insert("", "end", iid=i["clave"], tags=tags, values=(
-                i["rubro"], i["item"], i["descripcion"], i["unidad"],
+            n_mod = sum(1 for x in i.get("insumos") or []
+                        if x.get("mod_incid") or x.get("mod_precio") or x.get("agregado"))
+            desc = i["descripcion"] + (f"   [{n_mod} insumo(s) modificado(s)]" if n_mod else "")
+            self.tbl.insert("", "end", iid=i["clave"], tags=tags,
+                            open=i["clave"] in self._abiertos, values=(
+                i["rubro"], i["item"], desc, i["unidad"],
                 "—" if E.es_adicional(i["clave"]) else _fmt(o.get("cantidad", 0.0)),
                 _fmt(prev) if prev else "",
                 _fmt(i["cantidad"]), f"$ {_fmt(i['pu'])}" if i["pu"] else "sin precio",
                 f"$ {_fmt_pt(t)}", "✔" if i.get("finaliza") else ""))
+            for n, x in enumerate(i.get("insumos") or []):
+                q = x["incid"] * i["cantidad"]
+                tg = ["ins_sinp" if not x["precio"] else "ins"]
+                if x.get("mod_incid") or x.get("mod_precio") or x.get("agregado"):
+                    tg.append("ins_mod")
+                if i.get("pu_manual"):
+                    tg.append("ins_off")          # con PU manual los insumos no cuentan
+                precio = (f"$ {_fmt(x['precio'])}" + (" *" if x.get("mod_precio") else "")
+                          if x["precio"] else "sin precio")
+                self.tbl.insert(i["clave"], "end", iid=f"{i['clave']}|{n}", tags=tuple(tg),
+                                values=(
+                    "", x["cod_ins"], ("  + " if x.get("agregado") else "    ")
+                    + (x.get("nombre") or x["cod_ins"])
+                    + ("   (agregado en la etapa)" if x.get("agregado") else ""), x["unidad"],
+                    _fmt(x["incid"], 4) + (" *" if x.get("mod_incid") else ""), "",
+                    _fmt(q), precio, f"$ {_fmt_pt(q * x['precio'])}", ""))
         falt = sum(1 for i in self.etapa["items"] if i.get("sin_precio"))
         t_ad = sum(i["cantidad"] * i["pu"] for i in self.etapa["items"]
                    if E.es_adicional(i["clave"]))
         self.lbl_tot.config(text=(f"⚠ {falt} con insumos sin precio    " if falt else "")
                                  + (f"Adicionales: $ {_fmt_pt(t_ad)}    " if t_ad else "")
-                                 + f"Total versión: $ {_fmt_pt(total)}")
+                                 + f"Total etapa: $ {_fmt_pt(total)}")
 
     def _item(self, clave):
         return next((i for i in self.etapa["items"] if i["clave"] == clave), None)
 
+    def _insumo(self, iid):
+        """iid de una fila de insumo ('clave|n') → (tarea, insumo), o (None, None)."""
+        if not iid or "|" not in iid or iid.startswith("sec|"):
+            return None, None
+        clave, n = iid.rsplit("|", 1)
+        i = self._item(clave)
+        if i is None or not n.isdigit() or int(n) >= len(i.get("insumos") or []):
+            return None, None
+        return i, i["insumos"][int(n)]
+
     def _recalcular(self, i):
-        nuevo = E.item_etapa(self.orig[i["clave"]], i["cantidad"], self.inc, self.precios,
-                             pu_manual=i.get("pu_manual"), finaliza=i.get("finaliza"))
-        i.update(pu=nuevo["pu"], sin_precio=nuevo["sin_precio"])
+        E.recalcular_item(i, self.orig.get(i["clave"], i))
+
+    def _refrescar(self, iid):
+        self._poblar()
+        if self.tbl.exists(iid):
+            self.tbl.selection_set(iid)
+            self.tbl.see(iid)
+
+    def _pedir_num(self, titulo, texto, valor, dec=2):
+        s = simpledialog.askstring(titulo, texto, parent=self,
+                                   initialvalue=_fmt(valor, dec).replace(".", "")
+                                   if valor is not None else "")
+        if s is None:
+            return None
+        try:
+            return _parse_num(s) or 0.0
+        except ValueError:
+            messagebox.showerror("Valor inválido", s, parent=self)
+            return None
 
     def _clic(self, event):
         if self.tbl.identify_region(event.x, event.y) != "cell":
-            return
-        if self.tbl.identify_column(event.x) != "#10":
-            return
-        iid = self.tbl.identify_row(event.y)
-        i = self._item(iid)
-        if i:
-            i["finaliza"] = not i.get("finaliza")
-            self._poblar()
-            self.tbl.selection_set(iid)
-
-    def _doble_clic(self, event):
+            return                                  # la flecha ▸ la maneja el Treeview
         iid = self.tbl.identify_row(event.y)
         col = self.tbl.identify_column(event.x)
         i = self._item(iid)
         if not i:
             return
+        if col == "#10":
+            i["finaliza"] = not i.get("finaliza")
+            self._refrescar(iid)
+        elif col in ("#1", "#2", "#3") and i.get("insumos"):
+            abrir = not self.tbl.item(iid, "open")
+            self.tbl.item(iid, open=abrir)
+            if abrir:
+                self._abiertos.add(iid)
+            else:
+                self._abiertos.discard(iid)
+
+    def _doble_clic(self, event):
+        iid = self.tbl.identify_row(event.y)
+        col = self.tbl.identify_column(event.x)
+        ti, x = self._insumo(iid)
+        if x is not None:
+            self._editar_insumo(iid, col, ti, x)
+            return
+        i = self._item(iid)
+        if not i:
+            return
         if col == "#7":
-            s = simpledialog.askstring("Cantidad", f"{i['descripcion']}\n\nCantidad en esta "
-                                       f"versión ({i['unidad']}):",
-                                       initialvalue=_fmt(i["cantidad"]).replace(".", ""),
-                                       parent=self)
-            if s is None:
+            q = self._pedir_num("Cantidad", f"{i['descripcion']}\n\nCantidad en esta "
+                                f"etapa ({i['unidad']}):", i["cantidad"])
+            if q is None:
                 return
-            try:
-                q = _parse_num(s)
-            except ValueError:
-                messagebox.showerror("Valor inválido", s, parent=self)
-                return
-            i["cantidad"] = q or 0.0
+            i["cantidad"] = q
         elif col == "#8":
             s = simpledialog.askstring("Precio unitario",
                                        f"{i['descripcion']}\n\nPrecio unitario manual "
-                                       "(vacío = calcular con los precios de insumos):",
+                                       "(vacío = calcular con los insumos):",
                                        initialvalue=_fmt(i["pu_manual"]).replace(".", "")
                                        if i.get("pu_manual") else "", parent=self)
             if s is None:
@@ -595,13 +671,138 @@ class _DlgVersion(tk.Toplevel):
             self._recalcular(i)
         else:
             return
-        self._poblar()
+        self._refrescar(iid)
+
+    def _editar_insumo(self, iid, col, i, x):
+        nom = f"{i['descripcion']}\n\nInsumo {x['cod_ins']}  {x.get('nombre', '')}"
+        if col == "#5":                                    # incidencia por unidad
+            v = self._pedir_num("Incidencia", f"{nom}\n\nCantidad de {x['unidad']} por "
+                                f"{i['unidad']} de tarea (análisis: "
+                                f"{_fmt(x['incid_base'], 4)}):", x["incid"], 4)
+            if v is None:
+                return
+            x["incid"] = v
+        elif col == "#7":                                  # cantidad total de la etapa
+            if not i["cantidad"]:
+                messagebox.showinfo("Sin cantidad", "La tarea tiene cantidad 0 en esta etapa: "
+                                    "cargá primero la cantidad de la tarea, o cambiá la "
+                                    "incidencia por unidad.", parent=self)
+                return
+            v = self._pedir_num("Cantidad del insumo", f"{nom}\n\nCantidad total en esta "
+                                f"etapa ({x['unidad']}), para {_fmt(i['cantidad'])} "
+                                f"{i['unidad']} de tarea:", x["incid"] * i["cantidad"])
+            if v is None:
+                return
+            x["incid"] = v / i["cantidad"]
+        elif col == "#8":                                  # precio del insumo
+            v = self._pedir_num("Precio del insumo", f"{nom}\n\nPrecio por {x['unidad']} "
+                                f"(archivo de precios: $ {_fmt(x['precio_base'])}):",
+                                x["precio"])
+            if v is None:
+                return
+            otras = [(t, y) for t in self.etapa["items"] if t is not i
+                     for y in t.get("insumos") or [] if y["cod_ins"] == x["cod_ins"]]
+            if otras and messagebox.askyesno(
+                    "Precio del insumo",
+                    f"Hay {len(otras)} tarea(s) más en esta etapa que usan este insumo.\n\n"
+                    "¿Aplicar el mismo precio a todas?\n(No = solo a esta tarea)", parent=self):
+                for t, y in otras:
+                    y["precio"] = v
+                    y["mod_precio"] = abs(v - y["precio_base"]) > 1e-9
+                    self._recalcular(t)
+            x["precio"] = v
+        else:
+            return
+        x["mod_incid"] = abs(x["incid"] - x["incid_base"]) > 1e-9
+        x["mod_precio"] = abs(x["precio"] - x["precio_base"]) > 1e-9
+        if i.get("pu_manual"):
+            i["pu_manual"] = None          # al tocar insumos, el PU vuelve a salir de ellos
+        self._recalcular(i)
+        self._refrescar(iid)
+
+    def _menu(self, event):
+        iid = self.tbl.identify_row(event.y)
+        if not iid:
+            return
         self.tbl.selection_set(iid)
-        self.tbl.see(iid)
+        i, x = self._insumo(iid)
+        m = tk.Menu(self, tearoff=0)
+        if x is not None:
+            clave = iid.rsplit("|", 1)[0]
+            m.add_command(label="Agregar insumo a esta tarea…",
+                          command=lambda: self._agregar_insumo(i))
+            m.add_separator()
+            if x.get("agregado"):
+                m.add_command(label="Quitar este insumo (agregado en la etapa)",
+                              command=lambda: self._quitar_insumo(i, x, clave))
+            else:
+                m.add_command(label="Quitar este insumo (incidencia 0)",
+                              command=lambda: self._quitar_insumo(i, x, clave))
+
+                def rest():
+                    E.restaurar_insumo(x)
+                    self._recalcular(i)
+                    self._refrescar(iid)
+                m.add_command(label="Restaurar valores del análisis y del archivo de precios",
+                              command=rest)
+        else:
+            i = self._item(iid)
+            if not i:
+                return
+            m.add_command(label="Agregar insumo a esta tarea…",
+                          command=lambda: self._agregar_insumo(i))
+            if i.get("insumos"):
+                def rest_todo():
+                    i["insumos"] = [y for y in i["insumos"] if not y.get("agregado")]
+                    for y in i["insumos"]:
+                        E.restaurar_insumo(y)
+                    self._recalcular(i)
+                    self._refrescar(iid)
+                m.add_command(label="Restaurar todos los insumos de la tarea "
+                                    "(saca los agregados)", command=rest_todo)
+        m.tk_popup(event.x_root, event.y_root)
+
+    def _tarea_seleccionada(self):
+        for iid in self.tbl.selection():
+            i, x = self._insumo(iid)
+            if i is None:
+                i = self._item(iid)
+            if i is not None:
+                return i
+        return None
+
+    def _agregar_insumo(self, i=None):
+        i = i or self._tarea_seleccionada()
+        if i is None:
+            messagebox.showinfo("Agregar insumo", "Seleccioná primero la tarea (o uno de sus "
+                                "insumos).", parent=self)
+            return
+        dlg = _DlgInsumo(self, i, self.cat, self.precios,
+                         {x["cod_ins"] for x in i.get("insumos") or []})
+        self.wait_window(dlg)
+        r = dlg.resultado
+        if not r:
+            return
+        if i.get("pu_manual"):
+            i["pu_manual"] = None          # el PU vuelve a salir de los insumos
+        i.setdefault("insumos", []).append(
+            E.nuevo_insumo(r["cod_ins"], self.cat, self.precios, r["incid"], r["precio"]))
+        self._recalcular(i)
+        self._abiertos.add(i["clave"])
+        self._refrescar(f"{i['clave']}|{len(i['insumos']) - 1}")
+
+    def _quitar_insumo(self, i, x, clave):
+        if x.get("agregado"):
+            i["insumos"].remove(x)
+        else:                              # del análisis: queda con incidencia 0 (restaurable)
+            x["incid"] = 0.0
+            x["mod_incid"] = abs(x["incid_base"]) > 1e-9
+        self._recalcular(i)
+        self._refrescar(clave)
 
     def _elegir_precios(self):
         ini = self.v.obra.carpeta_precios
-        ruta = filedialog.askopenfilename(parent=self, title="Archivo de precios de esta versión",
+        ruta = filedialog.askopenfilename(parent=self, title="Archivo de precios de esta etapa",
                                           initialdir=str(ini) if ini.exists() else None,
                                           filetypes=[("Excel", "*.xlsx *.XLSX")])
         if not ruta:
@@ -612,10 +813,12 @@ class _DlgVersion(tk.Toplevel):
             messagebox.showerror("Error al leer precios", str(e), parent=self)
             return
         # Los insumos que no están en el archivo nuevo conservan el precio anterior.
+        # Los precios cambiados a mano en la etapa se respetan.
         self.precios = {**self.precios, **nuevos}
         self.etapa["archivo_precios"] = Path(ruta).name
         self.var_prc.set(Path(ruta).name)
         for i in self.etapa["items"]:
+            E.aplicar_precios(i, self.precios)
             self._recalcular(i)
         self._poblar()
 
@@ -629,7 +832,7 @@ class _DlgVersion(tk.Toplevel):
         self.wait_window(dlg)
         for c in dlg.claves:
             self.etapa["items"].append(
-                E.item_etapa(self.orig[c], 0.0, self.inc, self.precios))
+                E.item_etapa(self.orig[c], 0.0, self.inc, self.precios, catalogo=self.cat))
         if dlg.claves:
             self._poblar()
 
@@ -646,17 +849,40 @@ class _DlgVersion(tk.Toplevel):
                                   a["cod_tar"], a["pu_manual"])
         self.orig[a["clave"]] = ficha
         it = E.item_etapa(ficha, a["cantidad"], self.inc, self.precios,
-                          pu_manual=a["pu_manual"])
+                          pu_manual=a["pu_manual"], catalogo=self.cat)
         self.etapa["items"].append(it)
         self._poblar()
         self.tbl.selection_set(a["clave"])
         self.tbl.see(a["clave"])
 
     def _quitar(self):
-        sel = {x for x in self.tbl.selection() if not x.startswith("sec|")}
+        sel = {x for x in self.tbl.selection() if not x.startswith("sec|") and "|" not in x}
         if sel:
             self.etapa["items"] = [i for i in self.etapa["items"] if i["clave"] not in sel]
             self._poblar()
+
+    def _exportar(self):
+        """Exporta la etapa tal como está en pantalla (aunque no esté guardada)."""
+        obra = self.v.obra
+        et = {**self.etapa, "nombre": self.var_nom.get().strip(),
+              "fecha": self.var_fecha.get().strip()}
+        nom = f"_{et['nombre']}" if et["nombre"] else ""
+        nom = "".join(c for c in nom if c not in '\\/:*?"<>|')
+        ruta = filedialog.asksaveasfilename(
+            parent=self, title="Exportar etapa", initialdir=str(obra.carpeta),
+            initialfile=f"Obra{obra.numero}_Etapa_{et['numero']:02d}{nom}.xlsx",
+            defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
+        if not ruta:
+            return
+        try:
+            E.exportar_etapa(Path(ruta), obra.titulo, et, self.tab.ejec)
+        except PermissionError:
+            messagebox.showerror("Archivo en uso", "Cerralo en Excel y volvé a intentar.",
+                                 parent=self)
+            return
+        if messagebox.askyesno("Exportado", f"{ruta}\n\n¿Abrirlo ahora?", parent=self):
+            import os
+            os.startfile(ruta)
 
     def _guardar(self):
         self.etapa["nombre"] = self.var_nom.get().strip()
@@ -679,10 +905,130 @@ class _DlgVersion(tk.Toplevel):
         self.destroy()
 
 
+class _DlgInsumo(tk.Toplevel):
+    """Elegir un insumo del catálogo de la obra para agregarlo a una tarea de la etapa."""
+
+    def __init__(self, parent, tarea: dict, catalogo: dict, precios: dict, ya: set):
+        super().__init__(parent)
+        self.title("Agregar insumo a la tarea")
+        self.geometry("820x560")
+        self.minsize(700, 440)
+        self.grab_set()
+        self.resultado = None
+        self.tarea, self.precios = tarea, precios
+        self.items = sorted((c for c in catalogo.values() if c["cod"] not in ya),
+                            key=lambda c: c["nombre"].lower())
+        self.cod_sel = ""
+
+        tk.Label(self, text=f"  {tarea['item']}  {tarea['descripcion']}  —  "
+                            f"{_fmt(tarea['cantidad'])} {tarea['unidad']} en esta etapa",
+                 bg="#1f5fbf", fg="white", font=FUENTE_B, anchor="w", pady=8).pack(fill="x")
+        bus = tk.Frame(self, bg=COLOR_BG, pady=4)
+        bus.pack(fill="x", padx=8)
+        tk.Label(bus, text="Buscar insumo (código o nombre):", bg=COLOR_BG,
+                 font=FUENTE_S).pack(side="left")
+        self.var_bus = tk.StringVar()
+        e = ttk.Entry(bus, textvariable=self.var_bus, width=40)
+        e.pack(side="left", padx=4)
+        e.focus_set()
+        self.var_bus.trace_add("write", lambda *_: self._filtrar())
+
+        fr = tk.Frame(self)
+        fr.pack(fill="both", expand=True, padx=8)
+        self.tbl = ttk.Treeview(fr, columns=("cod", "nombre", "unidad", "precio"),
+                                show="headings", selectmode="browse", height=12)
+        for c, t, w, a in (("cod", "Código", 80, "center"), ("nombre", "Insumo", 450, "w"),
+                           ("unidad", "Unidad", 60, "center"), ("precio", "Precio", 110, "e")):
+            self.tbl.heading(c, text=t)
+            self.tbl.column(c, width=w, anchor=a)
+        scr = ttk.Scrollbar(fr, orient="vertical", command=self.tbl.yview)
+        self.tbl.configure(yscrollcommand=scr.set)
+        scr.pack(side="right", fill="y")
+        self.tbl.pack(fill="both", expand=True)
+        self.tbl.bind("<<TreeviewSelect>>", self._elegir)
+
+        frm = tk.Frame(self, bg=COLOR_BG, pady=6)
+        frm.pack(fill="x", padx=8)
+        self.var_sel = tk.StringVar(value="(elegí un insumo de la lista)")
+        self.var_inc = tk.StringVar()
+        self.var_tot = tk.StringVar()
+        self.var_pre = tk.StringVar()
+        filas = (("Insumo:", tk.Label(frm, textvariable=self.var_sel, bg=COLOR_BG,
+                                      fg="#1f5fbf", font=FUENTE_B, anchor="w")),
+                 (f"Incidencia (por {tarea['unidad']} de tarea):",
+                  ttk.Entry(frm, textvariable=self.var_inc, width=14)),
+                 ("  o Cantidad total en la etapa:",
+                  ttk.Entry(frm, textvariable=self.var_tot, width=14)),
+                 ("Precio:", ttk.Entry(frm, textvariable=self.var_pre, width=14)))
+        for r, (lbl, w) in enumerate(filas):
+            tk.Label(frm, text=lbl, bg=COLOR_BG, font=FUENTE_S, anchor="e"
+                     ).grid(row=r, column=0, sticky="e", padx=(0, 6), pady=1)
+            w.grid(row=r, column=1, sticky="w", pady=1)
+        tk.Label(frm, text="(completá la incidencia o la cantidad total; el precio sale del "
+                           "archivo y se puede cambiar)", bg=COLOR_BG, fg="#666",
+                 font=FUENTE_S).grid(row=2, column=2, sticky="w", padx=6)
+
+        bot = tk.Frame(self, bg="#e0e0e0", pady=6)
+        bot.pack(side="bottom", fill="x")
+        _btn(bot, "Cancelar", "#888", self.destroy).pack(side="right", padx=(4, 10))
+        _btn(bot, "Agregar insumo", "#1f5fbf", self._ok, True).pack(side="right")
+        self._filtrar()
+        _centrar(self, parent)
+
+    def _filtrar(self):
+        txt = self.var_bus.get().strip().lower()
+        self.tbl.delete(*self.tbl.get_children())
+        n = 0
+        for c in self.items:
+            if txt and txt not in c["cod"].lower() and txt not in c["nombre"].lower():
+                continue
+            p = self.precios.get(c["cod"])
+            self.tbl.insert("", "end", iid=c["cod"], values=(
+                c["cod"], c["nombre"], c["unidad"], f"$ {_fmt(p)}" if p else "sin precio"))
+            n += 1
+            if n >= 500:                   # con la búsqueda se acota
+                break
+
+    def _elegir(self, _=None):
+        sel = self.tbl.selection()
+        if not sel:
+            return
+        c = next(x for x in self.items if x["cod"] == sel[0])
+        self.cod_sel = c["cod"]
+        self.var_sel.set(f"{c['cod']}  {c['nombre']}  ({c['unidad']})")
+        p = self.precios.get(c["cod"])
+        self.var_pre.set(_fmt(p).replace(".", "") if p else "")
+
+    def _ok(self):
+        if not self.cod_sel:
+            messagebox.showwarning("Falta insumo", "Elegí un insumo de la lista.", parent=self)
+            return
+        try:
+            inc = _parse_num(self.var_inc.get())
+            tot = _parse_num(self.var_tot.get())
+            pre = _parse_num(self.var_pre.get())
+        except ValueError:
+            messagebox.showerror("Valor inválido", "Revisá los números.", parent=self)
+            return
+        if inc is None and tot is not None:
+            if not self.tarea["cantidad"]:
+                messagebox.showwarning("Sin cantidad", "La tarea tiene cantidad 0: cargá la "
+                                       "incidencia por unidad.", parent=self)
+                return
+            inc = tot / self.tarea["cantidad"]
+        if not inc:
+            messagebox.showwarning("Falta cantidad",
+                                   "Completá la incidencia o la cantidad total.", parent=self)
+            return
+        self.resultado = {"cod_ins": self.cod_sel, "incid": inc,
+                          "precio": pre if pre is not None else None}
+        self.destroy()
+
+
 class _DlgAgregar(tk.Toplevel):
     def __init__(self, parent, candidatos, ejec):
         super().__init__(parent)
-        self.title("Agregar tareas a la versión")
+        self.title("Agregar tareas a la etapa")
         self.geometry("760x460")
         self.grab_set()
         self.claves = []
@@ -780,7 +1126,7 @@ class _DlgAdicional(tk.Toplevel):
             tk.Label(frm, text=lbl, bg=COLOR_BG, font=FUENTE_S, anchor="e"
                      ).grid(row=r, column=0, sticky="e", padx=(0, 6), pady=1)
             w.grid(row=r, column=1, sticky="w", pady=1)
-        tk.Label(frm, text="(vacío = se calcula con los precios de la versión; obligatorio si "
+        tk.Label(frm, text="(vacío = se calcula con los precios de la etapa; obligatorio si "
                            "no hay tarea del catálogo)", bg=COLOR_BG, fg="#666", font=FUENTE_S
                  ).grid(row=5, column=2, sticky="w", padx=6)
 
@@ -845,7 +1191,7 @@ class _DlgCierre(tk.Toplevel):
         quedan = any(E.estado(tab.ejec, i["clave"]) == "a_realizar"
                      for i in tab.ejec["original"]["items"])
         self.var_avance = tk.BooleanVar(value=quedan)
-        self.title("Cierre — Versiones vs Original")
+        self.title("Cierre — Etapas vs Original")
         self.geometry("1250x640")
         self.minsize(900, 400)
         hdr = tk.Frame(self, bg=COLOR_VERDE)
@@ -853,6 +1199,8 @@ class _DlgCierre(tk.Toplevel):
         tk.Label(hdr, text=f"  Cierre de obra — {self.tab.obra.titulo}", bg=COLOR_VERDE,
                  fg="white", font=("Segoe UI", 12, "bold"), pady=6).pack(side="left", padx=6)
         _btn(hdr, "Exportar Excel", "#155c38", self._exportar, True).pack(side="right", padx=8)
+        _btn(hdr, "Incidencias reales → BaseParticular…", "#155c38",
+             lambda: _DlgIncidencias(self, self.tab)).pack(side="right", padx=4)
         tk.Checkbutton(hdr, text="Solo tareas con avance (sin las «A realizar»)",
                        variable=self.var_avance, command=self._build, bg=COLOR_VERDE,
                        fg="white", selectcolor="#155c38", activebackground=COLOR_VERDE,
@@ -870,13 +1218,13 @@ class _DlgCierre(tk.Toplevel):
         c, t, g = self.comp, self.comp["total"], self.comp["total_general"]
         res = tk.Frame(self.cuerpo, bg="#e8f0f8", padx=12, pady=6)
         res.pack(fill="x", padx=8, pady=(6, 2))
-        vers = "   ".join(f"V{e['numero']:02d}: $ {_fmt_pt(e['total'])}"
+        vers = "   ".join(f"E{e['numero']:02d}: $ {_fmt_pt(e['total'])}"
                            + (f" (adic. $ {_fmt_pt(e['total_adic'])})" if e["total_adic"] else "")
                            for e in c["etapas"])
         pct = f"{t['dif'] / t['orig'] * 100:+.1f} %" if t["orig"] else "-"
         pct_g = f"{g['dif'] / g['orig'] * 100:+.1f} %" if g["orig"] else "-"
         tk.Label(res, bg="#e8f0f8", fg=COLOR_HDR, font=FUENTE_S, anchor="w", justify="left",
-                 text=f"Versiones:  {vers or '(ninguna)'}").pack(fill="x")
+                 text=f"Etapas:  {vers or '(ninguna)'}").pack(fill="x")
         tk.Label(res, bg="#e8f0f8", fg=COLOR_HDR, font=FUENTE_S, anchor="w", justify="left",
                  text=f"Tareas del Original:   Original $ {_fmt_pt(t['orig'])}   ·   "
                       f"Ejecutado $ {_fmt_pt(t['ejec'])}   ·   Diferencia $ {_fmt_pt(t['dif'])}"
@@ -969,7 +1317,7 @@ class _DlgCierre(tk.Toplevel):
         obra = self.tab.obra
         ruta = filedialog.asksaveasfilename(
             parent=self, title="Exportar cierre", initialdir=str(obra.carpeta),
-            initialfile=f"Obra{obra.numero}_Cierre_Versiones_vs_Original.xlsx",
+            initialfile=f"Obra{obra.numero}_Cierre_Etapas_vs_Original.xlsx",
             defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
         if not ruta:
             return
@@ -980,3 +1328,139 @@ class _DlgCierre(tk.Toplevel):
                                  parent=self)
             return
         messagebox.showinfo("Exportado", ruta, parent=self)
+
+
+# ═════════════════════════════════════════════════════════════════
+class _DlgIncidencias(tk.Toplevel):
+    """Vista previa y carga de las incidencias reales (tareas Realizadas) en la
+    BaseParticular.db de la obra."""
+
+    def __init__(self, parent, tab: TabEjecucion):
+        super().__init__(parent)
+        self.tab = tab
+        self.title("Incidencias reales → BaseParticular.db")
+        self.geometry("1100x600")
+        self.minsize(850, 400)
+        self.grupos = E.incidencias_reales(tab.data, tab.ejec, tab.v.maestro["incidencias"],
+                                           tab.v.maestro.get("insumos"), solo_realizadas=True)
+        if not self.grupos:
+            self.destroy()
+            messagebox.showinfo("Sin tareas realizadas",
+                                "No hay tareas «Realizadas» con cantidad ejecutada en las etapas.",
+                                parent=parent)
+            return
+        self.aplicar = {g["cod"] for g in self.grupos if g["cambios"]}
+        self.grab_set()
+
+        tk.Label(self, text="  Incidencias reales de las tareas Realizadas  —  consumo de todas "
+                            "las etapas ÷ cantidad ejecutada", bg=COLOR_VERDE, fg="white",
+                 font=FUENTE_B, anchor="w", pady=8).pack(fill="x")
+        tk.Label(self, text="  Clic en ✔ para incluir o excluir una tarea.  Las tareas que "
+                            "comparten código (ej. 1250E) se suman y quedan con una sola "
+                            "incidencia.  Antes de escribir se hace un backup de la base.",
+                 bg=COLOR_BG, fg="#555", font=FUENTE_S, anchor="w").pack(fill="x")
+
+        bot = tk.Frame(self, bg="#e0e0e0", pady=6)
+        bot.pack(side="bottom", fill="x")
+        _btn(bot, "Cancelar", "#888", self.destroy).pack(side="right", padx=(4, 10))
+        _btn(bot, "Aplicar a la BaseParticular", COLOR_ROJO, self._aplicar, True
+             ).pack(side="right", padx=4)
+        self.lbl = tk.Label(bot, text="", bg="#e0e0e0", fg=COLOR_HDR, font=FUENTE_B)
+        self.lbl.pack(side="left", padx=10)
+
+        cols = ("ap", "cod", "desc", "unidad", "base", "real", "dif", "acc")
+        txt = {"ap": "Aplicar", "cod": "Código", "desc": "Tarea / Insumo", "unidad": "Unidad",
+               "base": "Incid. análisis", "real": "Incid. real", "dif": "Dif. %",
+               "acc": "Acción"}
+        anch = {"ap": 55, "cod": 70, "desc": 430, "unidad": 55, "base": 105, "real": 105,
+                "dif": 65, "acc": 110}
+        fr = tk.Frame(self)
+        fr.pack(fill="both", expand=True, padx=8, pady=6)
+        self.tbl = ttk.Treeview(fr, columns=cols, show="tree headings", selectmode="browse")
+        self.tbl.column("#0", width=22, minwidth=22, stretch=False)
+        for c in cols:
+            self.tbl.heading(c, text=txt[c])
+            self.tbl.column(c, width=anch[c], minwidth=30,
+                            anchor="w" if c == "desc" else
+                            ("e" if c in ("base", "real", "dif") else "center"))
+        scr = ttk.Scrollbar(fr, orient="vertical", command=self.tbl.yview)
+        self.tbl.configure(yscrollcommand=scr.set)
+        scr.pack(side="right", fill="y")
+        self.tbl.pack(fill="both", expand=True)
+        self.tbl.tag_configure("tarea", background="#d4edda", font=FUENTE_B)
+        self.tbl.tag_configure("tarea_no", background="#eeeeee", foreground="#888",
+                               font=FUENTE_B)
+        self.tbl.tag_configure("igual", foreground="#999")
+        self.tbl.tag_configure("actualizar", foreground="#1f5fbf")
+        self.tbl.tag_configure("nuevo", foreground=COLOR_VERDE)
+        self.tbl.tag_configure("quitar", foreground=COLOR_ROJO)
+        self.tbl.bind("<ButtonRelease-1>", self._clic)
+        self._poblar()
+        _centrar(self, parent)
+
+    def _poblar(self):
+        abiertos = {g for g in self.tbl.get_children() if self.tbl.item(g, "open")}
+        primera = not self.tbl.get_children()
+        self.tbl.delete(*self.tbl.get_children())
+        for g in self.grupos:
+            ap = g["cod"] in self.aplicar
+            self.tbl.insert("", "end", iid=g["cod"], tags=("tarea" if ap else "tarea_no",),
+                            open=(g["cambios"] > 0) if primera else g["cod"] in abiertos,
+                            values=(
+                "✔" if ap else "", g["cod"],
+                "  ·  ".join(g["tareas"].values()) + f"   —  {_fmt(g['cantidad'])} ejecutado",
+                "", "", "", "", f"{g['cambios']} cambio(s)" if g["cambios"] else "sin cambios"))
+            for n, f in enumerate(g["insumos"]):
+                b, r = f["base"], f["real"]
+                dif = (f"{(r - b) / b * 100:+.1f}" if b else "") if b is not None else ""
+                tag = "igual" if f["accion"] == "sin cambio" else f["accion"]
+                self.tbl.insert(g["cod"], "end", iid=f"{g['cod']}|{n}", tags=(tag,), values=(
+                    "", f["cod_ins"], f"    {f['nombre']}", f["unidad"],
+                    _fmt(b, 4) if b is not None else "—", _fmt(r, 4), dif, f["accion"]))
+        n_t = sum(1 for g in self.grupos if g["cod"] in self.aplicar)
+        n_f = sum(g["cambios"] for g in self.grupos if g["cod"] in self.aplicar)
+        self.lbl.config(text=f"Se aplican {n_f} cambio(s) en {n_t} tarea(s)")
+
+    def _clic(self, event):
+        if self.tbl.identify_region(event.x, event.y) != "cell":
+            return
+        iid = self.tbl.identify_row(event.y)
+        if not iid or "|" in iid or self.tbl.identify_column(event.x) != "#1":
+            return
+        g = next(x for x in self.grupos if x["cod"] == iid)
+        if not g["cambios"]:
+            return
+        if iid in self.aplicar:
+            self.aplicar.discard(iid)
+        else:
+            self.aplicar.add(iid)
+        self._poblar()
+
+    def _aplicar(self):
+        sel = [g for g in self.grupos if g["cod"] in self.aplicar and g["cambios"]]
+        if not sel:
+            messagebox.showinfo("Nada para aplicar", "No hay tareas marcadas con cambios.",
+                                parent=self)
+            return
+        n = sum(g["cambios"] for g in sel)
+        if not messagebox.askyesno(
+                "Aplicar incidencias reales",
+                f"Se van a modificar {n} incidencia(s) de {len(sel)} tarea(s) en la "
+                "BaseParticular.db de esta obra:\n\n"
+                + "\n".join(f"  {g['cod']}: {g['cambios']} cambio(s)" for g in sel[:15])
+                + ("\n  …" if len(sel) > 15 else "")
+                + "\n\nAntes se guarda un backup de la base. El presupuesto de la obra va a "
+                  "usar las incidencias nuevas; el Original de la pestaña Ejecución no "
+                  "cambia.\n\n¿Continuar?", icon="warning", parent=self):
+            return
+        try:
+            bak = E.aplicar_incidencias(self.tab.data, sel)
+        except Exception as e:
+            messagebox.showerror("Error al escribir la base", str(e), parent=self)
+            return
+        from core.obra import cargar_maestro_desde_db
+        self.tab.v.maestro.update(cargar_maestro_desde_db(self.tab.data))
+        messagebox.showinfo("Incidencias cargadas",
+                            f"Se cargaron {n} incidencia(s) en BaseParticular.db.\n\n"
+                            f"Backup: {bak.name}", parent=self)
+        self.destroy()
