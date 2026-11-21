@@ -829,6 +829,8 @@ def exportar_etapa(ruta: Path, obra_titulo: str, etapa: dict, ejec: dict):
         for c in ws[ws.max_row]:
             c.font, c.fill = F_B, P_R
         for x in i.get("insumos") or []:
+            if abs(x["incid"] * i["cantidad"]) < 1e-9:
+                continue                   # quitado en la etapa (o tarea sin cantidad)
             mod = (["agregado"] if x.get("agregado") else
                    [t for t, k in (("incidencia", "mod_incid"), ("precio", "mod_precio"))
                     if x.get(k)])
