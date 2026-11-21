@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 from core.obra import Obra, CARPETA_DATA, CARPETA_PRECIOS, cargar_maestro_desde_db
 from core.maestro import cargar_precios
+from ui.tab_ejecucion import TabEjecucion
 
 
 class _PreciosFila:
@@ -106,9 +107,11 @@ class VentanaObra(tk.Toplevel):
         self.tab_rpt_mat = tk.Frame(self._nb_cont, bg=COLOR_BG)
         self.tab_rpt_mdo = tk.Frame(self._nb_cont, bg=COLOR_BG)
         self.tab_rpt_det = tk.Frame(self._nb_cont, bg=COLOR_BG)
+        self.tab_ejec    = tk.Frame(self._nb_cont, bg=COLOR_BG)
         self._tab_frames = [
             self.tab_rubros, self.tab_tareas, self.tab_ins, self.tab_ppto,
             self.tab_rpt_ins, self.tab_rpt_mat, self.tab_rpt_mdo, self.tab_rpt_det,
+            self.tab_ejec,
         ]
         # Mostrar tab inicial (Rubros)
         self.tab_rubros.place(relx=0, rely=0, relwidth=1, relheight=1)
@@ -120,6 +123,7 @@ class VentanaObra(tk.Toplevel):
         self._build_rpt_materiales()
         self._build_rpt_mdo()
         self._build_rpt_detalle()
+        self._ejecucion = TabEjecucion(self.tab_ejec, self)
         bar = tk.Frame(self, bg="#e0e0e0", pady=6)
         bar.pack(fill="x")
         tk.Button(bar, text="Guardar obra", bg=COLOR_VERDE, fg="white",
@@ -1504,6 +1508,8 @@ class VentanaObra(tk.Toplevel):
             self._cargar_rpt_mdo()
         elif idx == 7:
             self._cargar_rpt_detalle()
+        elif idx == 8:
+            self._ejecucion.refrescar()
     def _actualizar_st(self):
         items = getattr(self.obra, "items_presupuesto", [])
         n_items = sum(1 for it in items if not it.get("es_rubro"))
@@ -1740,7 +1746,7 @@ class VentanaObra(tk.Toplevel):
         tabbar = tk.Frame(self, bg="#c0c0c0", height=30)
         tabbar.pack(fill="x", padx=8, pady=(8, 0))
         tabbar.pack_propagate(False)
-        tabbar.grid_columnconfigure(4, weight=1)   # col INFORMES se expande
+        tabbar.grid_columnconfigure(5, weight=1)   # col INFORMES se expande
 
         self._tab_btns  = {}
         self._tab_activo = 0
@@ -1750,6 +1756,7 @@ class VentanaObra(tk.Toplevel):
             (1, "  2. Tareas  "),
             (2, "  3. Insumos y precios  "),
             (3, "  4. Presupuesto  "),
+            (8, "  5. Ejecución  "),
         ]
         INFORMES_TABS = [
             (4, "  Insumos  "),
@@ -1762,20 +1769,20 @@ class VentanaObra(tk.Toplevel):
             btn = tk.Button(tabbar, text=text, font=FUENTE_S,
                             relief="flat", borderwidth=0, cursor="hand2",
                             command=lambda i=col: self._select_nb(i))
-            btn.grid(row=0, column=col, sticky="nsew", ipadx=4, ipady=3)
+            btn.grid(row=0, column=col if col < 4 else 4, sticky="nsew", ipadx=4, ipady=3)
             self._tab_btns[col] = btn
 
         # Lengueta INFORMES — amarilla, columna con weight=1
         lbl_inf = tk.Label(tabbar, text="  INFORMES  ",
                            bg="#f5c400", fg="#333333",
                            font=("Segoe UI", 9, "bold"), anchor="center")
-        lbl_inf.grid(row=0, column=4, sticky="nsew")
+        lbl_inf.grid(row=0, column=5, sticky="nsew")
 
         for col, text in INFORMES_TABS:
             btn = tk.Button(tabbar, text=text, font=FUENTE_S,
                             relief="flat", borderwidth=0, cursor="hand2",
                             command=lambda i=col: self._select_nb(i))
-            btn.grid(row=0, column=col + 4, sticky="nsew", ipadx=4, ipady=3)
+            btn.grid(row=0, column=col + 2, sticky="nsew", ipadx=4, ipady=3)
             self._tab_btns[col] = btn
 
         self._actualizar_estilos_tabbar()
@@ -1795,7 +1802,7 @@ class VentanaObra(tk.Toplevel):
     def _actualizar_estilos_tabbar(self):
         idx = getattr(self, "_tab_activo", 0)
         for i, btn in self._tab_btns.items():
-            if i < 4:   # trabajo
+            if i < 4 or i == 8:   # trabajo
                 bg = COLOR_HDR  if i == idx else "#dce8f0"
                 fg = "white"    if i == idx else COLOR_HDR
             else:       # informe
