@@ -107,12 +107,14 @@ class TabEjecucion:
 
         fr_t = tk.Frame(pan, bg=COLOR_BG)
         cols = ("rubro", "item", "desc", "unidad", "cant", "pu", "total",
-                "ejec", "saldo", "estado")
+                "ejec", "ejec_p", "saldo", "estado")
         txt = {"rubro": "Rubro", "item": "Ítem", "desc": "Descripción", "unidad": "Unidad",
                "cant": "Cant. Orig.", "pu": "PU Orig.", "total": "Total Orig.",
-               "ejec": "Ejecutado", "saldo": "Saldo", "estado": "Estado"}
+               "ejec": "Ejecutado", "ejec_p": "$ Ejecutado", "saldo": "Saldo",
+               "estado": "Estado"}
         anch = {"rubro": 42, "item": 40, "desc": 290, "unidad": 50, "cant": 80,
-                "pu": 95, "total": 105, "ejec": 80, "saldo": 80, "estado": 80}
+                "pu": 95, "total": 105, "ejec": 80, "ejec_p": 105, "saldo": 80,
+                "estado": 80}
         self.tbl = ttk.Treeview(fr_t, columns=cols, show="headings", selectmode="extended")
         for c in cols:
             self.tbl.heading(c, text=txt[c])
@@ -179,6 +181,10 @@ class TabEjecucion:
         rubros = o.get("rubros", {})
         rub_act, n_est = None, {k: 0 for k in E.ESTADOS}
         t_orig = 0.0
+        rub_ej = {}                                   # $ ejecutado por rubro
+        for it in o["items"]:
+            rub_ej[it["rubro"]] = (rub_ej.get(it["rubro"], 0.0)
+                                   + acc.get(it["clave"], {}).get("total", 0.0))
         for it in o["items"]:
             est = E.estado(self.ejec, it["clave"])
             n_est[est] += 1
@@ -189,14 +195,16 @@ class TabEjecucion:
                 rub_act = it["rubro"]
                 self.tbl.insert("", "end", iid=f"rub|{rub_act}", tags=("rub",),
                                 values=(rub_act, "", rubros.get(rub_act, ""), "", "", "",
-                                        "", "", "", ""))
+                                        "", "", f"$ {_fmt_pt(rub_ej[rub_act])}"
+                                        if rub_ej.get(rub_act) else "", "", ""))
             q_ej = acc.get(it["clave"], {}).get("cantidad", 0.0)
+            p_ej = acc.get(it["clave"], {}).get("total", 0.0)
             self.tbl.insert("", "end", iid=it["clave"], tags=(est,), values=(
                 it["rubro"], it["item"], it["descripcion"], it["unidad"],
                 _fmt(it["cantidad"]), f"$ {_fmt(it['pu'])}" if it["pu"] else "-",
                 f"$ {_fmt_pt(it['cantidad'] * it['pu'])}" if it["pu"] else "-",
-                _fmt(q_ej) if q_ej else "", _fmt(it["cantidad"] - q_ej),
-                E.ESTADO_TXT[est]))
+                _fmt(q_ej) if q_ej else "", f"$ {_fmt_pt(p_ej)}" if p_ej else "",
+                _fmt(it["cantidad"] - q_ej), E.ESTADO_TXT[est]))
         adic = sorted(E.adicionales(self.ejec), key=lambda a: (a["rubro"], a["clave"]))
         visibles = [a for a in adic
                     if filtro == "todas" or E.estado(self.ejec, a["clave"]) == filtro]
@@ -204,14 +212,17 @@ class TabEjecucion:
             n_est[E.estado(self.ejec, a["clave"])] += 1
         if visibles:
             self.tbl.insert("", "end", iid="rub|ADIC", tags=("sec_adic",), values=(
-                "", "", "ADICIONALES (no previstas en el Original)", "", "", "", "", "", "",
-                ""))
+                "", "", "ADICIONALES (no previstas en el Original)", "", "", "", "", "",
+                f"$ {_fmt_pt(t_ad)}" if (t_ad := sum(acc.get(a["clave"], {}).get("total", 0.0)
+                                                     for a in adic)) else "", "", ""))
         for a in visibles:
             est = E.estado(self.ejec, a["clave"])
             q_ej = acc.get(a["clave"], {}).get("cantidad", 0.0)
+            p_ej = acc.get(a["clave"], {}).get("total", 0.0)
             self.tbl.insert("", "end", iid=a["clave"], tags=(est, "adic"), values=(
                 a["rubro"], a["item"], a["descripcion"], a["unidad"], "—", "—", "—",
-                _fmt(q_ej) if q_ej else "", "", E.ESTADO_TXT[est]))
+                _fmt(q_ej) if q_ej else "", f"$ {_fmt_pt(p_ej)}" if p_ej else "", "",
+                E.ESTADO_TXT[est]))
         t_ejec = 0.0
         for e in E.listar_etapas(self.data):
             tot = sum(i["cantidad"] * i["pu"] for i in e.get("items", []))

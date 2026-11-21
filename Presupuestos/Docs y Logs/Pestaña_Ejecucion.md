@@ -34,7 +34,7 @@ Una tarea puede repartirse en varias etapas: por ejemplo, 300 m² en la Etapa 01
 - Seleccioná una o varias tareas (con Ctrl o Shift + clic) y usá los botones **«Marcar selección como»**. También podés hacer clic derecho sobre las tareas.
 - El filtro **«Ver»** muestra todas las tareas o solo las de un estado.
 
-La tabla principal muestra, por cada tarea: la cantidad, el PU y el total del Original; lo **Ejecutado** (la suma de todas las etapas); el **Saldo** y el **Estado**. Abajo aparece cuántas tareas hay en cada estado y los totales Original y Ejecutado.
+La tabla principal muestra, por cada tarea: la cantidad, el PU y el total del Original; lo **Ejecutado** (la cantidad sumada de todas las etapas); el **$ Ejecutado** (lo gastado: cantidad × precio de cada etapa, sumado); el **Saldo** y el **Estado**. Las filas de rubro muestran el $ ejecutado del rubro. Abajo aparece cuántas tareas hay en cada estado y los totales Original y Ejecutado.
 
 ### Paso 3 — Crear una Etapa
 Hacé clic en **«+ Nueva Etapa»**. La etapa arranca así:
