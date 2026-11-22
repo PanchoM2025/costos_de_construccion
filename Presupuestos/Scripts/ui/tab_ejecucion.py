@@ -82,6 +82,8 @@ class TabEjecucion:
              ).pack(side="right", padx=4, pady=4)
         _btn(hdr, "Definir Original…", "#555", self._definir_original
              ).pack(side="right", padx=4, pady=4)
+        _btn(hdr, "Actualizar precios del Original…", "#555", self._actualizar_precios_orig
+             ).pack(side="right", padx=4, pady=4)
 
         self.lbl_orig = tk.Label(f, text="", bg="#e8f0f8", fg=COLOR_HDR,
                                  font=FUENTE_S, anchor="w", padx=10, pady=3)
@@ -109,13 +111,13 @@ class TabEjecucion:
 
         fr_t = tk.Frame(pan, bg=COLOR_BG)
         cols = ("rubro", "item", "desc", "unidad", "cant", "pu", "total",
-                "ejec", "ejec_p", "saldo", "estado")
+                "pu_act", "tot_act", "ejec", "ejec_p", "saldo", "estado")
         txt = {"rubro": "Rubro", "item": "Ítem", "desc": "Descripción", "unidad": "Unidad",
                "cant": "Cant. Orig.", "pu": "PU Orig.", "total": "Total Orig.",
-               "ejec": "Ejecutado", "ejec_p": "$ Ejecutado", "saldo": "Saldo",
+               "pu_act": "PU actual", "tot_act": "Total actual", "ejec": "Ejecutado", "ejec_p": "$ Ejecutado", "saldo": "Saldo",
                "estado": "Estado"}
-        anch = {"rubro": 42, "item": 40, "desc": 290, "unidad": 50, "cant": 80,
-                "pu": 95, "total": 105, "ejec": 80, "ejec_p": 105, "saldo": 80,
+        anch = {"rubro": 42, "item": 40, "desc": 260, "unidad": 50, "cant": 80,
+                "pu": 95, "total": 105, "pu_act": 95, "tot_act": 105, "ejec": 80, "ejec_p": 105, "saldo": 80,
                 "estado": 80}
         self.tbl = ttk.Treeview(fr_t, columns=cols, show="tree headings",
                                 selectmode="extended")
@@ -129,6 +131,8 @@ class TabEjecucion:
         self.tbl.configure(yscrollcommand=scr.set)
         scr.pack(side="right", fill="y")
         self.tbl.pack(fill="both", expand=True)
+        self.tbl.tag_configure("tot", background="#d0dcea", foreground=COLOR_HDR,
+                               font=FUENTE_B)
         self.tbl.tag_configure("rub", background=COLOR_HDR, foreground="white",
                                font=FUENTE_B)
         for est, col in COLOR_ESTADO.items():
@@ -160,7 +164,7 @@ class TabEjecucion:
         vcols = ("ver", "nombre", "fecha", "precios", "n", "total")
         vtxt = {"ver": "Etapa", "nombre": "Nombre", "fecha": "Fecha",
                 "precios": "Archivo de precios", "n": "Tareas", "total": "Total"}
-        vanch = {"ver": 80, "nombre": 220, "fecha": 90, "precios": 200, "n": 60, "total": 120}
+        vanch = {"ver": 150, "nombre": 220, "fecha": 90, "precios": 200, "n": 60, "total": 120}
         self.tbl_v = ttk.Treeview(fr_v, columns=vcols, show="headings",
                                   selectmode="browse", height=5)
         for c in vcols:
@@ -168,6 +172,7 @@ class TabEjecucion:
             self.tbl_v.column(c, width=vanch[c], minwidth=30,
                               anchor="e" if c in ("total", "n") else
                               ("w" if c in ("nombre", "precios") else "center"))
+        self.tbl_v.tag_configure("variante", background="#eef3fb", foreground="#1f5fbf")
         self.tbl_v.pack(fill="both", expand=True, pady=(2, 0))
         self.tbl_v.bind("<Double-1>", lambda _: self._abrir_version())
         pan.add(fr_v, minsize=90)
@@ -189,20 +194,23 @@ class TabEjecucion:
         o = self.ejec["original"]
         self.lbl_orig.config(
             text=f"  Original: {o['archivo']}   |   precios: {o.get('archivo_precios') or '-'}"
-                 f"   |   definido {o['fecha']}")
+                 f"   |   definido {o['fecha']}"
+                 + (f"   |   precios actualizados {o['precios_actualizados']}"
+                    if o.get("precios_actualizados") else ""))
         acc = E.acumulado(self.data)
         filtro = self.var_filtro.get()
         rubros = o.get("rubros", {})
         rub_act, n_est = None, {k: 0 for k in E.ESTADOS}
         t_orig = 0.0
-        rub_ej = {}                                   # $ ejecutado por rubro
-        for it in o["items"]:
-            rub_ej[it["rubro"]] = (rub_ej.get(it["rubro"], 0.0)
-                                   + acc.get(it["clave"], {}).get("total", 0.0))
+        rub_tot = {}                                  # rubro: [$ orig, $ actual, $ ejecutado]
         inc = self.v.maestro["incidencias"]
         cat = self.v.maestro.get("insumos")
         consumo = E.consumo_insumos(self.data, inc)
-        t_pend = 0.0                                  # insumos que faltan, a precio original
+        t_pend = 0.0                                  # insumos que faltan, a precio actual
+        # Precios actuales de la obra (pestaña 3); si un insumo no tiene, el del Original.
+        prec_act = {c: p for c, p in (self.v._precios or {}).items() if p}
+        pend = filtro == "pendientes"
+        _m = lambda v: f"$ {_fmt_pt(v)}" if v else ""
         for it in o["items"]:
             est = E.estado(self.ejec, it["clave"])
             n_est[est] += 1
@@ -212,50 +220,71 @@ class TabEjecucion:
             falta = est != "realizada" and (it["cantidad"] - q_ej > 1e-6 or
                                             any(f["saldo"] > 1e-6 for f in filas))
             if est != "realizada":
-                t_pend += sum(f["saldo"] * f["precio"] for f in filas if f["saldo"] > 0)
-            if filtro == "pendientes":
+                t_pend += sum(f["saldo"] * (prec_act.get(f["cod_ins"]) or f["precio"])
+                              for f in filas if f["saldo"] > 0)
+            if pend:
                 if not falta:
                     continue
             elif filtro != "todas" and est != filtro:
                 continue
             if it["rubro"] != rub_act:
                 rub_act = it["rubro"]
-                self.tbl.insert("", "end", iid=f"rub|{rub_act}", tags=("rub",),
-                                values=(rub_act, "", rubros.get(rub_act, ""), "", "", "",
-                                        "", "", f"$ {_fmt_pt(rub_ej[rub_act])}"
-                                        if rub_ej.get(rub_act) else "", "", ""))
+                if rub_act not in rub_tot:
+                    rub_tot[rub_act] = [0.0, 0.0, 0.0]
+                    self.tbl.insert("", "end", iid=f"rub|{rub_act}", tags=("rub",),
+                                    values=(rub_act, "", rubros.get(rub_act, "")))
             p_ej = acc.get(it["clave"], {}).get("total", 0.0)
             n_falta = sum(1 for f in filas if f["saldo"] > 1e-6)
             desc = it["descripcion"] + (f"   [faltan {n_falta} insumo(s)]"
                                         if est != "realizada" and n_falta and q_ej else "")
+            pu = it["pu"]
+            pu_act = pu                               # PU con los precios actuales de la obra
+            if not it.get("precio_manual") and it["cantidad"] and \
+                    any(f["previsto"] for f in filas):
+                pu_act = sum(f["q_orig"] * (prec_act.get(f["cod_ins"]) or f["precio"])
+                             for f in filas if f["previsto"]) / it["cantidad"]
+            r = rub_tot[rub_act]
+            r[0] += it["cantidad"] * pu
+            r[1] += it["cantidad"] * pu_act
+            r[2] += p_ej
             self.tbl.insert("", "end", iid=it["clave"], tags=(est,),
-                            open=(filtro == "pendientes" or it["clave"] in self._abiertos),
+                            open=it["clave"] in self._abiertos,
                             values=(
                 it["rubro"], it["item"], desc, it["unidad"],
-                _fmt(it["cantidad"]), f"$ {_fmt(it['pu'])}" if it["pu"] else "-",
-                f"$ {_fmt_pt(it['cantidad'] * it['pu'])}" if it["pu"] else "-",
-                _fmt(q_ej) if q_ej else "", f"$ {_fmt_pt(p_ej)}" if p_ej else "",
+                _fmt(it["cantidad"]),
+                f"$ {_fmt(pu)}" if pu else "-", _m(it["cantidad"] * pu) or "-",
+                f"$ {_fmt(pu_act)}" if pu_act else "-", _m(it["cantidad"] * pu_act) or "-",
+                _fmt(q_ej) if q_ej else "", _m(p_ej),
                 _fmt(it["cantidad"] - q_ej), E.ESTADO_TXT[est]))
-            self._insertar_insumos(it["clave"], filas, solo_faltantes=filtro == "pendientes")
+            self._insertar_insumos(it["clave"], filas, prec_act, solo_faltantes=pend)
+        for r, (t_o, t_a, ej) in rub_tot.items():        # montos de cada rubro
+            for col, v in (("total", t_o), ("tot_act", t_a), ("ejec_p", ej)):
+                self.tbl.set(f"rub|{r}", col, _m(v))
         adic = sorted(E.adicionales(self.ejec), key=lambda a: (a["rubro"], a["clave"]))
-        visibles = [a for a in adic if filtro != "pendientes" and
+        visibles = [a for a in adic if not pend and
                     (filtro == "todas" or E.estado(self.ejec, a["clave"]) == filtro)]
         for a in adic:
             n_est[E.estado(self.ejec, a["clave"])] += 1
+        t_ad = sum(acc.get(a["clave"], {}).get("total", 0.0) for a in visibles)
         if visibles:
             self.tbl.insert("", "end", iid="rub|ADIC", tags=("sec_adic",), values=(
-                "", "", "ADICIONALES (no previstas en el Original)", "", "", "", "", "",
-                f"$ {_fmt_pt(t_ad)}" if (t_ad := sum(acc.get(a["clave"], {}).get("total", 0.0)
-                                                     for a in adic)) else "", "", ""))
+                "", "", "ADICIONALES (no previstas en el Original)",
+                "", "", "", "", "", "", "", _m(t_ad), "", ""))
         for a in visibles:
             est = E.estado(self.ejec, a["clave"])
             q_ej = acc.get(a["clave"], {}).get("cantidad", 0.0)
             p_ej = acc.get(a["clave"], {}).get("total", 0.0)
             self.tbl.insert("", "end", iid=a["clave"], tags=(est, "adic"), values=(
-                a["rubro"], a["item"], a["descripcion"], a["unidad"], "—", "—", "—",
-                _fmt(q_ej) if q_ej else "", f"$ {_fmt_pt(p_ej)}" if p_ej else "", "",
-                E.ESTADO_TXT[est]))
-            self._insertar_insumos(a["clave"], E.saldo_insumos(self.ejec, a, inc, consumo, cat))
+                a["rubro"], a["item"], a["descripcion"], a["unidad"], "—", "—", "—", "—", "—",
+                _fmt(q_ej) if q_ej else "", _m(p_ej), "", E.ESTADO_TXT[est]))
+            self._insertar_insumos(a["clave"], E.saldo_insumos(self.ejec, a, inc, consumo, cat),
+                                   prec_act)
+        # Fila de totales de lo listado (solo montos: las cantidades tienen distintas unidades)
+        if rub_tot or visibles:
+            g = [sum(v[k] for v in rub_tot.values()) for k in range(3)]
+            self.tbl.insert("", "end", iid="tot|", tags=("tot",), values=(
+                "", "", "TOTAL" + (" (lo listado)" if filtro != "todas" else ""),
+                "", "", "", _m(g[0]), "", _m(g[1]), "", _m(g[2] + t_ad), "", ""))
         t_ejec = 0.0
         for e in E.listar_etapas(self.data):
             tot = sum(i["cantidad"] * i["pu"] for i in e.get("items", []))
@@ -264,18 +293,27 @@ class TabEjecucion:
                 f"Etapa {e['numero']:02d}", e.get("nombre", ""), e.get("fecha", ""),
                 e.get("archivo_precios", ""), len(e.get("items", [])),
                 f"$ {_fmt_pt(tot)}"))
+            for v in E.listar_variantes(self.data, e["numero"]):   # no suman al ejecutado
+                self.tbl_v.insert("", "end", iid=f"{e['numero']}v{v['variante']}",
+                                  tags=("variante",), values=(
+                    E.nombre_etapa(v), v.get("nombre", ""), v.get("fecha", ""),
+                    v.get("archivo_precios", ""), len(v.get("items", [])),
+                    f"$ {_fmt_pt(sum(i['cantidad'] * i['pu'] for i in v.get('items', [])))}"))
         self.lbl_tot.config(
             text=f"A realizar: {n_est['a_realizar']}   En curso: {n_est['en_curso']}   "
                  f"Realizadas: {n_est['realizada']}      |      "
                  f"Original: $ {_fmt_pt(t_orig)}     Ejecutado: $ {_fmt_pt(t_ejec)}"
                  + (f"  (adicionales: {len(adic)})" if adic else "")
-                 + f"     Falta (insumos a precio orig.): $ {_fmt_pt(t_pend)}")
+                 + f"     Falta (insumos a precio actual): $ {_fmt_pt(t_pend)}")
 
-    def _insertar_insumos(self, clave, filas, solo_faltantes=False):
-        """Filas hijas de una tarea: por insumo, previsto / ejecutado / saldo."""
+    def _insertar_insumos(self, clave, filas, precios, solo_faltantes=False):
+        """Filas hijas de una tarea: por insumo, previsto / ejecutado / saldo, con el precio
+        del Original y el actual de la obra (« *» = cambió respecto del Original)."""
         for n, f in enumerate(filas):
             if solo_faltantes and f["saldo"] <= 1e-6:
                 continue
+            p_act = precios.get(f["cod_ins"]) or f["precio"]
+            marca = " *" if f["precio"] and abs(p_act - f["precio"]) > 1e-9 else ""
             tag = ("ins_falta" if f["saldo"] > 1e-6 else
                    "ins_exceso" if f["saldo"] < -1e-6 else "ins")
             extra = "" if f["previsto"] else "   (no previsto)"
@@ -284,6 +322,8 @@ class TabEjecucion:
                 _fmt(f["q_orig"]) if f["q_orig"] else "—",
                 f"$ {_fmt(f['precio'])}" if f["precio"] else "",
                 f"$ {_fmt_pt(f['q_orig'] * f['precio'])}" if f["q_orig"] * f["precio"] else "",
+                f"$ {_fmt(p_act)}{marca}" if p_act else "",
+                f"$ {_fmt_pt(f['q_orig'] * p_act)}" if f["q_orig"] * p_act else "",
                 _fmt(f["q_ejec"]) if f["q_ejec"] else "",
                 f"$ {_fmt_pt(f['pesos_ejec'])}" if f["pesos_ejec"] else "",
                 _fmt(f["saldo"]) if abs(f["saldo"]) > 1e-6 else "0", ""))
@@ -341,6 +381,59 @@ class TabEjecucion:
             + (f"\n\n⚠ {falt} tareas tienen insumos sin precio en esa versión." if falt else ""),
             parent=self.v)
 
+    def _actualizar_precios_orig(self):
+        """Pasa al Original los precios actuales de la obra (pestaña 3) sin tocar
+        estados ni etapas: completa los que no tenían precio y, si se elige, cambia el resto."""
+        if not self._requiere_original():
+            return
+        cambios = E.cambios_precios_original(self.ejec, self.v._precios or {},
+                                             self.v.maestro["incidencias"],
+                                             self.v.maestro.get("insumos"))
+        if not cambios:
+            messagebox.showinfo("Precios del Original",
+                "Los precios del Original ya coinciden con los de la obra (pestaña 3).",
+                parent=self.v)
+            return
+        falt = [c for c in cambios if not c["antes"]]
+        dif = [c for c in cambios if c["antes"]]
+
+        def lineas(lst, n=18):
+            r = [f"  {c['cod_ins']:7} {c['nombre'][:34]:34} "
+                 + (f"$ {_fmt(c['antes'])} → " if c["antes"] else "")
+                 + f"$ {_fmt(c['nuevo'])}" for c in lst[:n]]
+            return r + ([f"  … y {len(lst) - n} más"] if len(lst) > n else [])
+
+        msg = ""
+        if falt:
+            msg += f"Sin precio en el Original ({len(falt)}):\n" + "\n".join(lineas(falt)) + "\n\n"
+        if dif:
+            msg += f"Con otro precio en el Original ({len(dif)}):\n" + "\n".join(lineas(dif)) + "\n\n"
+        msg += ("Sí = actualizar todos\n"
+                + ("No = solo completar los que no tenían precio\n" if falt else "")
+                + "Cancelar = no cambiar nada\n\n"
+                "No se tocan estados ni etapas. Las tareas con precio manual quedan igual.")
+        if falt and dif:
+            r = messagebox.askyesnocancel("Actualizar precios del Original", msg, parent=self.v)
+            if r is None:
+                return
+            elegidos = cambios if r else falt
+        else:
+            msg = msg.replace("Sí = actualizar todos\n", "").replace("Cancelar = no cambiar nada\n\n", "")
+            if not messagebox.askokcancel("Actualizar precios del Original", msg, parent=self.v):
+                return
+            elegidos = cambios
+        t_antes = sum(i["cantidad"] * i["pu"] for i in self.ejec["original"]["items"])
+        bak = E.actualizar_precios_original(self.data, self.ejec,
+                                            {c["cod_ins"]: c["nuevo"] for c in elegidos},
+                                            self.v.maestro["incidencias"],
+                                            self.v.maestro.get("insumos"))
+        t_desp = sum(i["cantidad"] * i["pu"] for i in self.ejec["original"]["items"])
+        self.refrescar()
+        messagebox.showinfo("Precios del Original",
+            f"{len(elegidos)} precios actualizados.\n\n"
+            f"Total Original: $ {_fmt_pt(t_antes)} → $ {_fmt_pt(t_desp)}\n\n"
+            f"Copia previa: {bak.name}", parent=self.v)
+
     def _seleccion_claves(self):
         return [i for i in self.tbl.selection() if not i.startswith("rub|") and "|" not in i]
 
@@ -394,7 +487,11 @@ class TabEjecucion:
             messagebox.showinfo("Sin selección", "Seleccioná una etapa de la lista.",
                                 parent=self.v)
             return None
-        ruta = E.ruta_etapa(self.data, int(sel[0]))
+        if "v" in sel[0]:                            # fila de una variante: "2v1"
+            num, var = sel[0].split("v")
+            ruta = E.ruta_variante(self.data, int(num), int(var))
+        else:
+            ruta = E.ruta_etapa(self.data, int(sel[0]))
         with open(ruta, encoding="utf-8") as f:
             return json.load(f)
 
@@ -415,7 +512,7 @@ class TabEjecucion:
         ruta = filedialog.asksaveasfilename(
             parent=self.v, title="Exportar etapa",
             initialdir=str(self.obra.carpeta),
-            initialfile=f"Obra{self.obra.numero}_Etapa_{et['numero']:02d}.xlsx",
+            initialfile=f"Obra{self.obra.numero}_{E.nombre_etapa(et).replace(' ', '_')}.xlsx",
             defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
         if ruta:
             try:
@@ -429,6 +526,18 @@ class TabEjecucion:
     def _eliminar_version(self):
         et = self._version_sel()
         if not et:
+            return
+        if et.get("variante"):
+            if messagebox.askyesno("Eliminar variante",
+                    f"¿Eliminar {E.nombre_etapa(et)}?\n\nLa etapa real no cambia. "
+                    "No se puede deshacer.", icon="warning", parent=self.v):
+                E.eliminar_variante(self.data, et["numero"], et["variante"])
+                self.refrescar()
+            return
+        if E.listar_variantes(self.data, et["numero"]):
+            messagebox.showinfo("Etapa con variantes",
+                f"La Etapa {et['numero']:02d} tiene variantes. Eliminalas primero.",
+                parent=self.v)
             return
         if not messagebox.askyesno("Eliminar etapa",
                 f"¿Eliminar la Etapa {et['numero']:02d}?\n\nLas tareas que esa etapa "
@@ -514,7 +623,7 @@ class _DlgVersion(tk.Toplevel):
                                self.cat)
         self._abiertos = set()              # tareas desplegadas
         self.acc_prev = E.acumulado(tab.data, excluir=etapa["numero"])
-        self.title(f"Etapa {etapa['numero']:02d}")
+        self.title(E.nombre_etapa(etapa))
         self.geometry("1150x620")
         self.minsize(900, 420)
         self.grab_set()
@@ -525,8 +634,10 @@ class _DlgVersion(tk.Toplevel):
     def _build(self):
         hdr = tk.Frame(self, bg=COLOR_HDR)
         hdr.pack(fill="x")
-        tk.Label(hdr, text=f"  Etapa {self.etapa['numero']:02d}"
-                           + ("  (nueva)" if self.nueva else ""),
+        tk.Label(hdr, text=f"  {E.nombre_etapa(self.etapa)}"
+                           + ("  (nueva)" if self.nueva else "")
+                           + ("  (alternativa: no suma al ejecutado)"
+                              if self.etapa.get("variante") else ""),
                  bg=COLOR_HDR, fg="white", font=("Segoe UI", 12, "bold"), pady=6
                  ).pack(side="left", padx=6)
 
@@ -559,8 +670,11 @@ class _DlgVersion(tk.Toplevel):
         bot = tk.Frame(self, bg="#e0e0e0", pady=6)
         bot.pack(side="bottom", fill="x")
         _btn(bot, "Cancelar", "#888", self.destroy).pack(side="right", padx=(4, 10))
-        _btn(bot, f"Guardar Etapa {self.etapa['numero']:02d}", COLOR_VERDE, self._guardar,
+        _btn(bot, f"Guardar {E.nombre_etapa(self.etapa)}", COLOR_VERDE, self._guardar,
              True).pack(side="right", padx=4)
+        if not self.nueva:
+            _btn(bot, "Guardar como nueva Variante", "#1f5fbf", self._guardar_como_variante,
+                 True).pack(side="right", padx=4)
         _btn(bot, "+ Agregar tarea", COLOR_SEC, self._agregar).pack(side="left", padx=(10, 4))
         _btn(bot, "+ Adicional (no prevista)", COLOR_SEC_AD, self._adicional
              ).pack(side="left", padx=4)
@@ -634,6 +748,9 @@ class _DlgVersion(tk.Toplevel):
             n_mod = sum(1 for x in i.get("insumos") or []
                         if x.get("mod_incid") or x.get("mod_precio") or x.get("agregado"))
             desc = i["descripcion"] + (f"   [{n_mod} insumo(s) modificado(s)]" if n_mod else "")
+            if E.variante_cambiada(i, o or i):
+                sub = i.get("subcontrato") or ""
+                desc += f"   [{sub or 'Propio'}: {E.VARIANTE_TXT.get(sub, '')}]"
             if i.get("solo_insumos"):
                 desc = (i["descripcion"] + f"   [solo insumos pendientes · no suma "
                         f"{i['unidad']}]")
@@ -857,7 +974,30 @@ class _DlgVersion(tk.Toplevel):
                     self._refrescar(iid)
                 m.add_command(label="Restaurar todos los insumos de la tarea "
                                     "(saca los agregados)", command=rest_todo)
+            if not self.nueva and not i.get("solo_insumos") and i.get("cod_tar"):
+                actual = (i.get("subcontrato") or "").strip().upper()
+                opciones = [v for v in E.variantes_tarea(i["cod_tar"], self.inc) if v != actual]
+                if opciones:
+                    m.add_separator()
+                for v in opciones:
+                    m.add_command(label=f"Cambiar a {v or 'Propio'}  ({E.VARIANTE_TXT[v]})",
+                                  command=lambda var=v: self._cambiar_variante(i, var))
         m.tk_popup(event.x_root, event.y_root)
+
+    def _cambiar_variante(self, i, variante):
+        """Reemplaza los insumos de la tarea por los de la variante elegida."""
+        if (i.get("pu_manual") or any(x.get("mod_incid") or x.get("agregado")
+                                      for x in i.get("insumos") or [])) and \
+                not messagebox.askokcancel("Cambiar variante",
+                    "Esta tarea tiene un PU manual, incidencias modificadas o insumos "
+                    "agregados, que se pierden al cambiar de variante.\n\n"
+                    "Los precios cambiados a mano se conservan en los insumos que sigan.",
+                    parent=self):
+            return
+        E.cambiar_variante(i, self.orig.get(i["clave"], i), variante, self.inc, self.precios,
+                           self.cat)
+        self._abiertos.add(i["clave"])
+        self._refrescar(i["clave"])
 
     def _tarea_seleccionada(self):
         for iid in self.tbl.selection():
@@ -967,7 +1107,7 @@ class _DlgVersion(tk.Toplevel):
         nom = "".join(c for c in nom if c not in '\\/:*?"<>|')
         ruta = filedialog.asksaveasfilename(
             parent=self, title="Exportar etapa", initialdir=str(obra.carpeta),
-            initialfile=f"Obra{obra.numero}_Etapa_{et['numero']:02d}{nom}.xlsx",
+            initialfile=f"Obra{obra.numero}_{E.nombre_etapa(et).replace(' ', '_')}{nom}.xlsx",
             defaultextension=".xlsx", filetypes=[("Excel", "*.xlsx")])
         if not ruta:
             return
@@ -981,16 +1121,41 @@ class _DlgVersion(tk.Toplevel):
             import os
             os.startfile(ruta)
 
-    def _guardar(self):
+    def _preparar_guardado(self) -> bool:
         self.etapa["nombre"] = self.var_nom.get().strip()
         self.etapa["fecha"] = self.var_fecha.get().strip()
         if self.etapa.get("archivo_precios") == "(los de la obra)":
             self.etapa["archivo_precios"] = ""
         self.etapa["precios"] = E.precios_usados(self.etapa["items"], self.inc, self.precios)
         falt = sum(1 for i in self.etapa["items"] if i.get("sin_precio"))
-        if falt and not messagebox.askyesno("Insumos sin precio",
+        return not falt or messagebox.askyesno("Insumos sin precio",
                 f"{falt} tareas tienen insumos sin precio (fila amarilla). ¿Guardar igual?",
-                parent=self):
+                parent=self)
+
+    def _guardar_como_variante(self):
+        if not self._preparar_guardado():
+            return
+        n = E.guardar_variante(self.tab.data, self.etapa)
+        self.tab.refrescar()
+        messagebox.showinfo("Variante guardada",
+            f"{E.nombre_etapa({**self.etapa, 'variante': n})}\n"
+            f"Total: $ {_fmt_pt(sum(i['cantidad'] * i['pu'] for i in self.etapa['items']))}\n\n"
+            "No suma al ejecutado ni cambia la etapa real.", parent=self.v)
+        self.destroy()
+
+    def _guardar(self):
+        if self.etapa.get("variante"):
+            if self._preparar_guardado():
+                E.guardar_variante(self.tab.data, self.etapa, self.etapa["variante"])
+                self.tab.refrescar()
+                self.destroy()
+            return
+        if any(E.variante_cambiada(i, self.orig.get(i["clave"], i)) for i in self.etapa["items"]):
+            messagebox.showinfo("Etapa con variantes",
+                "Hay tareas cambiadas a otra variante. Usá «Guardar como nueva Variante» "
+                "para no modificar la etapa real.", parent=self)
+            return
+        if not self._preparar_guardado():
             return
         ejec = self.tab.ejec
         # Las tareas agregadas a mano que estaban 'a realizar' pasan a 'en curso'.

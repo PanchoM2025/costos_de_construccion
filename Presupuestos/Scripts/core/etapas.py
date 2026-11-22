@@ -26,6 +26,7 @@ ESTADOS = ("a_realizar", "en_curso", "realizada")
 ESTADO_TXT = {"a_realizar": "A realizar", "en_curso": "En curso", "realizada": "Realizada"}
 
 _RE_ETAPA = re.compile(r"etapa(\d+)\.json$")
+_RE_VARIANTE = re.compile(r"etapa(\d+)_variante(\d+)\.json$")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -125,6 +126,53 @@ def definir_original(carpeta_data: Path, ruta_version: Path, incidencias: dict,
     }
     guardar_ejecucion(carpeta_data, ejec)
     return ejec
+
+
+def cambios_precios_original(ejec: dict, precios: dict, incidencias: dict,
+                             catalogo: dict | None = None) -> list:
+    """Insumos de las tareas del Original cuyo precio difiere del actual de la obra:
+    [{cod_ins, nombre, unidad, antes, nuevo}] (antes = 0 → no tenía precio).
+    Las tareas con precio manual no se tocan."""
+    o = ejec["original"]
+    cat = catalogo or {}
+    vistos, res = set(), []
+    for it in o["items"]:
+        if it.get("precio_manual"):
+            continue
+        for x in insumos_original(it, incidencias, o.get("precios") or {}, cat):
+            c = x["cod_ins"]
+            nuevo = float(precios.get(c) or 0.0)
+            if c in vistos or not nuevo or abs(nuevo - float(x["precio"] or 0.0)) < 1e-9:
+                continue
+            vistos.add(c)
+            res.append({"cod_ins": c, "nombre": x.get("nombre") or cat.get(c, {}).get("nombre", ""),
+                        "unidad": x.get("unidad", ""), "antes": float(x["precio"] or 0.0),
+                        "nuevo": nuevo})
+    return sorted(res, key=lambda r: r["cod_ins"])
+
+
+def actualizar_precios_original(carpeta_data: Path, ejec: dict, nuevos: dict,
+                                incidencias: dict, catalogo: dict | None = None) -> Path:
+    """Aplica `nuevos` {cod_ins: precio} a los insumos del Original y recalcula el PU
+    de cada tarea. No toca estados ni etapas. Deja copia previa de ejecucion.json."""
+    ruta = ruta_ejecucion(carpeta_data)
+    bak = ruta.with_name(f"ejecucion_antes_precios_{datetime.now():%Y-%m-%d_%H%M}.json")
+    bak.write_bytes(ruta.read_bytes())
+    o = ejec["original"]
+    for it in o["items"]:
+        if it.get("precio_manual") or not it.get("cod_tar"):
+            continue
+        # Congela la lista de insumos (con las incidencias de hoy si no estaba congelada)
+        it["insumos"] = insumos_original(it, incidencias, o.get("precios") or {}, catalogo)
+        for x in it["insumos"]:
+            if x["cod_ins"] in nuevos:
+                x["precio"] = float(nuevos[x["cod_ins"]])
+        it["pu"] = sum(x["incid"] * x["precio"] for x in it["insumos"])
+        it["sin_precio"] = [x["cod_ins"] for x in it["insumos"] if not x["precio"]]
+    o.setdefault("precios", {}).update({c: float(v) for c, v in nuevos.items()})
+    o["precios_actualizados"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    guardar_ejecucion(carpeta_data, ejec)
+    return bak
 
 
 def insumos_original(it: dict, incidencias: dict, precios: dict,
@@ -238,6 +286,87 @@ def proximo_numero(carpeta_data: Path) -> int:
 
 def ruta_etapa(carpeta_data: Path, numero: int) -> Path:
     return Path(carpeta_data) / f"etapa{numero:02d}.json"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+#  Variantes de una etapa (etapaNN_varianteMM.json)
+#  Son alternativas para comparar: no suman al ejecutado, no cambian estados ni
+#  saldos, y listar_etapas() no las incluye.
+# ─────────────────────────────────────────────────────────────────────────────
+
+VARIANTE_TXT = {"": "Personal propio", "S": "Subcontrato de MdeO",
+                "E": "Hormigón elaborado", "T": "Subcontrato total"}
+
+
+def nombre_etapa(etapa: dict) -> str:
+    """'Etapa 02' o 'Etapa 02 Variante 01'."""
+    txt = f"Etapa {etapa['numero']:02d}"
+    return txt + (f" Variante {etapa['variante']:02d}" if etapa.get("variante") else "")
+
+
+def ruta_variante(carpeta_data: Path, numero: int, variante: int) -> Path:
+    return Path(carpeta_data) / f"etapa{numero:02d}_variante{variante:02d}.json"
+
+
+def listar_variantes(carpeta_data: Path, numero: int) -> list[dict]:
+    res = []
+    for p in Path(carpeta_data).glob(f"etapa{numero:02d}_variante*.json"):
+        if not _RE_VARIANTE.search(p.name):
+            continue
+        with open(p, encoding="utf-8") as f:
+            res.append(json.load(f))
+    return sorted(res, key=lambda v: v.get("variante", 0))
+
+
+def guardar_variante(carpeta_data: Path, etapa: dict, variante: int | None = None) -> int:
+    """Guarda la etapa como variante (None = la próxima libre) y devuelve su número.
+    No toca la etapa real, los estados ni ejecucion.json."""
+    numero = etapa["numero"]
+    if variante is None:
+        variante = max((v.get("variante", 0) for v in listar_variantes(carpeta_data, numero)),
+                       default=0) + 1
+    d = {k: v for k, v in etapa.items() if not k.startswith("_")}
+    d["variante"] = variante
+    d["total"] = sum(i["cantidad"] * i["pu"] for i in d["items"])
+    d["guardado"] = datetime.now().strftime("%Y-%m-%d %H:%M")
+    with open(ruta_variante(carpeta_data, numero, variante), "w", encoding="utf-8") as f:
+        json.dump(d, f, ensure_ascii=False, indent=2)
+    return variante
+
+
+def eliminar_variante(carpeta_data: Path, numero: int, variante: int):
+    ruta = ruta_variante(carpeta_data, numero, variante)
+    if ruta.exists():
+        ruta.unlink()
+
+
+def variantes_tarea(cod_tar: str, incidencias: dict) -> list:
+    """Variantes que se pueden elegir: S, E y T en hormigón (las tareas que tienen E);
+    solo S en las demás. Incluye '' (personal propio) para poder volver."""
+    letras = ("S", "E", "T") if f"{cod_tar}E" in incidencias else ("S",)
+    return [v for v in ("",) + letras if cod_incidencias(cod_tar, v) in incidencias]
+
+
+def cambiar_variante(item: dict, it_orig: dict, variante: str, incidencias: dict,
+                     precios: dict, catalogo: dict | None = None):
+    """Pasa la tarea a otra variante con los insumos de su análisis. Conserva los precios
+    cambiados a mano de los insumos que siguen; el PU vuelve a salir de los insumos."""
+    previos = {x["cod_ins"]: x for x in item.get("insumos") or []}
+    nuevos = armar_insumos(item["cod_tar"], variante, incidencias, precios, catalogo)
+    for x in nuevos:
+        p = previos.get(x["cod_ins"])
+        if p and p.get("mod_precio"):
+            x["precio"], x["mod_precio"] = p["precio"], True
+    item["subcontrato"] = variante
+    item["insumos"] = nuevos
+    item["pu_manual"] = None
+    recalcular_item(item, it_orig)
+
+
+def variante_cambiada(item: dict, it_orig: dict) -> bool:
+    """True si la tarea usa una variante distinta de la del Original."""
+    return ((item.get("subcontrato") or "").strip().upper()
+            != (it_orig.get("subcontrato") or "").strip().upper())
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -879,9 +1008,10 @@ def exportar_etapa(ruta: Path, obra_titulo: str, etapa: dict, ejec: dict):
     P_R = PatternFill("solid", fgColor="D6E8F5")
     wb = openpyxl.Workbook()
     ws = wb.active
-    ws.title = f"Etapa {etapa['numero']:02d}"
-    ws.append([f"Obra {obra_titulo} — Etapa {etapa['numero']:02d}"
+    ws.title = nombre_etapa(etapa)
+    ws.append([f"Obra {obra_titulo} — {nombre_etapa(etapa)}"
                + (f" — {etapa['nombre']}" if etapa.get("nombre") else "")])
+    reg = registro(ejec)
     ws["A1"].font = Font(name="Arial", size=13, bold=True)
     ws.append([f"Fecha: {etapa.get('fecha', '')}   Precios: {etapa.get('archivo_precios') or '-'}"])
     ws.append([])
@@ -912,7 +1042,10 @@ def exportar_etapa(ruta: Path, obra_titulo: str, etapa: dict, ejec: dict):
                     c.font, c.fill = F_B, P_R
             t = i["cantidad"] * i["pu"]
             sub_sec += t
-            ws.append([i["rubro"], i["item"], i["descripcion"]
+            marca = (f"  [{i.get('subcontrato') or 'Propio'}: "
+                     f"{VARIANTE_TXT.get(i.get('subcontrato') or '', '')}]"
+                     if variante_cambiada(i, reg.get(i["clave"], i)) else "")
+            ws.append([i["rubro"], i["item"], i["descripcion"] + marca
                        + ("  (solo insumos pendientes, no suma cantidad)"
                           if i.get("solo_insumos") else ""), i["unidad"], i["cantidad"],
                        i["pu"], t, "Sí" if i.get("finaliza") else ""])

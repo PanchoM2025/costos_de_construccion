@@ -14,9 +14,12 @@ Sirve para seguir la obra por **etapas** (Etapa 01, 02…, por ejemplo una por q
 ## Uso
 
 1. **Definir el Original**: primero «Guardar obra»; después **«Definir Original…»** y elegís la versión contratada. Redefinirlo reinicia los estados.
+   - **«Actualizar precios del Original…»**: pasa al Original los precios actuales de la obra (pestaña 3) **sin tocar estados ni etapas**. Muestra qué insumos cambian y permite completar solo los que no tenían precio (No) o actualizar todos (Sí). Recalcula el PU de las tareas (las de precio manual quedan igual) y deja copia previa `ejecucion_antes_precios_<fecha>.json`.
 2. **Marcar tareas**: seleccionás tareas y usás **«Marcar selección como»** (o clic derecho). La tabla muestra, para cada tarea, el Original, lo **Ejecutado** (cantidad), el **$ Ejecutado** (lo gastado, sumado entre etapas), el **Saldo** y el **Estado**.
    - Cada tarea **se despliega** (clic en la descripción o en ▸) y muestra **por insumo** lo previsto en el Original, lo ejecutado en las etapas y el **saldo**. En amarillo, lo que falta; en rojo, lo que se usó de más o no estaba previsto. Si a una tarea con avance le faltan insumos, muestra «[faltan N insumo(s)]».
-   - El filtro **«Pendientes (lo que falta)»** muestra solo las tareas no Realizadas con algo por hacer, ya desplegadas y con los insumos que faltan. Al pie aparece **«Falta»**: el valor de esos insumos a precio del Original.
+   - El filtro **«Pendientes (lo que falta)»** muestra solo las tareas no Realizadas con algo por hacer, sin desplegar; al desplegar una tarea se ven solo los insumos que faltan.
+   - **Precios:** «PU Orig.» y «Total Orig.» son los del Original (lo contratado); «PU actual» y «Total actual» usan los precios actuales de la obra (pestaña 3). En los insumos, un « *» marca los que cambiaron de precio. Al pie, **«Falta»** es el valor de los insumos que faltan a precio actual.
+   - En todos los filtros, la última fila **TOTAL** suma el Total Orig., el Total actual y el $ Ejecutado de lo listado (incluidos los adicionales visibles). Los rubros muestran esos mismos montos.
    - El Original guarda su lista de insumos al definirse. En los Originales definidos antes, se toma de la base de la obra.
 3. **«+ Nueva Etapa»**: trae las tareas **En curso** con la cantidad propuesta igual al saldo.
    - Si la cantidad de una tarea ya está completa pero **le faltan insumos** (por ejemplo, se proveyó la madera y falta la mano de obra), la tarea viene como fila **«solo insumos pendientes»**: trae solo los insumos que faltan y **no suma m²** a la tarea. Sí suma pesos y consumo de insumos. Su cantidad aparece como «ref.». Con clic derecho sobre la tarea se puede hacer que sume cantidad, o que no sume.
@@ -35,6 +38,16 @@ Sirve para seguir la obra por **etapas** (Etapa 01, 02…, por ejemplo una por q
    - Lo modificado se ve en **azul** con `*`, y el PU de la tarea se recalcula solo.
 5. **«Guardar Etapa XX»**: las tareas con Finaliza pasan a **Realizada**, y las que estaban en A realizar pasan a **En curso**.
 6. **Lista de etapas**: **Abrir / Editar**, **Exportar Excel** (hojas de la etapa e «Insumos», solo con los insumos usados: los quitados no aparecen) y **Eliminar**. Al eliminar, las tareas que esa etapa finalizaba vuelven a En curso, salvo que otra etapa también las finalice.
+
+## Variantes de una etapa
+
+Sirven para comparar alternativas de una etapa ya guardada. **No suman al ejecutado** ni cambian estados, saldos, el Original o la base.
+
+1. **Abrir / Editar** la etapa y hacer clic derecho sobre una tarea: **«Cambiar a S / E / T»** en hormigón (tareas con variante E) y **«Cambiar a S»** en las demás. También se puede volver a **Propio**.
+2. Se cargan los insumos del análisis de esa variante. Los precios cambiados a mano se conservan en los insumos que siguen. Si un insumo no tiene precio (frecuente en T), se carga con doble clic.
+3. **«Guardar como nueva Variante»** crea `etapaNN_varianteMM.json`, que aparece en la lista como **Etapa NN Variante MM**, con su total. Se puede abrir, exportar y eliminar.
+
+Si hay tareas cambiadas, la etapa real no se puede guardar: solo como variante. Para eliminar una etapa, primero hay que eliminar sus variantes.
 
 ## Cierre / Comparación
 
