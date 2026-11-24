@@ -1,0 +1,353 @@
+{
+  "numero": 1,
+  "nombre": "Mamposteria de Bloques",
+  "fecha": "2026-11-21",
+  "archivo_precios": "PU_2026-11-02.xlsx",
+  "precios": {
+    "000114": 15000.0,
+    "000116": 10000.0,
+    "2132": 3600.0,
+    "1411": 300.0,
+    "2221": 178000.0,
+    "2211": 500.0,
+    "2212": 500.0,
+    "2222": 180000.0,
+    "2251": 2700.0
+  },
+  "items": [
+    {
+      "clave": "01.01",
+      "rubro": "01",
+      "item": "01",
+      "descripcion": "Muro Bloque H\" 0,20",
+      "unidad": "m2",
+      "cod_tar": "2426",
+      "subcontrato": "",
+      "cantidad": 60.0,
+      "pu": 74910.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "000114",
+          "nombre": "Oficial.",
+          "unidad": "hs",
+          "incid_base": 0.9,
+          "incid": 0.9,
+          "precio_base": 15000.0,
+          "precio": 15000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "000116",
+          "nombre": "Ayudante.",
+          "unidad": "hs",
+          "incid_base": 0.84,
+          "incid": 0.84,
+          "precio_base": 10000.0,
+          "precio": 10000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2132",
+          "nombre": "Bloque de hormigón 20/20/40",
+          "unidad": "un",
+          "incid_base": 13.125,
+          "incid": 13.125,
+          "precio_base": 3600.0,
+          "precio": 3600.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1411",
+          "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+          "unidad": "Kg",
+          "incid_base": 4.0,
+          "incid": 4.0,
+          "precio_base": 300.0,
+          "precio": 300.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2221",
+          "nombre": "Arena Mediana",
+          "unidad": "m3",
+          "incid_base": 0.02,
+          "incid": 0.02,
+          "precio_base": 178000.0,
+          "precio": 178000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2211",
+          "nombre": "Cal Hidraúlica",
+          "unidad": "Kg",
+          "incid_base": 2.0,
+          "incid": 2.0,
+          "precio_base": 500.0,
+          "precio": 500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    },
+    {
+      "clave": "02.01",
+      "rubro": "02",
+      "item": "01",
+      "descripcion": "Mampostería Bloques 0,20",
+      "unidad": "m2",
+      "cod_tar": "2426",
+      "subcontrato": "",
+      "cantidad": 30.0,
+      "pu": 74910.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "000114",
+          "nombre": "Oficial.",
+          "unidad": "hs",
+          "incid_base": 0.9,
+          "incid": 0.9,
+          "precio_base": 15000.0,
+          "precio": 15000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "000116",
+          "nombre": "Ayudante.",
+          "unidad": "hs",
+          "incid_base": 0.84,
+          "incid": 0.84,
+          "precio_base": 10000.0,
+          "precio": 10000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2132",
+          "nombre": "Bloque de hormigón 20/20/40",
+          "unidad": "un",
+          "incid_base": 13.125,
+          "incid": 13.125,
+          "precio_base": 3600.0,
+          "precio": 3600.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1411",
+          "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+          "unidad": "Kg",
+          "incid_base": 4.0,
+          "incid": 4.0,
+          "precio_base": 300.0,
+          "precio": 300.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2221",
+          "nombre": "Arena Mediana",
+          "unidad": "m3",
+          "incid_base": 0.02,
+          "incid": 0.02,
+          "precio_base": 178000.0,
+          "precio": 178000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2211",
+          "nombre": "Cal Hidraúlica",
+          "unidad": "Kg",
+          "incid_base": 2.0,
+          "incid": 2.0,
+          "precio_base": 500.0,
+          "precio": 500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    },
+    {
+      "clave": "02.02",
+      "rubro": "02",
+      "item": "02",
+      "descripcion": "Revoque interior",
+      "unidad": "m2",
+      "cod_tar": "2651",
+      "subcontrato": "",
+      "cantidad": 30.0,
+      "pu": 37225.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "000114",
+          "nombre": "Oficial.",
+          "unidad": "hs",
+          "incid_base": 1.15,
+          "incid": 1.15,
+          "precio_base": 15000.0,
+          "precio": 15000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "000116",
+          "nombre": "Ayudante.",
+          "unidad": "hs",
+          "incid_base": 0.78,
+          "incid": 0.78,
+          "precio_base": 10000.0,
+          "precio": 10000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1411",
+          "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+          "unidad": "Kg",
+          "incid_base": 4.7,
+          "incid": 4.7,
+          "precio_base": 300.0,
+          "precio": 300.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2211",
+          "nombre": "Cal Hidraúlica",
+          "unidad": "Kg",
+          "incid_base": 6.6,
+          "incid": 6.6,
+          "precio_base": 500.0,
+          "precio": 500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2212",
+          "nombre": "Cal Aerea",
+          "unidad": "Kg",
+          "incid_base": 0.65,
+          "incid": 0.65,
+          "precio_base": 500.0,
+          "precio": 500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2221",
+          "nombre": "Arena Mediana",
+          "unidad": "m3",
+          "incid_base": 0.03,
+          "incid": 0.03,
+          "precio_base": 178000.0,
+          "precio": 178000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2222",
+          "nombre": "Arena Fina",
+          "unidad": "m3",
+          "incid_base": 0.01,
+          "incid": 0.01,
+          "precio_base": 180000.0,
+          "precio": 180000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    },
+    {
+      "clave": "02.03",
+      "rubro": "02",
+      "item": "03",
+      "descripcion": "Revoque exterior",
+      "unidad": "m2",
+      "cod_tar": "2621",
+      "subcontrato": "",
+      "cantidad": 30.0,
+      "pu": 42965.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "000114",
+          "nombre": "Oficial.",
+          "unidad": "hs",
+          "incid_base": 1.2,
+          "incid": 1.2,
+          "precio_base": 15000.0,
+          "precio": 15000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "000116",
+          "nombre": "Ayudante.",
+          "unidad": "hs",
+          "incid_base": 1.1,
+          "incid": 1.1,
+          "precio_base": 10000.0,
+          "precio": 10000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1411",
+          "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+          "unidad": "Kg",
+          "incid_base": 22.0,
+          "incid": 22.0,
+          "precio_base": 300.0,
+          "precio": 300.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2221",
+          "nombre": "Arena Mediana",
+          "unidad": "m3",
+          "incid_base": 0.03,
+          "incid": 0.03,
+          "precio_base": 178000.0,
+          "precio": 178000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "2251",
+          "nombre": "Hidrófugo Inorgánico tipo SIKA",
+          "unidad": "Kg",
+          "incid_base": 0.75,
+          "incid": 0.75,
+          "precio_base": 2700.0,
+          "precio": 2700.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    }
+  ],
+  "total": 9147600.0,
+  "guardado": "2026-11-24 15:53"
+}

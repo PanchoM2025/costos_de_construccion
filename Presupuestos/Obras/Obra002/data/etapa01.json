@@ -1,0 +1,113 @@
+{
+  "numero": 1,
+  "nombre": "Provision de Maderas",
+  "fecha": "2026-11-21",
+  "archivo_precios": "",
+  "precios": {
+    "505175": 61250.0,
+    "1342": 1600.0,
+    "1343": 1600.0,
+    "1323": 1600.0,
+    "1224": 4500.0,
+    "9155": 8000.0,
+    "505155": 850.0
+  },
+  "items": [
+    {
+      "clave": "01.01",
+      "rubro": "01",
+      "item": "01",
+      "descripcion": "Deck de Coihue 2x8",
+      "unidad": "m2",
+      "cod_tar": "5175S",
+      "subcontrato": "",
+      "cantidad": 114.0,
+      "pu": 64791.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "505175",
+          "nombre": "M. de Obra Deck de Coihue",
+          "unidad": "m2",
+          "incid_base": 1.0,
+          "incid": 0.0,
+          "precio_base": 61250.0,
+          "precio": 61250.0,
+          "mod_incid": true,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1342",
+          "nombre": "Tirante de Coihue 4x4",
+          "unidad": "pie",
+          "incid_base": 6.58,
+          "incid": 6.58,
+          "precio_base": 1600.0,
+          "precio": 1600.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1343",
+          "nombre": "Tablón de Coihue 8x2",
+          "unidad": "pie",
+          "incid_base": 21.9,
+          "incid": 21.9,
+          "precio_base": 1600.0,
+          "precio": 1600.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1323",
+          "nombre": "Tabla de Coihue 1x6",
+          "unidad": "pie",
+          "incid_base": 0.38,
+          "incid": 0.38,
+          "precio_base": 1600.0,
+          "precio": 1600.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1224",
+          "nombre": "Clavos espiralados 4\"",
+          "unidad": "Kg",
+          "incid_base": 0.1,
+          "incid": 0.0,
+          "precio_base": 4500.0,
+          "precio": 4500.0,
+          "mod_incid": true,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "9155",
+          "nombre": "Pintura asfáltica",
+          "unidad": "Lt",
+          "incid_base": 0.6,
+          "incid": 0.0,
+          "precio_base": 8000.0,
+          "precio": 8000.0,
+          "mod_incid": true,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "505155",
+          "nombre": "M. de Obra Cepillado a maquina",
+          "unidad": "pie",
+          "incid_base": 21.9,
+          "incid": 21.9,
+          "precio_base": 850.0,
+          "precio": 850.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    }
+  ],
+  "total": 7386174.0,
+  "guardado": "2026-11-21 13:05"
+}

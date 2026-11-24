@@ -1,0 +1,262 @@
+{
+  "original": {
+    "archivo": "obra000.json",
+    "version": 0,
+    "archivo_precios": "PU_2026-11-02.xlsx",
+    "fecha": "2026-11-21 08:58",
+    "rubros": {
+      "01": "Cordón de Contención",
+      "02": "Muro cerramiento inferior",
+      "03": "Piso H°A° Nivel -2",
+      "04": "Carpetas armadas y Alisadas",
+      "05": "Tabiques H\"A\" accesos",
+      "06": "Pared divisoria Galpon oficina"
+    },
+    "items": [
+      {
+        "clave": "01.01",
+        "rubro": "01",
+        "item": "01",
+        "descripcion": "Muro Bloque H\" 0,20",
+        "unidad": "m2",
+        "cod_tar": "2426",
+        "subcontrato": "",
+        "cantidad": 60.0,
+        "pu": 26660.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "2132",
+          "2211"
+        ]
+      },
+      {
+        "clave": "02.01",
+        "rubro": "02",
+        "item": "01",
+        "descripcion": "Mampostería Bloques 0,20",
+        "unidad": "m2",
+        "cod_tar": "2426",
+        "subcontrato": "",
+        "cantidad": 30.0,
+        "pu": 26660.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "2132",
+          "2211"
+        ]
+      },
+      {
+        "clave": "02.02",
+        "rubro": "02",
+        "item": "02",
+        "descripcion": "Revoque interior",
+        "unidad": "m2",
+        "cod_tar": "2651",
+        "subcontrato": "",
+        "cantidad": 30.0,
+        "pu": 33600.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "2211",
+          "2212"
+        ]
+      },
+      {
+        "clave": "02.03",
+        "rubro": "02",
+        "item": "03",
+        "descripcion": "Revoque exterior",
+        "unidad": "m2",
+        "cod_tar": "2621",
+        "subcontrato": "",
+        "cantidad": 30.0,
+        "pu": 48440.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "2251"
+        ]
+      },
+      {
+        "clave": "03.01",
+        "rubro": "03",
+        "item": "01",
+        "descripcion": "Piso H\"A\" 0,12",
+        "unidad": "m2",
+        "cod_tar": "1162",
+        "subcontrato": "",
+        "cantidad": 630.0,
+        "pu": 100220.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "1212"
+        ]
+      },
+      {
+        "clave": "04.01",
+        "rubro": "04",
+        "item": "01",
+        "descripcion": "Alisado mecánico helicóptero -2",
+        "unidad": "m2",
+        "cod_tar": "5169",
+        "subcontrato": "",
+        "cantidad": 630.0,
+        "pu": 7250.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "5169"
+        ]
+      },
+      {
+        "clave": "04.02",
+        "rubro": "04",
+        "item": "02",
+        "descripcion": "Carpeta armada -1",
+        "unidad": "m2",
+        "cod_tar": "1250",
+        "subcontrato": "E",
+        "cantidad": 693.0,
+        "pu": 45975.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "1212"
+        ]
+      },
+      {
+        "clave": "04.03",
+        "rubro": "04",
+        "item": "03",
+        "descripcion": "Alisado mecánico helicóptero -1",
+        "unidad": "m2",
+        "cod_tar": "5169",
+        "subcontrato": "",
+        "cantidad": 693.0,
+        "pu": 7250.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "5169"
+        ]
+      },
+      {
+        "clave": "04.04",
+        "rubro": "04",
+        "item": "04",
+        "descripcion": "Carpeta armada Galpón",
+        "unidad": "m2",
+        "cod_tar": "1250",
+        "subcontrato": "E",
+        "cantidad": 693.0,
+        "pu": 45975.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "1212"
+        ]
+      },
+      {
+        "clave": "04.05",
+        "rubro": "04",
+        "item": "05",
+        "descripcion": "Alisado mecánico helicóptero NPT",
+        "unidad": "m2",
+        "cod_tar": "5169",
+        "subcontrato": "",
+        "cantidad": 693.0,
+        "pu": 7250.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "5169"
+        ]
+      },
+      {
+        "clave": "05.01",
+        "rubro": "05",
+        "item": "01",
+        "descripcion": "Tabiques de contencion",
+        "unidad": "m3",
+        "cod_tar": "1351",
+        "subcontrato": "",
+        "cantidad": 3.0,
+        "pu": 1186000.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "1129",
+          "1212",
+          "1223",
+          "1322",
+          "1341"
+        ]
+      },
+      {
+        "clave": "06.01",
+        "rubro": "06",
+        "item": "01",
+        "descripcion": "Muro de ladrillos ceramicos 0,18",
+        "unidad": "m2",
+        "cod_tar": "2423",
+        "subcontrato": "",
+        "cantidad": 60.0,
+        "pu": 31760.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "2123",
+          "2211"
+        ]
+      },
+      {
+        "clave": "06.02",
+        "rubro": "06",
+        "item": "02",
+        "descripcion": "Revoque pared",
+        "unidad": "m2",
+        "cod_tar": "2651",
+        "subcontrato": "",
+        "cantidad": 120.0,
+        "pu": 33600.0,
+        "precio_manual": false,
+        "sin_precio": [
+          "2211",
+          "2212"
+        ]
+      }
+    ],
+    "precios": {
+      "000114": 15000.0,
+      "000116": 10000.0,
+      "1131": 3400.0,
+      "1411": 300.0,
+      "1511": 180000.0,
+      "1630": 200000.0,
+      "5170": 1070.0,
+      "101162": 34500.0,
+      "101250": 9250.0,
+      "101351": 840000.0,
+      "202423": 27000.0,
+      "202426": 21900.0,
+      "202621": 36500.0,
+      "202651": 25050.0,
+      "505169": 7250.0,
+      "5172": 20000.0,
+      "1821": 485000.0,
+      "102162": 27600.0,
+      "102351": 672000.0,
+      "102250": 7400.0,
+      "2221": 178000.0,
+      "2222": 180000.0
+    }
+  },
+  "estados": {
+    "01.01": "en_curso",
+    "02.01": "en_curso",
+    "02.02": "a_realizar",
+    "02.03": "a_realizar",
+    "03.01": "a_realizar",
+    "04.01": "a_realizar",
+    "04.02": "a_realizar",
+    "04.03": "a_realizar",
+    "04.04": "a_realizar",
+    "04.05": "a_realizar",
+    "05.01": "a_realizar",
+    "06.01": "a_realizar",
+    "06.02": "a_realizar"
+  },
+  "adicionales": []
+}

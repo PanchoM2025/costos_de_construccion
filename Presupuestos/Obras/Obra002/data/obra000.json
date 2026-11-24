@@ -1,0 +1,50 @@
+{
+  "numero": "002",
+  "nombre": "Deck Frente Cumelen",
+  "ubicacion": "Villa la Angostura",
+  "comitente": "FAM",
+  "fecha_creacion": "2026-11-21",
+  "version": 0,
+  "archivo_precios": "",
+  "items_presupuesto": [
+    {
+      "es_rubro": true,
+      "rubro": "01",
+      "descripcion": "Deck de Coihue"
+    },
+    {
+      "es_rubro": false,
+      "rubro": "01",
+      "item": "01",
+      "descripcion": "Deck de Coihue 2x8",
+      "unidad": "m2",
+      "cantidad": 114.0,
+      "cod_tar": "5175S",
+      "subcontrato": "",
+      "rubro_std": "PISOS y ZOCALOS"
+    }
+  ],
+  "tareas": {
+    "5175S": {
+      "cod": "5175S",
+      "base": "5175",
+      "variante": "S",
+      "nombre": "Deck de Coihue - Entablonado 2\"",
+      "nombre_editado": "Deck de Coihue 2x8",
+      "unidad": "m2",
+      "rubro": "PISOS y ZOCALOS",
+      "cantidad": 114.0,
+      "subcontrato": ""
+    }
+  },
+  "precios": {
+    "1323": 1600.0,
+    "1342": 1600.0,
+    "1343": 1600.0,
+    "505175": 61404.0,
+    "505155": 850.0,
+    "1224": 4500.0,
+    "9155": 8000.0
+  },
+  "precios_tarea": {}
+}

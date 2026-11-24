@@ -1,0 +1,39 @@
+{
+  "original": {
+    "archivo": "obra000.json",
+    "version": 0,
+    "archivo_precios": "",
+    "fecha": "2026-11-21 12:23",
+    "rubros": {
+      "01": "Deck de Coihue"
+    },
+    "items": [
+      {
+        "clave": "01.01",
+        "rubro": "01",
+        "item": "01",
+        "descripcion": "Deck de Coihue 2x8",
+        "unidad": "m2",
+        "cod_tar": "5175S",
+        "subcontrato": "",
+        "cantidad": 114.0,
+        "pu": 131291.0,
+        "precio_manual": false,
+        "sin_precio": []
+      }
+    ],
+    "precios": {
+      "1323": 1600.0,
+      "1342": 1600.0,
+      "1343": 1600.0,
+      "505175": 61250.0,
+      "505155": 850.0,
+      "1224": 4500.0,
+      "9155": 8000.0
+    }
+  },
+  "estados": {
+    "01.01": "en_curso"
+  },
+  "adicionales": []
+}

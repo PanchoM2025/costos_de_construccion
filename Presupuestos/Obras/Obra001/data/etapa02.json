@@ -1,0 +1,445 @@
+{
+  "numero": 2,
+  "nombre": "Piso Nivel -2",
+  "fecha": "2026-11-22",
+  "archivo_precios": "PU_2026-11-02.xlsx",
+  "precios": {
+    "000114": 15000.0,
+    "000116": 10000.0,
+    "1131": 3400.0,
+    "1212": 4500.0,
+    "1411": 300.0,
+    "1511": 180000.0,
+    "1630": 200000.0,
+    "5169": 2500.0,
+    "5172": 20000.0,
+    "102250": 8400.0,
+    "1821": 485000.0,
+    "1700": 500.0
+  },
+  "items": [
+    {
+      "clave": "03.01",
+      "rubro": "03",
+      "item": "01",
+      "descripcion": "Piso H\"A\" 0,12",
+      "unidad": "m2",
+      "cod_tar": "1162",
+      "subcontrato": "",
+      "cantidad": 630.0,
+      "pu": 100310.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "000114",
+          "nombre": "Oficial.",
+          "unidad": "hs",
+          "incid_base": 1.1,
+          "incid": 1.1,
+          "precio_base": 15000.0,
+          "precio": 15000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "000116",
+          "nombre": "Ayudante.",
+          "unidad": "hs",
+          "incid_base": 1.8,
+          "incid": 1.8,
+          "precio_base": 10000.0,
+          "precio": 10000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1131",
+          "nombre": "Malla de Acero tipo Sima 15x15 - Diam. 6mm Q188.",
+          "unidad": "Kg",
+          "incid_base": 3.3,
+          "incid": 3.3,
+          "precio_base": 3400.0,
+          "precio": 3400.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1212",
+          "nombre": "Alambre negro recocido Nro. 16.",
+          "unidad": "Kg",
+          "incid_base": 0.02,
+          "incid": 0.02,
+          "precio_base": 4500.0,
+          "precio": 4500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1411",
+          "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+          "unidad": "Kg",
+          "incid_base": 55.0,
+          "incid": 55.0,
+          "precio_base": 300.0,
+          "precio": 300.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1511",
+          "nombre": "Arena gruesa lavada",
+          "unidad": "m3",
+          "incid_base": 0.1,
+          "incid": 0.1,
+          "precio_base": 180000.0,
+          "precio": 180000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1630",
+          "nombre": "Canto Rodado / Piedra partida",
+          "unidad": "m3",
+          "incid_base": 0.1,
+          "incid": 0.1,
+          "precio_base": 200000.0,
+          "precio": 200000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    },
+    {
+      "clave": "04.01",
+      "rubro": "04",
+      "item": "01",
+      "descripcion": "Alisado mecánico helicóptero -2",
+      "unidad": "m2",
+      "cod_tar": "5169",
+      "subcontrato": "",
+      "cantidad": 630.0,
+      "pu": 17250.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "000114",
+          "nombre": "Oficial.",
+          "unidad": "hs",
+          "incid_base": 0.25,
+          "incid": 0.25,
+          "precio_base": 15000.0,
+          "precio": 15000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "000116",
+          "nombre": "Ayudante.",
+          "unidad": "hs",
+          "incid_base": 0.25,
+          "incid": 0.25,
+          "precio_base": 10000.0,
+          "precio": 10000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "5169",
+          "nombre": "Endurecedor no metálico color para pisos",
+          "unidad": "Kg",
+          "incid_base": 4.0,
+          "incid": 4.0,
+          "precio_base": 2500.0,
+          "precio": 2500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "5172",
+          "nombre": "Alquiler alisadora mecánica (helicóptero)",
+          "unidad": "hs",
+          "incid_base": 0.05,
+          "incid": 0.05,
+          "precio_base": 20000.0,
+          "precio": 20000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    },
+    {
+      "clave": "04.02",
+      "rubro": "04",
+      "item": "02",
+      "descripcion": "Carpeta armada -1",
+      "unidad": "m2",
+      "cod_tar": "1250",
+      "subcontrato": "E",
+      "cantidad": 693.0,
+      "pu": 47395.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "102250",
+          "nombre": "Subcontrato tipo E, Carpeta armada s/piso esp. 0,05",
+          "unidad": "m2",
+          "incid_base": 1.0,
+          "incid": 1.0,
+          "precio_base": 8400.0,
+          "precio": 8400.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1131",
+          "nombre": "Malla de Acero tipo Sima 15x15 - Diam. 6mm Q188.",
+          "unidad": "Kg",
+          "incid_base": 3.5,
+          "incid": 3.5,
+          "precio_base": 3400.0,
+          "precio": 3400.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1212",
+          "nombre": "Alambre negro recocido Nro. 16.",
+          "unidad": "Kg",
+          "incid_base": 0.06,
+          "incid": 0.06,
+          "precio_base": 4500.0,
+          "precio": 4500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1821",
+          "nombre": "Hormigón Elaborado p/Estructuras as. 15 - Tbk 210",
+          "unidad": "m3",
+          "incid_base": 0.055,
+          "incid": 0.055,
+          "precio_base": 485000.0,
+          "precio": 485000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1700",
+          "nombre": "Ligante cementicio SikaCim Haftemulsion",
+          "unidad": "Lt",
+          "incid_base": 0.3,
+          "incid": 0.3,
+          "precio_base": 500.0,
+          "precio": 500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    },
+    {
+      "clave": "04.03",
+      "rubro": "04",
+      "item": "03",
+      "descripcion": "Alisado mecánico helicóptero -1",
+      "unidad": "m2",
+      "cod_tar": "5169",
+      "subcontrato": "",
+      "cantidad": 693.0,
+      "pu": 17250.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "000114",
+          "nombre": "Oficial.",
+          "unidad": "hs",
+          "incid_base": 0.25,
+          "incid": 0.25,
+          "precio_base": 15000.0,
+          "precio": 15000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "000116",
+          "nombre": "Ayudante.",
+          "unidad": "hs",
+          "incid_base": 0.25,
+          "incid": 0.25,
+          "precio_base": 10000.0,
+          "precio": 10000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "5169",
+          "nombre": "Endurecedor no metálico color para pisos",
+          "unidad": "Kg",
+          "incid_base": 4.0,
+          "incid": 4.0,
+          "precio_base": 2500.0,
+          "precio": 2500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "5172",
+          "nombre": "Alquiler alisadora mecánica (helicóptero)",
+          "unidad": "hs",
+          "incid_base": 0.05,
+          "incid": 0.05,
+          "precio_base": 20000.0,
+          "precio": 20000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    },
+    {
+      "clave": "04.04",
+      "rubro": "04",
+      "item": "04",
+      "descripcion": "Carpeta armada Galpón",
+      "unidad": "m2",
+      "cod_tar": "1250",
+      "subcontrato": "E",
+      "cantidad": 693.0,
+      "pu": 47395.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "102250",
+          "nombre": "Subcontrato tipo E, Carpeta armada s/piso esp. 0,05",
+          "unidad": "m2",
+          "incid_base": 1.0,
+          "incid": 1.0,
+          "precio_base": 8400.0,
+          "precio": 8400.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1131",
+          "nombre": "Malla de Acero tipo Sima 15x15 - Diam. 6mm Q188.",
+          "unidad": "Kg",
+          "incid_base": 3.5,
+          "incid": 3.5,
+          "precio_base": 3400.0,
+          "precio": 3400.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1212",
+          "nombre": "Alambre negro recocido Nro. 16.",
+          "unidad": "Kg",
+          "incid_base": 0.06,
+          "incid": 0.06,
+          "precio_base": 4500.0,
+          "precio": 4500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1821",
+          "nombre": "Hormigón Elaborado p/Estructuras as. 15 - Tbk 210",
+          "unidad": "m3",
+          "incid_base": 0.055,
+          "incid": 0.055,
+          "precio_base": 485000.0,
+          "precio": 485000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1700",
+          "nombre": "Ligante cementicio SikaCim Haftemulsion",
+          "unidad": "Lt",
+          "incid_base": 0.3,
+          "incid": 0.3,
+          "precio_base": 500.0,
+          "precio": 500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    },
+    {
+      "clave": "04.05",
+      "rubro": "04",
+      "item": "05",
+      "descripcion": "Alisado mecánico helicóptero NPT",
+      "unidad": "m2",
+      "cod_tar": "5169",
+      "subcontrato": "",
+      "cantidad": 693.0,
+      "pu": 17250.0,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "000114",
+          "nombre": "Oficial.",
+          "unidad": "hs",
+          "incid_base": 0.25,
+          "incid": 0.25,
+          "precio_base": 15000.0,
+          "precio": 15000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "000116",
+          "nombre": "Ayudante.",
+          "unidad": "hs",
+          "incid_base": 0.25,
+          "incid": 0.25,
+          "precio_base": 10000.0,
+          "precio": 10000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "5169",
+          "nombre": "Endurecedor no metálico color para pisos",
+          "unidad": "Kg",
+          "incid_base": 4.0,
+          "incid": 4.0,
+          "precio_base": 2500.0,
+          "precio": 2500.0,
+          "mod_incid": false,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "5172",
+          "nombre": "Alquiler alisadora mecánica (helicóptero)",
+          "unidad": "hs",
+          "incid_base": 0.05,
+          "incid": 0.05,
+          "precio_base": 20000.0,
+          "precio": 20000.0,
+          "mod_incid": false,
+          "mod_precio": false
+        }
+      ]
+    }
+  ],
+  "total": 163660770.0,
+  "guardado": "2026-11-24 17:03"
+}

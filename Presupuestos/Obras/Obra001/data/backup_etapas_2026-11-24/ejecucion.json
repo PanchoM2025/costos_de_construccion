@@ -1,0 +1,806 @@
+{
+  "original": {
+    "archivo": "obra000.json",
+    "version": 0,
+    "archivo_precios": "PU_2026-11-02.xlsx",
+    "fecha": "2026-11-24 16:43",
+    "rubros": {
+      "01": "Cordón de Contención",
+      "02": "Muro cerramiento inferior",
+      "03": "Piso H°A° Nivel -2",
+      "04": "Carpetas armadas y Alisadas",
+      "05": "Tabiques H\"A\" accesos",
+      "06": "Pared divisoria Galpon oficina"
+    },
+    "items": [
+      {
+        "clave": "01.01",
+        "rubro": "01",
+        "item": "01",
+        "descripcion": "Muro Bloque H\" 0,20",
+        "unidad": "m2",
+        "cod_tar": "2426",
+        "subcontrato": "",
+        "cantidad": 60.0,
+        "pu": 74350.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 0.9,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 0.84,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "2132",
+            "nombre": "Bloque de hormigón 20/20/40",
+            "unidad": "un",
+            "incid": 13.125,
+            "precio": 3600.0
+          },
+          {
+            "cod_ins": "1411",
+            "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+            "unidad": "Kg",
+            "incid": 4.0,
+            "precio": 300.0
+          },
+          {
+            "cod_ins": "2221",
+            "nombre": "Arena Mediana",
+            "unidad": "m3",
+            "incid": 0.02,
+            "precio": 150000.0
+          },
+          {
+            "cod_ins": "2211",
+            "nombre": "Cal Hidraúlica",
+            "unidad": "Kg",
+            "incid": 2.0,
+            "precio": 500.0
+          }
+        ]
+      },
+      {
+        "clave": "02.01",
+        "rubro": "02",
+        "item": "01",
+        "descripcion": "Muro de contencion en Bloques 0,20",
+        "unidad": "m2",
+        "cod_tar": "2010",
+        "subcontrato": "",
+        "cantidad": 30.0,
+        "pu": 119906.4,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 1.02,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 1.32,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "1124",
+            "nombre": "H. Torsionado Tek=4200Kgr/cm2 - Diam. 10,0mm.",
+            "unidad": "Kg",
+            "incid": 4.07,
+            "precio": 1920.0
+          },
+          {
+            "cod_ins": "1212",
+            "nombre": "Alambre negro recocido Nro. 16.",
+            "unidad": "Kg",
+            "incid": 0.04,
+            "precio": 4500.0
+          },
+          {
+            "cod_ins": "1411",
+            "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+            "unidad": "Kg",
+            "incid": 45.0,
+            "precio": 300.0
+          },
+          {
+            "cod_ins": "1511",
+            "nombre": "Arena gruesa lavada",
+            "unidad": "m3",
+            "incid": 0.105,
+            "precio": 180000.0
+          },
+          {
+            "cod_ins": "2132",
+            "nombre": "Bloque de hormigón 20/20/40",
+            "unidad": "un",
+            "incid": 14.17,
+            "precio": 3600.0
+          }
+        ]
+      },
+      {
+        "clave": "02.02",
+        "rubro": "02",
+        "item": "02",
+        "descripcion": "Revoque interior",
+        "unidad": "m2",
+        "cod_tar": "2651",
+        "subcontrato": "",
+        "cantidad": 30.0,
+        "pu": 36385.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 1.15,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 0.78,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "1411",
+            "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+            "unidad": "Kg",
+            "incid": 4.7,
+            "precio": 300.0
+          },
+          {
+            "cod_ins": "2211",
+            "nombre": "Cal Hidraúlica",
+            "unidad": "Kg",
+            "incid": 6.6,
+            "precio": 500.0
+          },
+          {
+            "cod_ins": "2212",
+            "nombre": "Cal Aerea",
+            "unidad": "Kg",
+            "incid": 0.65,
+            "precio": 500.0
+          },
+          {
+            "cod_ins": "2221",
+            "nombre": "Arena Mediana",
+            "unidad": "m3",
+            "incid": 0.03,
+            "precio": 150000.0
+          },
+          {
+            "cod_ins": "2222",
+            "nombre": "Arena Fina",
+            "unidad": "m3",
+            "incid": 0.01,
+            "precio": 180000.0
+          }
+        ]
+      },
+      {
+        "clave": "02.03",
+        "rubro": "02",
+        "item": "03",
+        "descripcion": "Revoque exterior",
+        "unidad": "m2",
+        "cod_tar": "2621",
+        "subcontrato": "",
+        "cantidad": 30.0,
+        "pu": 42125.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 1.2,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 1.1,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "1411",
+            "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+            "unidad": "Kg",
+            "incid": 22.0,
+            "precio": 300.0
+          },
+          {
+            "cod_ins": "2221",
+            "nombre": "Arena Mediana",
+            "unidad": "m3",
+            "incid": 0.03,
+            "precio": 150000.0
+          },
+          {
+            "cod_ins": "2251",
+            "nombre": "Hidrófugo Inorgánico tipo SIKA",
+            "unidad": "Kg",
+            "incid": 0.75,
+            "precio": 2700.0
+          }
+        ]
+      },
+      {
+        "clave": "03.01",
+        "rubro": "03",
+        "item": "01",
+        "descripcion": "Piso H\"A\" 0,12",
+        "unidad": "m2",
+        "cod_tar": "1162",
+        "subcontrato": "",
+        "cantidad": 630.0,
+        "pu": 100310.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 1.1,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 1.8,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "1131",
+            "nombre": "Malla de Acero tipo Sima 15x15 - Diam. 6mm Q188.",
+            "unidad": "Kg",
+            "incid": 3.3,
+            "precio": 3400.0
+          },
+          {
+            "cod_ins": "1212",
+            "nombre": "Alambre negro recocido Nro. 16.",
+            "unidad": "Kg",
+            "incid": 0.02,
+            "precio": 4500.0
+          },
+          {
+            "cod_ins": "1411",
+            "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+            "unidad": "Kg",
+            "incid": 55.0,
+            "precio": 300.0
+          },
+          {
+            "cod_ins": "1511",
+            "nombre": "Arena gruesa lavada",
+            "unidad": "m3",
+            "incid": 0.1,
+            "precio": 180000.0
+          },
+          {
+            "cod_ins": "1630",
+            "nombre": "Canto Rodado / Piedra partida",
+            "unidad": "m3",
+            "incid": 0.1,
+            "precio": 200000.0
+          }
+        ]
+      },
+      {
+        "clave": "04.01",
+        "rubro": "04",
+        "item": "01",
+        "descripcion": "Alisado mecánico helicóptero -2",
+        "unidad": "m2",
+        "cod_tar": "5169",
+        "subcontrato": "",
+        "cantidad": 630.0,
+        "pu": 17250.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 0.25,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 0.25,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "5169",
+            "nombre": "Endurecedor no metálico color para pisos",
+            "unidad": "Kg",
+            "incid": 4.0,
+            "precio": 2500.0
+          },
+          {
+            "cod_ins": "5172",
+            "nombre": "Alquiler alisadora mecánica (helicóptero)",
+            "unidad": "hs",
+            "incid": 0.05,
+            "precio": 20000.0
+          }
+        ]
+      },
+      {
+        "clave": "04.02",
+        "rubro": "04",
+        "item": "02",
+        "descripcion": "Carpeta armada -1",
+        "unidad": "m2",
+        "cod_tar": "1250",
+        "subcontrato": "E",
+        "cantidad": 693.0,
+        "pu": 47395.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "102250",
+            "nombre": "Subcontrato tipo E, Carpeta armada s/piso esp. 0,05",
+            "unidad": "m2",
+            "incid": 1.0,
+            "precio": 8400.0
+          },
+          {
+            "cod_ins": "1131",
+            "nombre": "Malla de Acero tipo Sima 15x15 - Diam. 6mm Q188.",
+            "unidad": "Kg",
+            "incid": 3.5,
+            "precio": 3400.0
+          },
+          {
+            "cod_ins": "1212",
+            "nombre": "Alambre negro recocido Nro. 16.",
+            "unidad": "Kg",
+            "incid": 0.06,
+            "precio": 4500.0
+          },
+          {
+            "cod_ins": "1821",
+            "nombre": "Hormigón Elaborado p/Estructuras as. 15 - Tbk 210",
+            "unidad": "m3",
+            "incid": 0.055,
+            "precio": 485000.0
+          },
+          {
+            "cod_ins": "1700",
+            "nombre": "Ligante cementicio SikaCim Haftemulsion",
+            "unidad": "Lt",
+            "incid": 0.3,
+            "precio": 500.0
+          }
+        ]
+      },
+      {
+        "clave": "04.03",
+        "rubro": "04",
+        "item": "03",
+        "descripcion": "Alisado mecánico helicóptero -1",
+        "unidad": "m2",
+        "cod_tar": "5169",
+        "subcontrato": "",
+        "cantidad": 693.0,
+        "pu": 17250.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 0.25,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 0.25,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "5169",
+            "nombre": "Endurecedor no metálico color para pisos",
+            "unidad": "Kg",
+            "incid": 4.0,
+            "precio": 2500.0
+          },
+          {
+            "cod_ins": "5172",
+            "nombre": "Alquiler alisadora mecánica (helicóptero)",
+            "unidad": "hs",
+            "incid": 0.05,
+            "precio": 20000.0
+          }
+        ]
+      },
+      {
+        "clave": "04.04",
+        "rubro": "04",
+        "item": "04",
+        "descripcion": "Carpeta armada Galpón",
+        "unidad": "m2",
+        "cod_tar": "1250",
+        "subcontrato": "E",
+        "cantidad": 693.0,
+        "pu": 47395.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "102250",
+            "nombre": "Subcontrato tipo E, Carpeta armada s/piso esp. 0,05",
+            "unidad": "m2",
+            "incid": 1.0,
+            "precio": 8400.0
+          },
+          {
+            "cod_ins": "1131",
+            "nombre": "Malla de Acero tipo Sima 15x15 - Diam. 6mm Q188.",
+            "unidad": "Kg",
+            "incid": 3.5,
+            "precio": 3400.0
+          },
+          {
+            "cod_ins": "1212",
+            "nombre": "Alambre negro recocido Nro. 16.",
+            "unidad": "Kg",
+            "incid": 0.06,
+            "precio": 4500.0
+          },
+          {
+            "cod_ins": "1821",
+            "nombre": "Hormigón Elaborado p/Estructuras as. 15 - Tbk 210",
+            "unidad": "m3",
+            "incid": 0.055,
+            "precio": 485000.0
+          },
+          {
+            "cod_ins": "1700",
+            "nombre": "Ligante cementicio SikaCim Haftemulsion",
+            "unidad": "Lt",
+            "incid": 0.3,
+            "precio": 500.0
+          }
+        ]
+      },
+      {
+        "clave": "04.05",
+        "rubro": "04",
+        "item": "05",
+        "descripcion": "Alisado mecánico helicóptero NPT",
+        "unidad": "m2",
+        "cod_tar": "5169",
+        "subcontrato": "",
+        "cantidad": 693.0,
+        "pu": 17250.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 0.25,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 0.25,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "5169",
+            "nombre": "Endurecedor no metálico color para pisos",
+            "unidad": "Kg",
+            "incid": 4.0,
+            "precio": 2500.0
+          },
+          {
+            "cod_ins": "5172",
+            "nombre": "Alquiler alisadora mecánica (helicóptero)",
+            "unidad": "hs",
+            "incid": 0.05,
+            "precio": 20000.0
+          }
+        ]
+      },
+      {
+        "clave": "05.01",
+        "rubro": "05",
+        "item": "01",
+        "descripcion": "Tabiques de contencion",
+        "unidad": "m3",
+        "cod_tar": "1351",
+        "subcontrato": "",
+        "cantidad": 3.0,
+        "pu": 1348784.5,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 36.0,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 30.0,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "1129",
+            "nombre": "H. Torsionado Tek=4200Kgr/cm2 - Diam. promedio",
+            "unidad": "Kg",
+            "incid": 73.5,
+            "precio": 1920.0
+          },
+          {
+            "cod_ins": "1212",
+            "nombre": "Alambre negro recocido Nro. 16.",
+            "unidad": "Kg",
+            "incid": 0.525,
+            "precio": 4500.0
+          },
+          {
+            "cod_ins": "1223",
+            "nombre": "Clavos Punta París 2-3\" promedio.",
+            "unidad": "Kg",
+            "incid": 1.785,
+            "precio": 4900.0
+          },
+          {
+            "cod_ins": "1322",
+            "nombre": "Tablas de madera p/encofrado cepilladas 1\".",
+            "unidad": "m2",
+            "incid": 3.465,
+            "precio": 2700.0
+          },
+          {
+            "cod_ins": "1341",
+            "nombre": "Tirante de pino 3x3",
+            "unidad": "ml",
+            "incid": 0.3,
+            "precio": 4000.0
+          },
+          {
+            "cod_ins": "1411",
+            "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+            "unidad": "Kg",
+            "incid": 330.0,
+            "precio": 300.0
+          },
+          {
+            "cod_ins": "1511",
+            "nombre": "Arena gruesa lavada",
+            "unidad": "m3",
+            "incid": 0.65,
+            "precio": 180000.0
+          },
+          {
+            "cod_ins": "1630",
+            "nombre": "Canto Rodado / Piedra partida",
+            "unidad": "m3",
+            "incid": 0.65,
+            "precio": 200000.0
+          }
+        ]
+      },
+      {
+        "clave": "06.01",
+        "rubro": "06",
+        "item": "01",
+        "descripcion": "Muro de ladrillos ceramicos 0,18",
+        "unidad": "m2",
+        "cod_tar": "2423",
+        "subcontrato": "",
+        "cantidad": 60.0,
+        "pu": 56375.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 1.1,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 1.05,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "1411",
+            "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+            "unidad": "Kg",
+            "incid": 4.0,
+            "precio": 300.0
+          },
+          {
+            "cod_ins": "2123",
+            "nombre": "Ladrillo cerámico hueco 18/18/33",
+            "unidad": "un",
+            "incid": 16.5,
+            "precio": 1450.0
+          },
+          {
+            "cod_ins": "2211",
+            "nombre": "Cal Hidraúlica",
+            "unidad": "Kg",
+            "incid": 2.5,
+            "precio": 500.0
+          },
+          {
+            "cod_ins": "2221",
+            "nombre": "Arena Mediana",
+            "unidad": "m3",
+            "incid": 0.02,
+            "precio": 150000.0
+          }
+        ]
+      },
+      {
+        "clave": "06.02",
+        "rubro": "06",
+        "item": "02",
+        "descripcion": "Revoque pared",
+        "unidad": "m2",
+        "cod_tar": "2651",
+        "subcontrato": "",
+        "cantidad": 120.0,
+        "pu": 36385.0,
+        "precio_manual": false,
+        "sin_precio": [],
+        "insumos": [
+          {
+            "cod_ins": "000114",
+            "nombre": "Oficial.",
+            "unidad": "hs",
+            "incid": 1.15,
+            "precio": 15000.0
+          },
+          {
+            "cod_ins": "000116",
+            "nombre": "Ayudante.",
+            "unidad": "hs",
+            "incid": 0.78,
+            "precio": 10000.0
+          },
+          {
+            "cod_ins": "1411",
+            "nombre": "Cemento Portland normal bolsa de 50Kgr - 3 pliegos",
+            "unidad": "Kg",
+            "incid": 4.7,
+            "precio": 300.0
+          },
+          {
+            "cod_ins": "2211",
+            "nombre": "Cal Hidraúlica",
+            "unidad": "Kg",
+            "incid": 6.6,
+            "precio": 500.0
+          },
+          {
+            "cod_ins": "2212",
+            "nombre": "Cal Aerea",
+            "unidad": "Kg",
+            "incid": 0.65,
+            "precio": 500.0
+          },
+          {
+            "cod_ins": "2221",
+            "nombre": "Arena Mediana",
+            "unidad": "m3",
+            "incid": 0.03,
+            "precio": 150000.0
+          },
+          {
+            "cod_ins": "2222",
+            "nombre": "Arena Fina",
+            "unidad": "m3",
+            "incid": 0.01,
+            "precio": 180000.0
+          }
+        ]
+      }
+    ],
+    "precios": {
+      "000114": 15000.0,
+      "000116": 10000.0,
+      "1131": 3400.0,
+      "1411": 300.0,
+      "1511": 180000.0,
+      "1630": 200000.0,
+      "5170": 1070.0,
+      "101162": 34500.0,
+      "101250": 10500.0,
+      "101351": 840000.0,
+      "202423": 27000.0,
+      "202426": 21900.0,
+      "202621": 29000.0,
+      "202651": 25050.0,
+      "505169": 7250.0,
+      "5172": 20000.0,
+      "1821": 485000.0,
+      "102162": 27600.0,
+      "102351": 672000.0,
+      "102250": 8400.0,
+      "2221": 150000.0,
+      "2222": 180000.0,
+      "1129": 1920.0,
+      "1212": 4500.0,
+      "1223": 4900.0,
+      "1322": 2700.0,
+      "1341": 4000.0,
+      "2123": 1450.0,
+      "2132": 3600.0,
+      "2251": 2700.0,
+      "5169": 2500.0,
+      "2211": 500.0,
+      "2212": 500.0,
+      "1700": 500.0,
+      "1124": 1920.0,
+      "202010": 28500.0
+    }
+  },
+  "estados": {
+    "01.01": "a_realizar",
+    "02.01": "a_realizar",
+    "02.02": "a_realizar",
+    "02.03": "a_realizar",
+    "03.01": "a_realizar",
+    "04.01": "a_realizar",
+    "04.02": "a_realizar",
+    "04.03": "a_realizar",
+    "04.04": "a_realizar",
+    "04.05": "a_realizar",
+    "05.01": "a_realizar",
+    "06.01": "a_realizar",
+    "06.02": "a_realizar"
+  },
+  "adicionales": []
+}

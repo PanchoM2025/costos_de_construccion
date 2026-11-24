@@ -1,0 +1,66 @@
+{
+  "numero": 2,
+  "nombre": "Anticipo MdeO",
+  "fecha": "2026-11-21",
+  "archivo_precios": "",
+  "precios": {
+    "505175": 61250.0,
+    "1224": 4500.0,
+    "9155": 8000.0
+  },
+  "items": [
+    {
+      "clave": "01.01",
+      "rubro": "01",
+      "item": "01",
+      "descripcion": "Deck de Coihue 2x8",
+      "unidad": "m2",
+      "cod_tar": "5175S",
+      "subcontrato": "",
+      "cantidad": 114.0,
+      "pu": 8773.793859649122,
+      "pu_manual": null,
+      "finaliza": false,
+      "sin_precio": [],
+      "adicional": false,
+      "insumos": [
+        {
+          "cod_ins": "505175",
+          "nombre": "M. de Obra Deck de Coihue",
+          "unidad": "m2",
+          "incid_base": 1.0,
+          "incid": 0.1432456140350877,
+          "precio_base": 61250.0,
+          "precio": 61250.0,
+          "mod_incid": true,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "1224",
+          "nombre": "Clavos espiralados 4\"",
+          "unidad": "Kg",
+          "incid_base": 0.1,
+          "incid": 0.0,
+          "precio_base": 4500.0,
+          "precio": 4500.0,
+          "mod_incid": true,
+          "mod_precio": false
+        },
+        {
+          "cod_ins": "9155",
+          "nombre": "Pintura asfáltica",
+          "unidad": "Lt",
+          "incid_base": 0.6,
+          "incid": 0.0,
+          "precio_base": 8000.0,
+          "precio": 8000.0,
+          "mod_incid": true,
+          "mod_precio": false
+        }
+      ],
+      "solo_insumos": true
+    }
+  ],
+  "total": 1000212.4999999999,
+  "guardado": "2026-11-21 13:27"
+}
