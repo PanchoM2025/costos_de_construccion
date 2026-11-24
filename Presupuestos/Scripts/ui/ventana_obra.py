@@ -52,6 +52,9 @@ class VentanaObra(tk.Toplevel):
     def __init__(self, parent, obra: Obra):
         super().__init__(parent)
         self.obra = obra
+        # Etapa abierta como obra (core/obra_etapa.py): sin pestaña Ejecución,
+        # se guarda en etapaNN.json.
+        self.es_etapa = getattr(obra, "es_etapa", False)
         self.title(f"Obra {obra.titulo}")
         self.geometry("1020x660")
         self.minsize(820, 480)
@@ -83,13 +86,15 @@ class VentanaObra(tk.Toplevel):
             if cand.exists():
                 self._ruta_precios = cand
         self._build_ui()
+        if self.es_etapa and getattr(obra, "diferencias_precio", None):
+            self.after(200, self._avisar_precios_distintos)
     def _build_ui(self):
         hdr = tk.Frame(self, bg=COLOR_HDR, height=50)
         hdr.pack(fill="x")
         hdr.pack_propagate(False)
-        tk.Label(hdr, text=f"  Obra {self.obra.titulo}",
-                 bg=COLOR_HDR, fg="white", font=("Segoe UI", 13, "bold")
-                 ).pack(side="left", padx=12)
+        self.lbl_titulo = tk.Label(hdr, text=f"  Obra {self.obra.titulo}",
+                 bg=COLOR_HDR, fg="white", font=("Segoe UI", 13, "bold"))
+        self.lbl_titulo.pack(side="left", padx=12)
         if self.obra.ubicacion:
             tk.Label(hdr, text=f"  |  {self.obra.ubicacion}",
                      bg=COLOR_HDR, fg="#aaccee", font=("Segoe UI", 11)
@@ -123,13 +128,19 @@ class VentanaObra(tk.Toplevel):
         self._build_rpt_materiales()
         self._build_rpt_mdo()
         self._build_rpt_detalle()
-        self._ejecucion = TabEjecucion(self.tab_ejec, self)
+        self._ejecucion = None if self.es_etapa else TabEjecucion(self.tab_ejec, self)
         bar = tk.Frame(self, bg="#e0e0e0", pady=6)
         bar.pack(fill="x")
-        tk.Button(bar, text="Guardar obra", bg=COLOR_VERDE, fg="white",
+        tk.Button(bar, text="Guardar etapa" if self.es_etapa else "Guardar obra",
+                  bg=COLOR_VERDE, fg="white",
                   font=FUENTE_B, relief="flat", padx=14, pady=5,
                   cursor="hand2", command=self._guardar
                   ).pack(side="right", padx=12)
+        if self.es_etapa:
+            tk.Button(bar, text="Detalle de etapa…", bg=COLOR_SEC, fg="white",
+                      font=FUENTE_B, relief="flat", padx=14, pady=5,
+                      cursor="hand2", command=self._detalle_etapa
+                      ).pack(side="right", padx=4)
         self.lbl_st = tk.Label(bar, text="", bg="#e0e0e0",
                                fg="#444", font=FUENTE_S, anchor="w")
         self.lbl_st.pack(side="left", padx=12)
@@ -245,7 +256,8 @@ class VentanaObra(tk.Toplevel):
         frm_iz_top = tk.Frame(izq, bg=COLOR_HDR, height=32)
         frm_iz_top.pack(fill="x")
         frm_iz_top.pack_propagate(False)
-        tk.Label(frm_iz_top, text="  Presupuesto de licitación",
+        tk.Label(frm_iz_top,
+                 text="  Tareas de la etapa" if self.es_etapa else "  Presupuesto de licitación",
                  bg=COLOR_HDR, fg="white", font=FUENTE_B).pack(side="left", padx=8)
         tk.Button(frm_iz_top, text="+ Fila", bg="#2a6099", fg="white",
                   font=FUENTE_S, relief="flat", padx=6, pady=1, cursor="hand2",
@@ -255,10 +267,11 @@ class VentanaObra(tk.Toplevel):
                   font=FUENTE_S, relief="flat", padx=6, pady=1, cursor="hand2",
                   command=self._agregar_rubro
                   ).pack(side="right", padx=2, pady=3)
-        tk.Button(frm_iz_top, text="Importar", bg="#2a6099", fg="white",
-                  font=FUENTE_S, relief="flat", padx=6, pady=1, cursor="hand2",
-                  command=self._importar_presupuesto
-                  ).pack(side="right", padx=2, pady=3)
+        if not self.es_etapa:
+            tk.Button(frm_iz_top, text="Importar", bg="#2a6099", fg="white",
+                      font=FUENTE_S, relief="flat", padx=6, pady=1, cursor="hand2",
+                      command=self._importar_presupuesto
+                      ).pack(side="right", padx=2, pady=3)
         cols_iz = ("rubro", "item", "descripcion", "unidad", "cantidad")
         self.tbl_iz = ttk.Treeview(izq, columns=cols_iz,
                                    show="headings", selectmode="extended")
@@ -434,6 +447,7 @@ class VentanaObra(tk.Toplevel):
         it["unidad"]      = it.get("unidad") or t["unidad"]
         it["rubro_std"]   = t["rubro"]
         it["subcontrato"] = subcont
+        self._proponer_saldo(it)
         if not hasattr(self, "_subc_cache"):
             self._subc_cache = {}
         self._subc_cache[cod] = subcont
@@ -613,11 +627,17 @@ class VentanaObra(tk.Toplevel):
         it["unidad"]      = it.get("unidad") or t["unidad"]
         it["rubro_std"]   = t["rubro"]
         it["subcontrato"] = subcont
+        self._proponer_saldo(it)
         self._refrescar_der_sel(cod)
         self._poblar_iz()
         self.tbl_iz.item(str(self._item_sel_idx), tags=("sel",))
         self.tbl_iz.see(str(self._item_sel_idx))
         self._actualizar_st()
+    def _proponer_saldo(self, it):
+        """Etapa: fila nueva vinculada a una tarea del Original y sin cantidad →
+        se propone el saldo de esa tarea."""
+        if self.es_etapa and not it.get("clave") and not it.get("cantidad"):
+            it["cantidad"] = self.obra.saldo_para(it)
     def _refrescar_der_sel(self, cod):
         for iid in self.tbl_der.get_children():
             if iid.startswith("__rub_"):
@@ -1176,16 +1196,22 @@ class VentanaObra(tk.Toplevel):
         tk.Button(frm_top, text="📄 Exportar Excel", bg=COLOR_VERDE, fg="white",
                   font=FUENTE_S, relief="flat", padx=8, pady=3, cursor="hand2",
                   command=self._exportar_presupuesto).pack(side="right")
-        cols = ("rubro", "item", "descripcion", "unidad", "cantidad", "precio", "total")
+        # Tarea:  P. Parcial = precio unitario de la tarea; Total = P. Parcial × cantidad.
+        # Insumo: Cantidad = incidencia; P. Insumo = precio del insumo;
+        #         P. Parcial = incidencia × precio; Total = P. Parcial × cantidad de la tarea.
+        cols = ("rubro", "item", "descripcion", "unidad", "cantidad", "precio",
+                "parcial", "total")
         self.tbl_ppto = ttk.Treeview(f, columns=cols, show="headings",
                                      selectmode="browse")
         anchos = {"rubro": 42, "item": 42, "descripcion": 280,
-                  "unidad": 56, "cantidad": 80, "precio": 100, "total": 110}
+                  "unidad": 56, "cantidad": 80, "precio": 100, "parcial": 100,
+                  "total": 110}
         textos = {"rubro": "Rubro", "item": "Ítem", "descripcion": "Descripción",
                   "unidad": "Unidad", "cantidad": "Cantidad",
-                  "precio": "P. Unit.", "total": "Total"}
+                  "precio": "P. Insumo", "parcial": "P. Parcial", "total": "Total"}
         anclas = {"rubro": "center", "item": "center", "descripcion": "w",
-                  "unidad": "center", "cantidad": "e", "precio": "e", "total": "e"}
+                  "unidad": "center", "cantidad": "e", "precio": "e", "parcial": "e",
+                  "total": "e"}
         for c in cols:
             self.tbl_ppto.heading(c, text=textos[c])
             self.tbl_ppto.column(c, width=anchos[c], minwidth=24, anchor=anclas[c])
@@ -1199,6 +1225,8 @@ class VentanaObra(tk.Toplevel):
         self.tbl_ppto.tag_configure("tarea_ok",        background="#ffffff")
         self.tbl_ppto.tag_configure("tarea_sinprecio", background="#fff3cd")
         self.tbl_ppto.tag_configure("tarea_alt",       background="#f5f5f5")
+        self.tbl_ppto.tag_configure("solo_insumos",    background="#ede4f5",
+                                    foreground="#5b2c83")
         self.tbl_ppto.tag_configure("insumo",
             background="#eef4fb", foreground="#1a3a5c", font=("Segoe UI", 9))
         self.tbl_ppto.tag_configure("insumo_alt",
@@ -1234,8 +1262,7 @@ class VentanaObra(tk.Toplevel):
             cod_tar = it.get("cod_tar", "")
             subcont = (it.get("subcontrato") or "").strip().upper()
             cant    = it.get("cantidad") or 0.0
-            cod_buscar  = cod_tar + subcont if (cod_tar and subcont) else cod_tar
-            lista_inc   = incidencias.get(cod_buscar, []) if subcont else incidencias.get(cod_tar, [])
+            lista_inc   = self.obra.incidencias_item(it, incidencias)
             precio_unit = (self._precios_tarea.get(idx) or
                            sum((precios.get(inc["cod_ins"], 0.0) or 0.0) * inc["cantidad"]
                                for inc in lista_inc))
@@ -1247,10 +1274,10 @@ class VentanaObra(tk.Toplevel):
                 rub  = it.get("rubro", "")
                 desc = it.get("descripcion", "")
                 sub  = totales_rubro.get(idx, 0.0)
-                sub_str = f"$ {self._fmt_pt(sub)}" if sub else ""
+                sub_str = f"$ {self._fmt_pp(sub)}" if sub else ""
                 self.tbl_ppto.insert("", "end",
                     iid=f"rub_{idx}", tags=("rub_hdr",),
-                    values=(rub, "", desc, "", "", "", sub_str))
+                    values=(rub, "", desc, "", "", "", "", sub_str))
                 continue
             cod_tar  = it.get("cod_tar", "")
             subcont  = (it.get("subcontrato") or "").strip().upper()
@@ -1259,8 +1286,7 @@ class VentanaObra(tk.Toplevel):
             unidad   = it.get("unidad", "")
             rub      = it.get("rubro", "")
             item_num = it.get("item", "")
-            cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
-            lista_inc  = incidencias.get(cod_buscar, []) if subcont else incidencias.get(cod_tar, [])
+            lista_inc  = self.obra.incidencias_item(it, incidencias)
             precio_unit      = 0.0
             todos_con_precio = True
             insumos_detalle  = []
@@ -1293,26 +1319,32 @@ class VentanaObra(tk.Toplevel):
             iid_tarea = f"tar_{idx}"
             expandido = iid_tarea in self._ppto_expandido
             prefijo   = "▼ " if expandido else "▶ "
-            p_str = f"$ {self._fmt_pu(precio_unit)}" if precio_unit else "-"
-            t_str = f"$ {self._fmt_pt(total_tarea)}"  if precio_unit else "-"
+            p_str = f"$ {self._fmt_pp(precio_unit)}" if precio_unit else "-"
+            t_str = f"$ {self._fmt_pp(total_tarea)}"  if precio_unit else "-"
             c_str = self._fmt_q(cant, 2) if cant else "-"
+            if it.get("solo_insumos"):      # etapa: fila que no suma cantidad a la tarea
+                desc  += "   [solo insumos · no suma cantidad]"
+                c_str += " ref."
+                tag    = "solo_insumos"
             self.tbl_ppto.insert("", "end", iid=iid_tarea, tags=(tag,),
                 values=(rub, item_num, prefijo + desc,
-                        unidad, c_str, p_str, t_str))
+                        unidad, c_str, "", p_str, t_str))
             if expandido:
                 for j, ins in enumerate(insumos_detalle):
                     tag_ins = "insumo" if j % 2 == 0 else "insumo_alt"
                     p_i = f"$ {self._fmt_pu(ins['precio'])}" if ins['precio'] else "Sin precio"
-                    s_i = f"$ {self._fmt_pt(ins['subtotal'])}" if ins['precio'] else "-"
+                    s_i = f"$ {self._fmt_pp(ins['subtotal'])}" if ins['precio'] else "-"
+                    t_i = f"$ {self._fmt_pp(ins['subtotal'] * cant)}" if ins['precio'] else "-"
                     self.tbl_ppto.insert("", "end",
                         iid=f"ins_{idx}_{j}", tags=(tag_ins,),
                         values=("", "", f"    {ins['nombre']}",
-                                ins["unidad"], f"{ins['incidencia']:g}", p_i, s_i))
+                                ins["unidad"], self._fmt_inc(ins["incidencia"]),
+                                p_i, s_i, t_i))
             i_tarea += 1
         if total_general > 0:
             self.tbl_ppto.insert("", "end", iid="total_gen",
                 tags=("total_general",),
-                values=("", "", "TOTAL GENERAL", "", "", "",
+                values=("", "", "TOTAL GENERAL", "", "", "", "",
                         f"$ {self._fmt_pt(total_general)}"))
         self.lbl_total_ppto.config(
             text=f"Total general:  $ {self._fmt_pt(total_general)}   "
@@ -1407,9 +1439,7 @@ class VentanaObra(tk.Toplevel):
                 unidad   = it.get("unidad", "")
                 rub      = it.get("rubro", "")
                 item_num = it.get("item", "")
-                cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
-                lista_inc  = (incidencias.get(cod_buscar, []) if subcont
-                              else incidencias.get(cod_tar, []))
+                lista_inc  = self.obra.incidencias_item(it, incidencias)
                 precio_unit = (self._precios_tarea.get(idx) or
                                sum((precios.get(inc["cod_ins"], 0.0) or 0.0) * inc["cantidad"]
                                    for inc in lista_inc))
@@ -1457,7 +1487,7 @@ class VentanaObra(tk.Toplevel):
         if not iid or not iid.startswith("tar_"):
             return
         col = self.tbl_ppto.identify_column(event.x)
-        if col != "#6":   # columna P.Unit.
+        if col not in ("#6", "#7"):   # P. Insumo / P. Parcial (el P.U. de la tarea)
             return
         idx = int(iid.split("_")[1])
         items = getattr(self.obra, "items_presupuesto", [])
@@ -1508,7 +1538,7 @@ class VentanaObra(tk.Toplevel):
             self._cargar_rpt_mdo()
         elif idx == 7:
             self._cargar_rpt_detalle()
-        elif idx == 8:
+        elif idx == 8 and self._ejecucion:
             self._ejecucion.refrescar()
     def _actualizar_st(self):
         items = getattr(self.obra, "items_presupuesto", [])
@@ -1569,6 +1599,9 @@ class VentanaObra(tk.Toplevel):
             messagebox.showwarning("Precios no guardados", str(e), parent=self)
             return 0
     def _guardar(self, silencioso=False):
+        if self.es_etapa:
+            self._guardar_etapa()
+            return
         try:
             self.obra.precios          = dict(self._precios)
             self.obra.precios_tarea    = {}   # ahora vive en cada ítem ("precio_manual")
@@ -1682,8 +1715,7 @@ class VentanaObra(tk.Toplevel):
                      COLOR_SIN)
                 continue
 
-            cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
-            lista_inc  = incidencias.get(cod_buscar) or incidencias.get(cod_tar, [])
+            lista_inc  = self.obra.incidencias_item(it, incidencias, fallback=True)
             p_unit = self._precios_tarea.get(idx)
             if p_unit is None:
                 p_unit = sum(
@@ -1741,6 +1773,125 @@ class VentanaObra(tk.Toplevel):
     #  Barra de tabs personalizada
     # ═══════════════════════════════════════════════════════════════
 
+    # ═══════════════════════════════════════════════════════════════
+    #  Modo etapa (core/obra_etapa.py)
+    # ═══════════════════════════════════════════════════════════════
+    def _avisar_precios_distintos(self):
+        cods = self.obra.diferencias_precio
+        cat = self.maestro["insumos"]
+        lista = "\n".join(f"  {c}  {cat.get(c, {}).get('nombre', '')}" for c in cods[:12])
+        if len(cods) > 12:
+            lista += f"\n  ... y {len(cods) - 12} más"
+        messagebox.showinfo("Precios distintos según la tarea",
+            "En esta etapa hay insumos con precios distintos según la tarea:\n\n"
+            f"{lista}\n\nAcá se muestra un solo precio por insumo. Si no lo cambiás, "
+            "cada tarea conserva el suyo al guardar (se ven en «Detalle de etapa…»).",
+            parent=self)
+
+    def _datos_etapa(self):
+        """(etapa armada con lo que hay en pantalla, filas omitidas). No escribe."""
+        self.obra.archivo_precios = self._nombre_precios
+        return self.obra.armar_etapa(self.maestro, dict(self._precios))
+
+    def _guardar_etapa(self):
+        from core import etapas as E
+        from tkinter import simpledialog
+        data = self.obra.carpeta_data
+        ejec = E.cargar_ejecucion(data)
+        if not ejec:
+            messagebox.showerror("Sin Original",
+                "La obra no tiene Original definido.", parent=self)
+            return
+        self.obra.ejec = ejec
+        etapa, omitidas = self._datos_etapa()
+        if omitidas:
+            if not messagebox.askyesno("Filas sin tarea",
+                    "Estas filas no tienen tarea vinculada ni precio y no se guardan:\n\n"
+                    + "\n".join(f"  • {d}" for d in omitidas[:10])
+                    + "\n\n¿Guardar igual?", parent=self):
+                return
+        if not etapa["items"]:
+            messagebox.showinfo("Etapa vacía", "La etapa no tiene tareas.", parent=self)
+            return
+        if not (etapa.get("nombre") or "").strip():
+            nom = simpledialog.askstring("Nombre de la etapa",
+                f"Nombre para la {E.nombre_etapa(etapa)}:", parent=self)
+            if nom is None:
+                return
+            etapa["nombre"] = nom.strip()
+        falt = sum(1 for i in etapa["items"] if i.get("sin_precio"))
+        if falt and not messagebox.askyesno("Insumos sin precio",
+                f"{falt} tareas tienen insumos sin precio. ¿Guardar igual?", parent=self):
+            return
+        if etapa.get("variante"):
+            E.guardar_variante(data, etapa, etapa["variante"])
+            msg = f"{E.nombre_etapa(etapa)} guardada."
+        elif self.obra.variantes_cambiadas(etapa):
+            reg = E.registro(ejec)
+            txt = lambda s: s or "propia"
+            lista = "\n".join(
+                f"  • {i['clave']} {i['descripcion'][:40]}:  Original "
+                f"{txt(reg.get(i['clave'], {}).get('subcontrato', ''))} → acá {txt(i['subcontrato'])}"
+                for i in self.obra.variantes_cambiadas(etapa)[:10])
+            if not messagebox.askyesno("Tareas en otra variante",
+                    "Estas tareas están en una variante distinta de la del Original:\n\n"
+                    f"{lista}\n\n"
+                    "La etapa real no se puede guardar así. ¿Guardarla como nueva "
+                    "Variante? (no suma al ejecutado ni cambia estados)\n\n"
+                    "Para guardar la etapa real, cambiá la variante en «2. Tareas» "
+                    "(columna Subc.) y volvé a guardar.", parent=self):
+                return
+            etapa["variante"] = E.guardar_variante(data, etapa)
+            msg = f"Guardada como {E.nombre_etapa(etapa)}."
+        else:
+            for i in etapa["items"]:     # las agregadas que estaban 'a realizar' → en curso
+                if E.estado(ejec, i["clave"]) == "a_realizar":
+                    ejec["estados"][i["clave"]] = "en_curso"
+            E.guardar_etapa(data, ejec, etapa)
+            msg = f"{E.nombre_etapa(etapa)} guardada."
+        self._recargar_etapa(etapa)
+        total = sum(i["cantidad"] * i["pu"] for i in etapa["items"])
+        self.lbl_st.config(text=f"  {msg}  Total: $ {self._fmt_pt(total)}")
+
+    def _recargar_etapa(self, etapa=None):
+        """Vuelve a leer la etapa del disco (la de `etapa` o la abierta) y refresca."""
+        import json
+        from core import etapas as E
+        et = etapa or self.obra.etapa
+        if et.get("variante"):
+            ruta = E.ruta_variante(self.obra.carpeta_data, et["numero"], et["variante"])
+        else:
+            ruta = E.ruta_etapa(self.obra.carpeta_data, et["numero"])
+        if not ruta.exists():
+            return
+        with open(ruta, encoding="utf-8") as f:
+            etapa = json.load(f)
+        self.obra.recargar(etapa, E.cargar_ejecucion(self.obra.carpeta_data), self.maestro)
+        self._precios = dict(self.obra.precios)
+        self._nombre_precios = self.obra.archivo_precios or self._nombre_precios
+        self.title(f"Obra {self.obra.titulo}")
+        self.lbl_titulo.config(text=f"  Obra {self.obra.titulo}")
+        self._item_sel_idx = None
+        self._poblar_iz()
+        self._on_tab_switch(self._tab_activo)
+        self._actualizar_st()
+
+    def _detalle_etapa(self):
+        """Abre el editor de la etapa (Finaliza, incidencias por tarea, variantes)
+        con lo que hay en pantalla. Si se guarda ahí, esta ventana se recarga."""
+        import copy
+        from types import SimpleNamespace
+        from core import etapas as E
+        from ui.tab_ejecucion import _DlgVersion
+        data = self.obra.carpeta_data
+        ejec = E.cargar_ejecucion(data)
+        self.obra.ejec = ejec
+        etapa, _omitidas = self._datos_etapa()
+        tab = SimpleNamespace(v=self, data=data, ejec=ejec, obra=self.obra,
+                              refrescar=self._recargar_etapa)
+        _DlgVersion(tab, copy.deepcopy(etapa), dict(self._precios),
+                    nueva=self.obra.es_nueva)
+
     def _build_custom_tabbar(self):
         """Frame con botones tk coloreados — reemplaza la tira de tabs nativa."""
         tabbar = tk.Frame(self, bg="#c0c0c0", height=30)
@@ -1756,8 +1907,7 @@ class VentanaObra(tk.Toplevel):
             (1, "  2. Tareas  "),
             (2, "  3. Insumos y precios  "),
             (3, "  4. Presupuesto  "),
-            (8, "  5. Ejecución  "),
-        ]
+        ] + ([] if self.es_etapa else [(8, "  5. Ejecución  ")])
         INFORMES_TABS = [
             (4, "  Insumos  "),
             (5, "  Materiales  "),
@@ -1821,11 +1971,27 @@ class VentanaObra(tk.Toplevel):
         s = f"{v:,.{dec}f}"                          # "1,234.567"
         return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")  # "1.234,567"
 
+    @classmethod
+    def _fmt_inc(cls, v) -> str:
+        """Incidencia con 2 decimales; las menores a 0,01 con 4 para no mostrar 0,00."""
+        from decimal import Decimal, ROUND_HALF_UP
+        v = v or 0.0
+        dec = 4 if 0 < abs(v) < 0.005 else 2
+        v = float(Decimal(repr(v)).quantize(Decimal(1).scaleb(-dec), ROUND_HALF_UP))
+        return cls._fmt_q(v, dec)
+
     @staticmethod
     def _fmt_pu(v) -> str:
         """Precio Unitario: #.##0,00  (notación argentina, 2 decimales)."""
         s = f"{v:,.2f}"                          # "1,234.56"
         return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")  # "1.234,56"
+
+    @classmethod
+    def _fmt_pp(cls, v) -> str:
+        """P. Parcial y Total en 4. Presupuesto: sin decimales, salvo los
+        importes menores a 1 (0,nn), que van con 2."""
+        v = v or 0.0
+        return cls._fmt_pu(v) if 0 < abs(v) < 1 else cls._fmt_pt(v)
 
     @staticmethod
     def _fmt_pt(v) -> str:
@@ -2328,8 +2494,7 @@ class VentanaObra(tk.Toplevel):
                             self._fmt_q(cant, 2) if cant else "", "", ""))
                 continue
             n_tar += 1
-            cod_buscar = cod_tar + subcont if (cod_tar and subcont) else cod_tar
-            lista_inc  = incidencias.get(cod_buscar) or incidencias.get(cod_tar, [])
+            lista_inc  = self.obra.incidencias_item(it, incidencias, fallback=True)
             tag_tar    = "par" if i_tar % 2 == 0 else "impar"
             cod_label  = cod_tar + subcont if subcont else cod_tar
             cant_str   = self._fmt_q(cant, 2) if cant else ""
@@ -2471,11 +2636,15 @@ class _DlgGuardarVersion(tk.Toplevel):
                   relief="flat", padx=10, pady=5, cursor="hand2",
                   command=lambda: self._elegir("pisar")).pack(side="right", padx=(4, 0))
 
-        tk.Label(frm_bot, text="Nota:", bg=COLOR_BG,
-                 font=FUENTE_S, fg="#555").pack(side="left", padx=(0, 4))
+        # Nombre / nota en su propia fila, a todo el ancho (arriba de los botones)
+        frm_nota = tk.Frame(self, bg=COLOR_BG, padx=10, pady=(6))
+        frm_nota.pack(side="bottom", fill="x")
+        tk.Label(frm_nota, text="Nombre / nota:", bg=COLOR_BG,
+                 font=FUENTE_B, fg=COLOR_HDR).pack(side="left", padx=(0, 6))
         self.var_nota = tk.StringVar()
-        ttk.Entry(frm_bot, textvariable=self.var_nota,
-                  font=FUENTE, width=22).pack(side="left")
+        ent = ttk.Entry(frm_nota, textvariable=self.var_nota, font=FUENTE)
+        ent.pack(side="left", fill="x", expand=True)
+        ent.focus_set()
 
         # ── Treeview de versiones ─────────────────────────────────
         cols = ("archivo", "version", "fecha", "nota_ver")
@@ -2499,8 +2668,11 @@ class _DlgGuardarVersion(tk.Toplevel):
         self.tbl.tag_configure("impar",  background="#eaf2fb")
 
         self.tbl.bind("<Double-1>", lambda _: self._elegir("pisar"))
+        # Al elegir una versión se trae su nombre/nota para poder cambiarlo
+        self.tbl.bind("<<TreeviewSelect>>", self._nota_de_seleccion)
 
         self._poblar()
+        self._nota_de_seleccion()
 
     def _poblar(self):
         import json as _json
@@ -2522,6 +2694,13 @@ class _DlgGuardarVersion(tk.Toplevel):
             if es_actual:
                 self.tbl.selection_set(str(j))
                 self.tbl.see(str(j))
+
+    def _nota_de_seleccion(self, _=None):
+        import re
+        sel = self.tbl.selection()
+        if sel:
+            nota = self.tbl.item(sel[0], "values")[3]
+            self.var_nota.set(re.sub(r"\s*\(desde obra\d{3}\.json\)\s*$", "", nota))
 
     def _leer_notas(self) -> dict:
         notas = {}

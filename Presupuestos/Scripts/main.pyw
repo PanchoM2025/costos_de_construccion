@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from core.obra import listar_obras, Obra, CARPETA_DATA
 from ui.dialogo_nueva_obra import DialogoNuevaObra
 from ui.ventana_obra import VentanaObra
+from ui.dialogo_etapas import DlgModo, DlgEtapas
 from cierre_de_dia import cierre as _cierre_de_dia
 
 # ── Rutas de integración con el módulo Costos ─────────────────────────────────
@@ -210,6 +211,18 @@ class AppPrincipal(tk.Tk):
         if obra is None:
             num = self._obra_seleccionada()
             if not num: messagebox.showinfo("Sin selección","Seleccioná una obra de la lista.",parent=self); return
+            # Elegir qué abrir: el presupuesto (Original) o las Etapas
+            vals = self.tabla.item(num, "values")
+            dlg_modo = DlgModo(self, num, f"{num} - {vals[1] if len(vals) > 1 else ''}")
+            self.wait_window(dlg_modo)
+            if dlg_modo.modo is None:
+                return
+            if dlg_modo.modo == "etapas":
+                try:
+                    DlgEtapas(self, num)
+                except Exception as e:
+                    messagebox.showerror("Error", str(e), parent=self)
+                return
             try:
                 from core.obra import CARPETA_OBRAS
                 carpeta_data = CARPETA_OBRAS / f"Obra{num}" / "data"

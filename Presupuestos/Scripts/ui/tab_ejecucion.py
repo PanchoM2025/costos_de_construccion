@@ -1068,8 +1068,13 @@ class _DlgVersion(tk.Toplevel):
         dlg = _DlgAgregar(self, cand, self.tab.ejec)
         self.wait_window(dlg)
         for c in dlg.claves:
+            # Cantidad propuesta = saldo de la tarea (Original − otras etapas), como en
+            # «+ Nueva Etapa». Las adicionales (sin cantidad en el Original) quedan en 0.
+            o = self.orig[c]
+            saldo = max((o.get("cantidad") or 0.0)
+                        - self.acc_prev.get(c, {}).get("cantidad", 0.0), 0.0)
             self.etapa["items"].append(
-                E.item_etapa(self.orig[c], 0.0, self.inc, self.precios, catalogo=self.cat))
+                E.item_etapa(o, saldo, self.inc, self.precios, catalogo=self.cat))
         if dlg.claves:
             self._poblar()
 

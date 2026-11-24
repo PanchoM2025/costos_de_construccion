@@ -375,10 +375,8 @@ class Obra:
             if it.get("es_rubro") or not it.get("cod_tar"):
                 continue
             cod_tar  = it["cod_tar"]
-            subcont  = (it.get("subcontrato") or "").strip().upper()
             cant_tar = it.get("cantidad", 0) or 0
-            cod_buscar = cod_tar + subcont if subcont else cod_tar
-            lista_inc = incidencias.get(cod_buscar, []) if subcont else incidencias.get(cod_tar, [])
+            lista_inc = self.incidencias_item(it, incidencias)
             for inc in lista_inc:
                 cod_ins  = inc["cod_ins"]
                 cant_ins = inc["cantidad"] * cant_tar
@@ -398,6 +396,19 @@ class Obra:
                     "subtotal":    cant_ins,
                 })
         return resultado
+
+    def incidencias_item(self, it: dict, incidencias: dict, fallback: bool = False) -> list:
+        """Incidencias de una fila del presupuesto: las del análisis de su tarea
+        (con la variante de subcontrato). fallback: si la variante no existe, la base.
+        ObraEtapa la redefine para usar las incidencias propias de la etapa."""
+        cod_tar = it.get("cod_tar", "")
+        if not cod_tar:
+            return []
+        subcont = (it.get("subcontrato") or "").strip().upper()
+        if not subcont:
+            return incidencias.get(cod_tar, [])
+        lista = incidencias.get(cod_tar + subcont, [])
+        return lista or (incidencias.get(cod_tar, []) if fallback else [])
 
     def insumos_sin_precio(self, incidencias: dict, precios: dict) -> list:
         insumos_obra = self.calcular_insumos(incidencias)
@@ -423,6 +434,8 @@ class Obra:
             version_origen = self.version
             self.version   = self._ultima_version_en_disco() + 1
             self._registrar_variacion(nota, version_origen)
+        elif nota:
+            self._actualizar_nota(nota)
         self._escribir_json()
         _actualizar_db(self)
 
@@ -447,6 +460,29 @@ class Obra:
         }
         with open(self.ruta_json, "w", encoding="utf-8") as f:
             json.dump(datos, f, ensure_ascii=False, indent=2)
+
+    def _actualizar_nota(self, nota: str):
+        """Guardar sobre una versión existente con nota: reemplaza la nota (el nombre
+        que se ve en las listas de versiones) de ese archivo en variaciones.txt.
+        Conserva la fecha y el «(desde obraNNN.json)». El archivo sigue siendo obraNNN.json."""
+        import re
+        ruta = self.carpeta_data / "variaciones.txt"
+        archivo = f"obra{self.version:03d}.json"
+        lineas = ruta.read_text(encoding="utf-8").splitlines() if ruta.exists() else []
+        for k, linea in enumerate(lineas):
+            partes = linea.split("  —  ")
+            if partes[0].strip() != archivo:
+                continue
+            m = re.search(r"\s*\(desde obra\d{3}\.json\)\s*$", linea)
+            origen = f"  {m.group(0).strip()}" if m else ""
+            fecha = re.sub(r"\s*\(desde obra\d{3}\.json\)\s*$", "",
+                           partes[1] if len(partes) > 1 else "").strip()
+            lineas[k] = f"{archivo}  —  {fecha}  —  {nota}{origen}"
+            break
+        else:
+            lineas.append(f"{archivo}  —  {self.fecha_creacion}  —  {nota}")
+            lineas.sort(key=lambda l: l.split("  —  ")[0])
+        ruta.write_text("\n".join(lineas) + "\n", encoding="utf-8")
 
     def _registrar_variacion(self, nota: str, version_origen: int | None = None):
         ruta = self.carpeta_data / "variaciones.txt"

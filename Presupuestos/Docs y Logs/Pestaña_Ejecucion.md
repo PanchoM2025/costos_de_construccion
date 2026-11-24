@@ -4,6 +4,19 @@ Sirve para seguir la obra por **etapas** (Etapa 01, 02…, por ejemplo una por q
 
 > No confundir con las **versiones del presupuesto** (`obra000.json`, `obra001.json`…), que se crean con «Guardar obra» → «↑ Nueva versión». Las etapas se crean solo desde esta pestaña, con **«+ Nueva Etapa»**.
 
+## Abrir una obra: «Obra Original» o «Etapas»
+
+Al abrir una obra se elige qué abrir:
+
+- **Obra Original**: el presupuesto, como siempre (versiones, pestañas 1 a 4, Informes y esta pestaña 5 con el seguimiento y el cierre).
+- **Etapas**: la lista de etapas (y sus variantes) con **Abrir**, **+ Nueva etapa** y **Eliminar**. Cada etapa se abre en la misma ventana de obra, **como si fuera otra obra**: 1. Rubros, 2. Tareas, 3. Insumos y precios, 4. Presupuesto e Informes, con las cantidades, incidencias y precios de esa etapa. No tiene pestaña 5.
+  - **«Guardar etapa»** escribe en `etapaNN.json` (o en su variante). Si alguna tarea está en otra variante (S/E/T) que la del Original, ofrece guardarla como nueva Variante y lista cuáles son.
+  - Una tarea agregada en «2. Tareas» toma la clave del Original si es la misma tarea. Si no está en el Original, queda como **adicional** (`A01`…).
+  - Un precio cambiado en «3. Insumos y precios» se aplica a todas las tareas de la etapa. Los que no se tocan conservan el precio que tenía cada tarea.
+  - **«Detalle de etapa…»** abre el editor de siempre (Finaliza, incidencias por tarea, insumos agregados, variantes) con lo que hay en pantalla. Si se guarda ahí, la ventana se recarga.
+
+Código: `Scripts/ui/dialogo_etapas.py` (pantallas) y `Scripts/core/obra_etapa.py` (etapa ↔ obra).
+
 ## Conceptos
 
 - **Original**: la versión contratada del presupuesto, **congelada** con sus cantidades y PU. Los cambios posteriores al presupuesto no la modifican.
